@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AniPulse Streaming</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar" aria-label="Primary navigation">
+        <a class="brand" href="#watch">
+          <span class="brand-mark">A</span>
+          <span>AniPulse</span>
+        </a>
+
+        <nav class="nav-stack">
+          <a class="nav-item active" href="#watch" aria-label="Home">
+            <span aria-hidden="true">⌂</span>
+            <span>Home</span>
+          </a>
+          <a class="nav-item" href="#discover" aria-label="Discover">
+            <span aria-hidden="true">◎</span>
+            <span>Discover</span>
+          </a>
+          <a class="nav-item" href="#latest" aria-label="Latest episodes">
+            <span aria-hidden="true">▶</span>
+            <span>Latest</span>
+          </a>
+          <a class="nav-item" href="#watchlist" aria-label="Watchlist">
+            <span aria-hidden="true">☆</span>
+            <span>Watchlist</span>
+          </a>
+        </nav>
+
+        <div class="side-panel">
+          <p class="panel-kicker">Tonight</p>
+          <strong>6 premieres</strong>
+          <span>New episodes refresh every evening.</span>
+        </div>
+      </aside>
+
+      <main class="main-area">
+        <header class="topbar">
+          <label class="search-wrap">
+            <span aria-hidden="true">⌕</span>
+            <input id="searchInput" type="search" placeholder="Search anime, genres, studios" />
+          </label>
+          <div class="top-actions">
+            <button class="icon-button" type="button" aria-label="Notifications">●</button>
+            <button class="profile-button" type="button" aria-label="Open profile">PR</button>
+          </div>
+        </header>
+
+        <section class="watch-stage" id="watch">
+          <div class="hero-copy">
+            <p class="eyebrow">Original streaming prototype</p>
+            <h1 id="featuredTitle">Neon Ronin Zero</h1>
+            <p id="featuredDescription">
+              A fugitive swordswoman and an exiled broadcast engineer race through a city where memories are bought as entertainment.
+            </p>
+            <div class="meta-row" id="featuredMeta"></div>
+            <div class="hero-actions">
+              <button class="primary-button" id="playFeatured" type="button">
+                <span aria-hidden="true">▶</span>
+                Watch now
+              </button>
+              <button class="secondary-button" id="saveFeatured" type="button">
+                <span aria-hidden="true">☆</span>
+                Save
+              </button>
+            </div>
+          </div>
+
+          <div class="player-panel" aria-label="Video player">
+            <video id="videoPlayer" controls poster="assets/hero-anime-city.png">
+              <source
+                src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
+                type="video/mp4"
+              />
+            </video>
+            <div class="player-caption">
+              <div>
+                <span class="now-playing">Now playing</span>
+                <strong id="playerTitle">Neon Ronin Zero - Episode 1</strong>
+              </div>
+              <span id="playerDuration">24m</span>
+            </div>
+          </div>
+        </section>
+
+        <section class="content-band" id="discover">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">Browse</p>
+              <h2>Explore anime</h2>
+            </div>
+            <div class="filter-tabs" role="tablist" aria-label="Genre filters">
+              <button class="filter-tab active" type="button" data-filter="All">All</button>
+              <button class="filter-tab" type="button" data-filter="Action">Action</button>
+              <button class="filter-tab" type="button" data-filter="Fantasy">Fantasy</button>
+              <button class="filter-tab" type="button" data-filter="Slice of Life">Slice</button>
+              <button class="filter-tab" type="button" data-filter="Sci-Fi">Sci-Fi</button>
+            </div>
+          </div>
+          <div class="anime-grid" id="animeGrid" aria-live="polite"></div>
+        </section>
+
+        <section class="content-band split-layout" id="latest">
+          <div>
+            <div class="section-heading compact-heading">
+              <div>
+                <p class="eyebrow">Queue</p>
+                <h2>Latest episodes</h2>
+              </div>
+            </div>
+            <div class="episode-list" id="episodeList"></div>
+          </div>
+
+          <aside class="schedule-panel" aria-label="Release schedule">
+            <p class="eyebrow">Release schedule</p>
+            <h2>This week</h2>
+            <div class="schedule-row">
+              <span>Mon</span>
+              <strong>Moonlit Bento Club</strong>
+            </div>
+            <div class="schedule-row">
+              <span>Wed</span>
+              <strong>Signal Bloom</strong>
+            </div>
+            <div class="schedule-row">
+              <span>Fri</span>
+              <strong>Neon Ronin Zero</strong>
+            </div>
+            <div class="schedule-row">
+              <span>Sun</span>
+              <strong>Cloud Atelier</strong>
+            </div>
+          </aside>
+        </section>
+      </main>
+    </div>
+
+    <script src="script.js"></script>
+  </body>
+</html>
