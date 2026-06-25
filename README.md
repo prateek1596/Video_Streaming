@@ -1,4 +1,4 @@
-# AniPulse Streaming Prototype
+﻿# AniPulse Streaming Prototype
 
 AniPulse is a static anime streaming platform prototype inspired by modern catalog sites. It uses original sample anime titles and a safe public sample video instead of scraped or unauthorized streams.
 
@@ -15,9 +15,12 @@ Then visit `http://localhost:5173`.
 ## Included
 
 - Featured watch area with video player
+- Episode selector in the player
 - Search and genre filters
 - Anime catalog cards
-- Watchlist save toggles
+- Continue-watching progress row
+- Watchlist save toggles and saved-anime section
+- Show details modal with episode buttons
 - Latest episode queue
 - Weekly release schedule
 - Responsive desktop and mobile layout
