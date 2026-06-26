@@ -1,20 +1,16 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import {
-  Bell,
-  Bookmark,
-  BookmarkCheck,
-  ChevronRight,
-  Clock3,
-  Home,
-  Info,
-  Library,
-  ListVideo,
-  Play,
-  Search,
-  Sparkles,
-  Tv,
-  X,
-} from "lucide-react";
+import Bell from "lucide-react/dist/esm/icons/bell.js";
+import Bookmark from "lucide-react/dist/esm/icons/bookmark.js";
+import BookmarkCheck from "lucide-react/dist/esm/icons/bookmark-check.js";
+import Clock3 from "lucide-react/dist/esm/icons/clock-3.js";
+import Home from "lucide-react/dist/esm/icons/home.js";
+import Info from "lucide-react/dist/esm/icons/info.js";
+import Library from "lucide-react/dist/esm/icons/library.js";
+import ListVideo from "lucide-react/dist/esm/icons/list-video.js";
+import Play from "lucide-react/dist/esm/icons/play.js";
+import Search from "lucide-react/dist/esm/icons/search.js";
+import Sparkles from "lucide-react/dist/esm/icons/sparkles.js";
+import X from "lucide-react/dist/esm/icons/x.js";
 import { anime, genres, sampleVideo, schedule } from "./data.js";
 import heroImage from "../assets/hero-anime-city.png";
 
