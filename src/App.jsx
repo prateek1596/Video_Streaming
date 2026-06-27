@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import Bell from "lucide-react/dist/esm/icons/bell.js";
 import Bookmark from "lucide-react/dist/esm/icons/bookmark.js";
 import BookmarkCheck from "lucide-react/dist/esm/icons/bookmark-check.js";
