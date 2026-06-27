@@ -2,6 +2,9 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import Bell from "lucide-react/dist/esm/icons/bell.js";
 import Bookmark from "lucide-react/dist/esm/icons/bookmark.js";
 import BookmarkCheck from "lucide-react/dist/esm/icons/bookmark-check.js";
+import Captions from "lucide-react/dist/esm/icons/captions.js";
+import ChevronLeft from "lucide-react/dist/esm/icons/chevron-left.js";
+import ChevronRight from "lucide-react/dist/esm/icons/chevron-right.js";
 import Clock3 from "lucide-react/dist/esm/icons/clock-3.js";
 import Home from "lucide-react/dist/esm/icons/home.js";
 import Info from "lucide-react/dist/esm/icons/info.js";
@@ -535,4 +538,6 @@ function App() {
 }
 
 export default App;
+
+
 
