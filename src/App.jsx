@@ -37,6 +37,10 @@ function clampEpisode(value, item) {
   return Math.min(Math.max(Number(value) || item.currentEpisode, 1), item.episodes);
 }
 
+function initialEpisodeMap(storedEpisodes) {
+  return Object.fromEntries(anime.map((item) => [item.id, clampEpisode(storedEpisodes?.[item.id] || item.currentEpisode, item)]));
+}
+
 function IconButton({ label, children, className = "icon-button", ...props }) {
   return (
     <button className={className} type="button" aria-label={label} title={label} {...props}>
@@ -132,7 +136,18 @@ function Hero({ item, selectedEpisode, isSaved, onPlay, onSave, onDetails }) {
   );
 }
 
-function Player({ item, selectedEpisode, shouldAutoPlay, onEpisodeSelect, onProgress }) {
+function Player({
+  item,
+  selectedEpisode,
+  shouldAutoPlay,
+  quality,
+  captionsOn,
+  onEpisodeSelect,
+  onProgress,
+  onQualityChange,
+  onCaptionsToggle,
+  onStepEpisode,
+}) {
   const videoRef = useRef(null);
 
   useEffect(() => {
@@ -149,9 +164,14 @@ function Player({ item, selectedEpisode, shouldAutoPlay, onEpisodeSelect, onProg
     if (watched > 0) onProgress(item.id, selectedEpisode, watched);
   }
 
+  function handleEnded() {
+    onProgress(item.id, selectedEpisode, 100);
+    if (selectedEpisode < item.episodes) onStepEpisode(1, true);
+  }
+
   return (
     <div className="player-panel" aria-label="Video player">
-      <video ref={videoRef} controls poster={heroImage} onTimeUpdate={handleTimeUpdate}>
+      <video ref={videoRef} controls poster={heroImage} onTimeUpdate={handleTimeUpdate} onEnded={handleEnded}>
         <source src={sampleVideo} type="video/mp4" />
       </video>
       <div className="player-caption">
@@ -160,6 +180,37 @@ function Player({ item, selectedEpisode, shouldAutoPlay, onEpisodeSelect, onProg
           <strong>{`${item.title} - ${episodeLabel(selectedEpisode)}`}</strong>
         </div>
         <span>{item.duration}</span>
+      </div>
+      <div className="player-controls" aria-label="Playback options">
+        <IconButton
+          label="Previous episode"
+          className="compact-icon-button"
+          disabled={selectedEpisode <= 1}
+          onClick={() => onStepEpisode(-1, true)}
+        >
+          <ChevronLeft size={18} />
+        </IconButton>
+        <IconButton
+          label="Next episode"
+          className="compact-icon-button"
+          disabled={selectedEpisode >= item.episodes}
+          onClick={() => onStepEpisode(1, true)}
+        >
+          <ChevronRight size={18} />
+        </IconButton>
+        <label className="select-control">
+          <span>Quality</span>
+          <select value={quality} onChange={(event) => onQualityChange(event.target.value)}>
+            <option>Auto</option>
+            <option>1080p</option>
+            <option>720p</option>
+            <option>480p</option>
+          </select>
+        </label>
+        <button className={`caption-toggle ${captionsOn ? "active" : ""}`} type="button" onClick={onCaptionsToggle}>
+          <Captions size={18} />
+          <span>{captionsOn ? "Captions on" : "Captions off"}</span>
+        </button>
       </div>
       <div className="season-strip" aria-label="Episodes">
         {Array.from({ length: Math.min(item.episodes, 12) }, (_, index) => index + 1).map((episodeNumber) => (
@@ -310,6 +361,7 @@ function App() {
   const stored = readStoredState();
   const [selectedId, setSelectedId] = useState(stored?.selectedId || anime[0].id);
   const [selectedEpisode, setSelectedEpisode] = useState(stored?.selectedEpisode || anime[0].currentEpisode);
+  const [currentEpisodes, setCurrentEpisodes] = useState(() => initialEpisodeMap(stored?.currentEpisodes));
   const [filter, setFilter] = useState("All");
   const [query, setQuery] = useState("");
   const [saved, setSaved] = useState(() => new Set(stored?.saved || ["signal-bloom", "cloud-atelier"]));
@@ -317,6 +369,8 @@ function App() {
   const [detailsId, setDetailsId] = useState(null);
   const [activeSection, setActiveSection] = useState("watch");
   const [shouldAutoPlay, setShouldAutoPlay] = useState(false);
+  const [quality, setQuality] = useState(stored?.quality || "Auto");
+  const [captionsOn, setCaptionsOn] = useState(Boolean(stored?.captionsOn));
 
   const selected = anime.find((item) => item.id === selectedId) || anime[0];
   const detailsItem = anime.find((item) => item.id === detailsId) || null;
@@ -341,11 +395,14 @@ function App() {
     const payload = {
       selectedId,
       selectedEpisode,
+      currentEpisodes,
       saved: Array.from(saved),
       progress,
+      quality,
+      captionsOn,
     };
     localStorage.setItem(storageKey, JSON.stringify(payload));
-  }, [selectedId, selectedEpisode, saved, progress]);
+  }, [selectedId, selectedEpisode, currentEpisodes, saved, progress, quality, captionsOn]);
 
   useEffect(() => {
     const sections = ["watch", "continue", "discover", "latest", "watchlist"]
@@ -364,11 +421,17 @@ function App() {
 
   function playSelection(id, episodeNumber, autoPlay = false) {
     const item = anime.find((candidate) => candidate.id === id) || anime[0];
+    const nextEpisode = clampEpisode(episodeNumber || currentEpisodes[item.id], item);
     setSelectedId(item.id);
-    setSelectedEpisode(clampEpisode(episodeNumber, item));
+    setSelectedEpisode(nextEpisode);
+    setCurrentEpisodes((current) => ({ ...current, [item.id]: nextEpisode }));
     setShouldAutoPlay(autoPlay);
     setDetailsId(null);
     document.getElementById("watch")?.scrollIntoView({ behavior: "smooth" });
+  }
+
+  function stepEpisode(direction, autoPlay = false) {
+    playSelection(selected.id, selectedEpisode + direction, autoPlay);
   }
 
   function toggleSave(id) {
@@ -382,7 +445,7 @@ function App() {
 
   function updateProgress(id, episodeNumber, watched) {
     setProgress((current) => ({ ...current, [id]: Math.max(current[id] || 0, watched) }));
-    const item = anime.find((candidate) => candidate.id === id);
+    setCurrentEpisodes((current) => ({ ...current, [id]: episodeNumber }));
   }
 
   return (
@@ -404,8 +467,13 @@ function App() {
             item={selected}
             selectedEpisode={selectedEpisode}
             shouldAutoPlay={shouldAutoPlay}
+            quality={quality}
+            captionsOn={captionsOn}
             onEpisodeSelect={playSelection}
             onProgress={updateProgress}
+            onQualityChange={setQuality}
+            onCaptionsToggle={() => setCaptionsOn((current) => !current)}
+            onStepEpisode={stepEpisode}
           />
         </section>
 
@@ -418,7 +486,12 @@ function App() {
           </div>
           <div className="continue-grid">
             {continueItems.map((item) => (
-              <ContinueCard key={item.id} item={item} progress={progress[item.id] || item.progress} onPlay={playSelection} />
+              <ContinueCard
+                key={item.id}
+                item={{ ...item, currentEpisode: currentEpisodes[item.id] || item.currentEpisode }}
+                progress={progress[item.id] || item.progress}
+                onPlay={playSelection}
+              />
             ))}
           </div>
         </section>
