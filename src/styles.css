@@ -931,3 +931,47 @@ svg {
     flex: 1 1 11rem;
   }
 }
+
+@media (max-width: 680px) {
+  .app-shell,
+  .main-area,
+  .sidebar,
+  .topbar,
+  .watch-stage,
+  .hero-copy,
+  .player-panel,
+  .anime-grid,
+  .section-heading {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .sidebar,
+  .nav-stack {
+    width: 100%;
+  }
+
+  .brand {
+    width: fit-content;
+  }
+
+  .nav-stack {
+    min-width: 0;
+    max-width: 100%;
+    padding-bottom: 0.2rem;
+  }
+
+  .player-controls {
+    display: grid;
+    grid-template-columns: 2.45rem 2.45rem minmax(0, 1fr);
+  }
+
+  .caption-toggle,
+  .select-control {
+    min-width: 0;
+  }
+
+  .caption-toggle {
+    grid-column: 1 / -1;
+  }
+}
