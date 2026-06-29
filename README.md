@@ -33,7 +33,7 @@ The production output is generated in `dist/`.
 - Episode selector in the player
 - Search, genre filters, and catalog sorting
 - Anime catalog cards
-- Continue-watching progress row
+- Continue-watching progress row with complete/reset controls
 - Persistent watchlist, reminders, and progress state via localStorage
 - Show details modal with metadata, tags, and episode buttons
 - Latest episode queue and release reminders

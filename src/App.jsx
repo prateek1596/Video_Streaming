@@ -551,10 +551,10 @@ function App() {
   }, [filter, query, sortMode]);
 
   const continueItems = useMemo(
-    () => anime.filter((item) => Number(progress[item.id] || item.progress) > 0).slice(0, 4),
+    () => anime.filter((item) => Number(progress[item.id] ?? item.progress) > 0).slice(0, 4),
     [progress],
   );
-  const completedCount = useMemo(() => anime.filter((item) => Number(progress[item.id] || 0) >= 100).length, [progress]);
+  const completedCount = useMemo(() => anime.filter((item) => Number(progress[item.id] ?? 0) >= 100).length, [progress]);
   const nextContinueTitle = continueItems[0]
     ? `${continueItems[0].title} E${currentEpisodes[continueItems[0].id] || continueItems[0].currentEpisode}`
     : "Pick a show";
@@ -563,7 +563,7 @@ function App() {
   const reminderItems = useMemo(() => anime.filter((item) => reminders.has(item.id)), [reminders]);
   const libraryAverageProgress = useMemo(() => {
     if (!savedItems.length) return 0;
-    const total = savedItems.reduce((sum, item) => sum + Number(progress[item.id] || item.progress || 0), 0);
+    const total = savedItems.reduce((sum, item) => sum + Number((progress[item.id] ?? item.progress) || 0), 0);
     return Math.round(total / savedItems.length);
   }, [progress, savedItems]);
   const nextSavedRelease = savedItems.find((item) => reminders.has(item.id))?.nextRelease || savedItems[0]?.nextRelease;
@@ -692,7 +692,7 @@ function App() {
               <ContinueCard
                 key={item.id}
                 item={{ ...item, currentEpisode: currentEpisodes[item.id] || item.currentEpisode }}
-                progress={progress[item.id] || item.progress}
+                progress={progress[item.id] ?? item.progress}
                 onPlay={playSelection}
                 onMarkComplete={markComplete}
                 onResetProgress={resetProgress}
