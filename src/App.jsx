@@ -275,7 +275,7 @@ function WatchBrief({ item, selectedEpisode, progress }) {
     </aside>
   );
 }
-function AnimeCard({ item, isSaved, onPlay, onSave, onDetails }) {
+function AnimeCard({ item, isSaved, isReminderOn, onPlay, onSave, onDetails, onReminderToggle }) {
   return (
     <article className="anime-card">
       <button
@@ -309,6 +309,13 @@ function AnimeCard({ item, isSaved, onPlay, onSave, onDetails }) {
           >
             {isSaved ? <BookmarkCheck size={17} /> : <Bookmark size={17} />}
           </IconButton>
+          <IconButton
+            label={`${isReminderOn ? "Disable" : "Enable"} reminder for ${item.title}`}
+            className={`save-button reminder-save ${isReminderOn ? "saved" : ""}`}
+            onClick={() => onReminderToggle(item.id)}
+          >
+            {isReminderOn ? <CheckCircle2 size={17} /> : <Bell size={17} />}
+          </IconButton>
         </div>
       </div>
     </article>
@@ -339,6 +346,65 @@ function ContinueCard({ item, progress, onPlay }) {
   );
 }
 
+
+function LibraryStats({ savedCount, reminderCount, averageProgress, nextRelease }) {
+  const stats = [
+    [Library, "Saved", savedCount || "0"],
+    [Bell, "Reminders", reminderCount || "0"],
+    [TvMinimalPlay, "Progress", `${averageProgress}%`],
+    [ShieldCheck, "Next release", nextRelease || "None"],
+  ];
+
+  return (
+    <div className="library-stats" aria-label="Library stats">
+      {stats.map(([Icon, label, value]) => (
+        <div className="library-stat" key={label}>
+          <Icon size={18} />
+          <span>{label}</span>
+          <strong>{value}</strong>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function ReminderQueue({ items, reminders, onReminderToggle, onPlay }) {
+  return (
+    <aside className="reminder-panel" aria-label="Release reminders">
+      <div>
+        <p className="eyebrow">Alerts</p>
+        <h2>Release reminders</h2>
+      </div>
+      <div className="reminder-list">
+        {items.length ? (
+          items.map((item) => {
+            const isReminderOn = reminders.has(item.id);
+            return (
+              <article className="reminder-row" key={item.id}>
+                <button className="reminder-art" style={{ "--poster": item.poster }} type="button" onClick={() => onPlay(item.id, item.currentEpisode, true)}>
+                  E{item.currentEpisode}
+                </button>
+                <div>
+                  <strong>{item.title}</strong>
+                  <span>{item.nextRelease}</span>
+                </div>
+                <IconButton
+                  label={`${isReminderOn ? "Disable" : "Enable"} reminder for ${item.title}`}
+                  className={`reminder-toggle ${isReminderOn ? "active" : ""}`}
+                  onClick={() => onReminderToggle(item.id)}
+                >
+                  {isReminderOn ? <CheckCircle2 size={17} /> : <Bell size={17} />}
+                </IconButton>
+              </article>
+            );
+          })
+        ) : (
+          <div className="empty-state compact-empty">Save shows to build a reminder queue.</div>
+        )}
+      </div>
+    </aside>
+  );
+}
 function DetailsDialog({ item, isSaved, onClose, onPlay, onSave }) {
   const dialogRef = useRef(null);
 
@@ -425,6 +491,7 @@ function App() {
   const [sortMode, setSortMode] = useState("Trending");
   const [query, setQuery] = useState("");
   const [saved, setSaved] = useState(() => new Set(stored?.saved || ["signal-bloom", "cloud-atelier"]));
+  const [reminders, setReminders] = useState(() => new Set(stored?.reminders || ["neon-ronin-zero", "signal-bloom"]));
   const [progress, setProgress] = useState(() => stored?.progress || Object.fromEntries(anime.map((item) => [item.id, item.progress])));
   const [detailsId, setDetailsId] = useState(null);
   const [activeSection, setActiveSection] = useState("watch");
@@ -458,6 +525,13 @@ function App() {
   );
 
   const savedItems = useMemo(() => anime.filter((item) => saved.has(item.id)), [saved]);
+  const reminderItems = useMemo(() => anime.filter((item) => reminders.has(item.id)), [reminders]);
+  const libraryAverageProgress = useMemo(() => {
+    if (!savedItems.length) return 0;
+    const total = savedItems.reduce((sum, item) => sum + Number(progress[item.id] || item.progress || 0), 0);
+    return Math.round(total / savedItems.length);
+  }, [progress, savedItems]);
+  const nextSavedRelease = savedItems.find((item) => reminders.has(item.id))?.nextRelease || savedItems[0]?.nextRelease;
 
   useEffect(() => {
     const payload = {
@@ -465,12 +539,13 @@ function App() {
       selectedEpisode,
       currentEpisodes,
       saved: Array.from(saved),
+      reminders: Array.from(reminders),
       progress,
       quality,
       captionsOn,
     };
     localStorage.setItem(storageKey, JSON.stringify(payload));
-  }, [selectedId, selectedEpisode, currentEpisodes, saved, progress, quality, captionsOn]);
+  }, [selectedId, selectedEpisode, currentEpisodes, saved, reminders, progress, quality, captionsOn]);
 
   useEffect(() => {
     const sections = ["watch", "continue", "discover", "latest", "watchlist"]
@@ -511,6 +586,15 @@ function App() {
     });
   }
 
+
+  function toggleReminder(id) {
+    setReminders((current) => {
+      const next = new Set(current);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }
   function updateProgress(id, episodeNumber, watched) {
     setProgress((current) => ({ ...current, [id]: Math.max(current[id] || 0, watched) }));
     setCurrentEpisodes((current) => ({ ...current, [id]: episodeNumber }));
@@ -605,9 +689,11 @@ function App() {
                   key={item.id}
                   item={item}
                   isSaved={saved.has(item.id)}
+                  isReminderOn={reminders.has(item.id)}
                   onPlay={playSelection}
                   onSave={toggleSave}
                   onDetails={setDetailsId}
+                  onReminderToggle={toggleReminder}
                 />
               ))
             ) : (
@@ -661,21 +747,32 @@ function App() {
               <h2>Saved anime</h2>
             </div>
           </div>
-          <div className="anime-grid">
-            {savedItems.length ? (
-              savedItems.map((item) => (
-                <AnimeCard
-                  key={item.id}
-                  item={item}
-                  isSaved={saved.has(item.id)}
-                  onPlay={playSelection}
-                  onSave={toggleSave}
-                  onDetails={setDetailsId}
-                />
-              ))
-            ) : (
-              <div className="empty-state">Your saved list is empty.</div>
-            )}
+          <LibraryStats
+            savedCount={savedItems.length}
+            reminderCount={reminderItems.length}
+            averageProgress={libraryAverageProgress}
+            nextRelease={nextSavedRelease}
+          />
+          <div className="library-layout">
+            <div className="anime-grid">
+              {savedItems.length ? (
+                savedItems.map((item) => (
+                  <AnimeCard
+                    key={item.id}
+                    item={item}
+                    isSaved={saved.has(item.id)}
+                    isReminderOn={reminders.has(item.id)}
+                    onPlay={playSelection}
+                    onSave={toggleSave}
+                    onDetails={setDetailsId}
+                    onReminderToggle={toggleReminder}
+                  />
+                ))
+              ) : (
+                <div className="empty-state">Your saved list is empty.</div>
+              )}
+            </div>
+            <ReminderQueue items={savedItems.length ? savedItems : anime.slice(0, 3)} reminders={reminders} onReminderToggle={toggleReminder} onPlay={playSelection} />
           </div>
         </section>
       </main>

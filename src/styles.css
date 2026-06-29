@@ -1146,3 +1146,152 @@ svg {
     gap: 0.25rem;
   }
 }
+.card-actions {
+  grid-template-columns: 1fr 2.7rem 2.7rem;
+}
+
+.reminder-save.saved,
+.reminder-toggle.active {
+  background: rgba(44, 230, 211, 0.16);
+  border-color: rgba(44, 230, 211, 0.45);
+  color: var(--teal);
+}
+
+.library-stats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.library-stat {
+  display: grid;
+  gap: 0.35rem;
+  min-width: 0;
+  padding: 1rem;
+  border: 1px solid var(--line);
+  border-radius: 0.7rem;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.library-stat svg {
+  color: var(--teal);
+}
+
+.library-stat span {
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.library-stat strong {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  font-size: clamp(1rem, 2vw, 1.25rem);
+}
+
+.library-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(18rem, 0.34fr);
+  gap: 1rem;
+  align-items: start;
+}
+
+.reminder-panel {
+  position: sticky;
+  top: 5rem;
+  display: grid;
+  gap: 1rem;
+  padding: 1rem;
+  border: 1px solid var(--line);
+  border-radius: 0.7rem;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.reminder-panel h2 {
+  margin: 0.2rem 0 0;
+  font-size: clamp(1.25rem, 2vw, 1.6rem);
+}
+
+.reminder-list {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.reminder-row {
+  display: grid;
+  grid-template-columns: 4rem minmax(0, 1fr) 2.6rem;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.reminder-art {
+  display: grid;
+  width: 4rem;
+  height: 3.25rem;
+  place-items: center;
+  border: 0;
+  border-radius: 0.5rem;
+  background: var(--poster);
+  color: rgba(255, 255, 255, 0.9);
+  font-weight: 900;
+}
+
+.reminder-row div {
+  display: grid;
+  min-width: 0;
+  gap: 0.15rem;
+}
+
+.reminder-row strong,
+.reminder-row span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.reminder-row span {
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+
+.reminder-toggle {
+  display: grid;
+  width: 2.6rem;
+  height: 2.6rem;
+  place-items: center;
+  border: 1px solid var(--line);
+  border-radius: 0.55rem;
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--text);
+}
+
+.compact-empty {
+  padding: 1rem;
+}
+
+@media (max-width: 1040px) {
+  .library-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .reminder-panel {
+    position: static;
+  }
+}
+
+@media (max-width: 680px) {
+  .library-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .card-actions {
+    grid-template-columns: 1fr 2.7rem 2.7rem;
+  }
+}
+
+@media (max-width: 420px) {
+  .library-stats {
+    grid-template-columns: 1fr;
+  }
+}
