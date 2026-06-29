@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import Bell from "lucide-react/dist/esm/icons/bell.js";
 import Bookmark from "lucide-react/dist/esm/icons/bookmark.js";
 import BookmarkCheck from "lucide-react/dist/esm/icons/bookmark-check.js";
+import CalendarDays from "lucide-react/dist/esm/icons/calendar-days.js";
 import Captions from "lucide-react/dist/esm/icons/captions.js";
 import ChevronLeft from "lucide-react/dist/esm/icons/chevron-left.js";
 import ChevronRight from "lucide-react/dist/esm/icons/chevron-right.js";
@@ -13,11 +14,14 @@ import ListVideo from "lucide-react/dist/esm/icons/list-video.js";
 import Play from "lucide-react/dist/esm/icons/play.js";
 import Search from "lucide-react/dist/esm/icons/search.js";
 import Sparkles from "lucide-react/dist/esm/icons/sparkles.js";
+import Star from "lucide-react/dist/esm/icons/star.js";
+import TrendingUp from "lucide-react/dist/esm/icons/trending-up.js";
 import X from "lucide-react/dist/esm/icons/x.js";
 import { anime, genres, sampleVideo, schedule } from "./data.js";
 import heroImage from "../assets/hero-anime-city.png";
 
 const storageKey = "anipulse-react-state";
+const sortOptions = ["Trending", "Newest", "Episodes", "A-Z"];
 
 function readStoredState() {
   try {
@@ -112,7 +116,7 @@ function Hero({ item, selectedEpisode, isSaved, onPlay, onSave, onDetails }) {
       <h1>{item.title}</h1>
       <p>{item.description}</p>
       <div className="meta-row">
-        {[item.genre, item.rating, item.year, item.studio, `${item.episodes} episodes`].map((value) => (
+        {[item.genre, item.rating, item.year, item.language, `${item.episodes} episodes`].map((value) => (
           <span className="meta-pill" key={value}>
             {value}
           </span>
@@ -228,6 +232,46 @@ function Player({
   );
 }
 
+
+function WatchBrief({ item, selectedEpisode, progress }) {
+  const nextEpisode = Math.min(selectedEpisode + 1, item.episodes);
+  const completion = Math.min(100, Math.max(0, Number(progress) || 0));
+
+  return (
+    <aside className="watch-brief" aria-label="Watch session details">
+      <div>
+        <p className="eyebrow">Session</p>
+        <h2>{item.mood}</h2>
+      </div>
+      <div className="brief-stats">
+        <div>
+          <Star size={17} fill="currentColor" />
+          <span>{item.popularity}% match</span>
+        </div>
+        <div>
+          <CalendarDays size={17} />
+          <span>{item.nextRelease}</span>
+        </div>
+        <div>
+          <TrendingUp size={17} />
+          <span>{completion}% watched</span>
+        </div>
+      </div>
+      <div className="brief-progress" aria-label={`${completion}% watched`}>
+        <span style={{ width: `${completion}%` }} />
+      </div>
+      <div className="brief-next">
+        <span>Up next</span>
+        <strong>{`${episodeLabel(nextEpisode)} / ${item.duration}`}</strong>
+      </div>
+      <div className="tag-row">
+        {item.tags.map((tag) => (
+          <span key={tag}>{tag}</span>
+        ))}
+      </div>
+    </aside>
+  );
+}
 function AnimeCard({ item, isSaved, onPlay, onSave, onDetails }) {
   return (
     <article className="anime-card">
@@ -244,6 +288,11 @@ function AnimeCard({ item, isSaved, onPlay, onSave, onDetails }) {
         <div>
           <strong>{item.title}</strong>
           <div className="anime-card-meta">{`${item.genre} / ${item.rating} / ${item.episodes} eps`}</div>
+          <div className="card-tags">
+            {item.tags.slice(0, 2).map((tag) => (
+              <span key={tag}>{tag}</span>
+            ))}
+          </div>
         </div>
         <div className="card-actions">
           <button className="watch-button" type="button" onClick={() => onPlay(item.id, item.currentEpisode, true)}>
@@ -326,6 +375,8 @@ function DetailsDialog({ item, isSaved, onClose, onPlay, onSave }) {
               ["Year", item.year],
               ["Episodes", item.episodes],
               ["Runtime", item.duration],
+              ["Language", item.language],
+              ["Next", item.nextRelease],
             ].map(([label, value]) => (
               <div key={label}>
                 <span>{label}</span>
@@ -342,6 +393,11 @@ function DetailsDialog({ item, isSaved, onClose, onPlay, onSave }) {
               {isSaved ? <BookmarkCheck size={18} /> : <Bookmark size={18} />}
               {isSaved ? "Saved" : "Save"}
             </button>
+          </div>
+          <div className="tag-row dialog-tags">
+            {item.tags.map((tag) => (
+              <span key={tag}>{tag}</span>
+            ))}
           </div>
           <h3>Episodes</h3>
           <div className="dialog-episodes">
@@ -363,6 +419,7 @@ function App() {
   const [selectedEpisode, setSelectedEpisode] = useState(stored?.selectedEpisode || anime[0].currentEpisode);
   const [currentEpisodes, setCurrentEpisodes] = useState(() => initialEpisodeMap(stored?.currentEpisodes));
   const [filter, setFilter] = useState("All");
+  const [sortMode, setSortMode] = useState("Trending");
   const [query, setQuery] = useState("");
   const [saved, setSaved] = useState(() => new Set(stored?.saved || ["signal-bloom", "cloud-atelier"]));
   const [progress, setProgress] = useState(() => stored?.progress || Object.fromEntries(anime.map((item) => [item.id, item.progress])));
@@ -377,12 +434,20 @@ function App() {
 
   const filteredAnime = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase();
-    return anime.filter((item) => {
+    const results = anime.filter((item) => {
+      const searchable = `${item.title} ${item.genre} ${item.studio} ${item.year} ${item.tags.join(" ")}`.toLowerCase();
       const matchesFilter = filter === "All" || item.genre === filter;
-      const matchesQuery = `${item.title} ${item.genre} ${item.studio} ${item.year}`.toLowerCase().includes(normalizedQuery);
+      const matchesQuery = searchable.includes(normalizedQuery);
       return matchesFilter && matchesQuery;
     });
-  }, [filter, query]);
+
+    return [...results].sort((a, b) => {
+      if (sortMode === "Newest") return Number(b.year) - Number(a.year) || b.popularity - a.popularity;
+      if (sortMode === "Episodes") return b.episodes - a.episodes;
+      if (sortMode === "A-Z") return a.title.localeCompare(b.title);
+      return b.popularity - a.popularity;
+    });
+  }, [filter, query, sortMode]);
 
   const continueItems = useMemo(
     () => anime.filter((item) => Number(progress[item.id] || item.progress) > 0).slice(0, 4),
@@ -463,18 +528,21 @@ function App() {
             onSave={toggleSave}
             onDetails={setDetailsId}
           />
-          <Player
-            item={selected}
-            selectedEpisode={selectedEpisode}
-            shouldAutoPlay={shouldAutoPlay}
-            quality={quality}
-            captionsOn={captionsOn}
-            onEpisodeSelect={playSelection}
-            onProgress={updateProgress}
-            onQualityChange={setQuality}
-            onCaptionsToggle={() => setCaptionsOn((current) => !current)}
-            onStepEpisode={stepEpisode}
-          />
+          <div className="watch-stack">
+            <Player
+              item={selected}
+              selectedEpisode={selectedEpisode}
+              shouldAutoPlay={shouldAutoPlay}
+              quality={quality}
+              captionsOn={captionsOn}
+              onEpisodeSelect={playSelection}
+              onProgress={updateProgress}
+              onQualityChange={setQuality}
+              onCaptionsToggle={() => setCaptionsOn((current) => !current)}
+              onStepEpisode={stepEpisode}
+            />
+            <WatchBrief item={selected} selectedEpisode={selectedEpisode} progress={progress[selected.id]} />
+          </div>
         </section>
 
         <section className="content-band" id="continue">
@@ -502,19 +570,29 @@ function App() {
               <p className="eyebrow">Browse</p>
               <h2>Explore anime</h2>
             </div>
-            <div className="filter-tabs" role="tablist" aria-label="Genre filters">
-              {genres.map((genre) => (
-                <button
-                  className={`filter-tab ${filter === genre ? "active" : ""}`}
-                  key={genre}
-                  type="button"
-                  role="tab"
-                  aria-selected={filter === genre}
-                  onClick={() => setFilter(genre)}
-                >
-                  {genre === "Slice of Life" ? "Slice" : genre}
-                </button>
-              ))}
+            <div className="browse-tools">
+              <div className="filter-tabs" role="tablist" aria-label="Genre filters">
+                {genres.map((genre) => (
+                  <button
+                    className={`filter-tab ${filter === genre ? "active" : ""}`}
+                    key={genre}
+                    type="button"
+                    role="tab"
+                    aria-selected={filter === genre}
+                    onClick={() => setFilter(genre)}
+                  >
+                    {genre === "Slice of Life" ? "Slice" : genre}
+                  </button>
+                ))}
+              </div>
+              <label className="sort-control">
+                <span>Sort</span>
+                <select value={sortMode} onChange={(event) => setSortMode(event.target.value)}>
+                  {sortOptions.map((option) => (
+                    <option key={option}>{option}</option>
+                  ))}
+                </select>
+              </label>
             </div>
           </div>
           <div className="anime-grid" aria-live="polite">
@@ -551,7 +629,7 @@ function App() {
                   </button>
                   <div>
                     <p className="episode-title">{item.title}</p>
-                    <div className="episode-meta">{`${episodeLabel(item.currentEpisode)} / ${item.genre} / ${item.duration}`}</div>
+                    <div className="episode-meta">{`${episodeLabel(item.currentEpisode)} / ${item.genre} / ${item.nextRelease}`}</div>
                   </div>
                   <button className="watch-button" type="button" onClick={() => playSelection(item.id, item.currentEpisode, true)}>
                     <Play size={16} fill="currentColor" />
