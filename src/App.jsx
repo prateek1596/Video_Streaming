@@ -13,6 +13,7 @@ import Info from "lucide-react/dist/esm/icons/info.js";
 import Library from "lucide-react/dist/esm/icons/library.js";
 import ListVideo from "lucide-react/dist/esm/icons/list-video.js";
 import Play from "lucide-react/dist/esm/icons/play.js";
+import RotateCcw from "lucide-react/dist/esm/icons/rotate-ccw.js";
 import Search from "lucide-react/dist/esm/icons/search.js";
 import ShieldCheck from "lucide-react/dist/esm/icons/shield-check.js";
 import Sparkles from "lucide-react/dist/esm/icons/sparkles.js";
@@ -322,7 +323,7 @@ function AnimeCard({ item, isSaved, isReminderOn, onPlay, onSave, onDetails, onR
   );
 }
 
-function ContinueCard({ item, progress, onPlay }) {
+function ContinueCard({ item, progress, onPlay, onMarkComplete, onResetProgress }) {
   return (
     <article className="continue-card">
       <button
@@ -341,8 +342,38 @@ function ContinueCard({ item, progress, onPlay }) {
         <div className="progress-track" aria-label={`${progress}% watched`}>
           <span style={{ width: `${progress}%` }} />
         </div>
+        <div className="progress-actions">
+          <button type="button" onClick={() => onMarkComplete(item.id, item.currentEpisode)}>
+            <CheckCircle2 size={16} />
+            Complete
+          </button>
+          <button type="button" onClick={() => onResetProgress(item.id)}>
+            <RotateCcw size={16} />
+            Reset
+          </button>
+        </div>
       </div>
     </article>
+  );
+}
+
+function ActivitySummary({ watchingCount, completedCount, nextUp }) {
+  const stats = [
+    [Clock3, "Watching", watchingCount],
+    [CheckCircle2, "Completed", completedCount],
+    [TvMinimalPlay, "Next up", nextUp || "Pick a show"],
+  ];
+
+  return (
+    <div className="activity-summary" aria-label="Viewing activity summary">
+      {stats.map(([Icon, label, value]) => (
+        <div className="activity-stat" key={label}>
+          <Icon size={18} />
+          <span>{label}</span>
+          <strong>{value}</strong>
+        </div>
+      ))}
+    </div>
   );
 }
 
@@ -523,6 +554,10 @@ function App() {
     () => anime.filter((item) => Number(progress[item.id] || item.progress) > 0).slice(0, 4),
     [progress],
   );
+  const completedCount = useMemo(() => anime.filter((item) => Number(progress[item.id] || 0) >= 100).length, [progress]);
+  const nextContinueTitle = continueItems[0]
+    ? `${continueItems[0].title} E${currentEpisodes[continueItems[0].id] || continueItems[0].currentEpisode}`
+    : "Pick a show";
 
   const savedItems = useMemo(() => anime.filter((item) => saved.has(item.id)), [saved]);
   const reminderItems = useMemo(() => anime.filter((item) => reminders.has(item.id)), [reminders]);
@@ -595,6 +630,18 @@ function App() {
       return next;
     });
   }
+
+  function markComplete(id, episodeNumber) {
+    setProgress((current) => ({ ...current, [id]: 100 }));
+    setCurrentEpisodes((current) => ({ ...current, [id]: episodeNumber }));
+  }
+
+  function resetProgress(id) {
+    const item = anime.find((candidate) => candidate.id === id) || anime[0];
+    setProgress((current) => ({ ...current, [id]: 0 }));
+    setCurrentEpisodes((current) => ({ ...current, [id]: item.currentEpisode }));
+    if (selectedId === id) setSelectedEpisode(item.currentEpisode);
+  }
   function updateProgress(id, episodeNumber, watched) {
     setProgress((current) => ({ ...current, [id]: Math.max(current[id] || 0, watched) }));
     setCurrentEpisodes((current) => ({ ...current, [id]: episodeNumber }));
@@ -639,6 +686,7 @@ function App() {
               <h2>Continue watching</h2>
             </div>
           </div>
+          <ActivitySummary watchingCount={continueItems.length} completedCount={completedCount} nextUp={nextContinueTitle} />
           <div className="continue-grid">
             {continueItems.map((item) => (
               <ContinueCard
@@ -646,6 +694,8 @@ function App() {
                 item={{ ...item, currentEpisode: currentEpisodes[item.id] || item.currentEpisode }}
                 progress={progress[item.id] || item.progress}
                 onPlay={playSelection}
+                onMarkComplete={markComplete}
+                onResetProgress={resetProgress}
               />
             ))}
           </div>
