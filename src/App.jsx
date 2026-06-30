@@ -89,7 +89,9 @@ function Sidebar({ activeSection }) {
   );
 }
 
-function Topbar({ query, onQueryChange }) {
+function Topbar({ query, onQueryChange, reminderItems, onPlay, onReminderToggle }) {
+  const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
+
   return (
     <header className="topbar">
       <label className="search-wrap">
@@ -102,9 +104,45 @@ function Topbar({ query, onQueryChange }) {
         />
       </label>
       <div className="top-actions">
-        <IconButton label="Notifications">
-          <Bell size={18} />
-        </IconButton>
+        <div className="notification-wrap">
+          <IconButton
+            label="Notifications"
+            className={`icon-button notification-button ${isNotificationsOpen ? "active" : ""}`}
+            aria-expanded={isNotificationsOpen}
+            onClick={() => setIsNotificationsOpen((current) => !current)}
+          >
+            <Bell size={18} />
+            {reminderItems.length > 0 && <span className="notification-badge">{reminderItems.length}</span>}
+          </IconButton>
+          {isNotificationsOpen && (
+            <div className="notification-panel">
+              <div className="notification-heading">
+                <p className="eyebrow">Reminders</p>
+                <strong>{reminderItems.length ? `${reminderItems.length} queued` : "All clear"}</strong>
+              </div>
+              <div className="notification-list">
+                {reminderItems.length ? (
+                  reminderItems.map((item) => (
+                    <article className="notification-row" key={item.id}>
+                      <button className="notification-art" style={{ "--poster": item.poster }} type="button" onClick={() => onPlay(item.id, item.currentEpisode, true)}>
+                        E{item.currentEpisode}
+                      </button>
+                      <div>
+                        <strong>{item.title}</strong>
+                        <span>{item.nextRelease}</span>
+                      </div>
+                      <IconButton label={`Clear reminder for ${item.title}`} className="notification-clear" onClick={() => onReminderToggle(item.id)}>
+                        <CheckCircle2 size={16} />
+                      </IconButton>
+                    </article>
+                  ))
+                ) : (
+                  <div className="notification-empty">No release reminders are active.</div>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
         <button className="profile-button" type="button" aria-label="Profile">
           PR
         </button>
@@ -651,7 +689,7 @@ function App() {
     <div className="app-shell">
       <Sidebar activeSection={activeSection} />
       <main className="main-area">
-        <Topbar query={query} onQueryChange={setQuery} />
+        <Topbar query={query} onQueryChange={setQuery} reminderItems={reminderItems} onPlay={playSelection} onReminderToggle={toggleReminder} />
 
         <section className="watch-stage" id="watch">
           <Hero
