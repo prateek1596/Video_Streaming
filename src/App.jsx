@@ -15,6 +15,7 @@ import ListVideo from "lucide-react/dist/esm/icons/list-video.js";
 import Play from "lucide-react/dist/esm/icons/play.js";
 import RotateCcw from "lucide-react/dist/esm/icons/rotate-ccw.js";
 import Search from "lucide-react/dist/esm/icons/search.js";
+import Settings from "lucide-react/dist/esm/icons/settings.js";
 import ShieldCheck from "lucide-react/dist/esm/icons/shield-check.js";
 import Sparkles from "lucide-react/dist/esm/icons/sparkles.js";
 import Star from "lucide-react/dist/esm/icons/star.js";
@@ -89,8 +90,9 @@ function Sidebar({ activeSection }) {
   );
 }
 
-function Topbar({ query, onQueryChange, reminderItems, onPlay, onReminderToggle }) {
+function Topbar({ query, onQueryChange, reminderItems, quality, captionsOn, onPlay, onReminderToggle, onQualityChange, onCaptionsToggle, onResetLibrary }) {
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
 
   return (
     <header className="topbar">
@@ -143,9 +145,45 @@ function Topbar({ query, onQueryChange, reminderItems, onPlay, onReminderToggle 
             </div>
           )}
         </div>
-        <button className="profile-button" type="button" aria-label="Profile">
-          PR
-        </button>
+        <div className="profile-wrap">
+          <button
+            className={`profile-button ${isProfileOpen ? "active" : ""}`}
+            type="button"
+            aria-label="Profile preferences"
+            aria-expanded={isProfileOpen}
+            onClick={() => setIsProfileOpen((current) => !current)}
+          >
+            PR
+          </button>
+          {isProfileOpen && (
+            <div className="profile-panel">
+              <div className="profile-heading">
+                <div>
+                  <p className="eyebrow">Profile</p>
+                  <strong>Prateek</strong>
+                </div>
+                <Settings size={18} />
+              </div>
+              <label className="profile-field">
+                <span>Default quality</span>
+                <select value={quality} onChange={(event) => onQualityChange(event.target.value)}>
+                  <option>Auto</option>
+                  <option>1080p</option>
+                  <option>720p</option>
+                  <option>480p</option>
+                </select>
+              </label>
+              <button className={`profile-toggle ${captionsOn ? "active" : ""}`} type="button" onClick={onCaptionsToggle}>
+                <Captions size={17} />
+                {captionsOn ? "Captions enabled" : "Captions disabled"}
+              </button>
+              <button className="profile-reset" type="button" onClick={onResetLibrary}>
+                <RotateCcw size={17} />
+                Reset library state
+              </button>
+            </div>
+          )}
+        </div>
       </div>
     </header>
   );
@@ -680,6 +718,19 @@ function App() {
     setCurrentEpisodes((current) => ({ ...current, [id]: item.currentEpisode }));
     if (selectedId === id) setSelectedEpisode(item.currentEpisode);
   }
+
+  function resetLibraryState() {
+    setSelectedId(anime[0].id);
+    setSelectedEpisode(anime[0].currentEpisode);
+    setCurrentEpisodes(initialEpisodeMap());
+    setSaved(new Set(["signal-bloom", "cloud-atelier"]));
+    setReminders(new Set(["neon-ronin-zero", "signal-bloom"]));
+    setProgress(Object.fromEntries(anime.map((item) => [item.id, item.progress])));
+    setQuality("Auto");
+    setCaptionsOn(false);
+    setDetailsId(null);
+    setShouldAutoPlay(false);
+  }
   function updateProgress(id, episodeNumber, watched) {
     setProgress((current) => ({ ...current, [id]: Math.max(current[id] || 0, watched) }));
     setCurrentEpisodes((current) => ({ ...current, [id]: episodeNumber }));
@@ -689,7 +740,7 @@ function App() {
     <div className="app-shell">
       <Sidebar activeSection={activeSection} />
       <main className="main-area">
-        <Topbar query={query} onQueryChange={setQuery} reminderItems={reminderItems} onPlay={playSelection} onReminderToggle={toggleReminder} />
+        <Topbar query={query} onQueryChange={setQuery} reminderItems={reminderItems} quality={quality} captionsOn={captionsOn} onPlay={playSelection} onReminderToggle={toggleReminder} onQualityChange={setQuality} onCaptionsToggle={() => setCaptionsOn((current) => !current)} onResetLibrary={resetLibraryState} />
 
         <section className="watch-stage" id="watch">
           <Hero
