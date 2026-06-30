@@ -189,6 +189,26 @@ function Topbar({ query, onQueryChange, reminderItems, quality, captionsOn, onPl
   );
 }
 
+
+function NowPlayingStrip({ item, selectedEpisode, quality, captionsOn, progress }) {
+  const completion = Math.min(100, Math.max(0, Number(progress) || 0));
+
+  return (
+    <section className="now-playing-strip" aria-label="Now playing summary">
+      <div>
+        <span className="pulse-dot" />
+        <strong>{item.title}</strong>
+        <span>{episodeLabel(selectedEpisode)}</span>
+      </div>
+      <div className="strip-meta">
+        <span>{quality}</span>
+        <span>{captionsOn ? "Captions on" : "Captions off"}</span>
+        <span>{`${completion}% watched`}</span>
+      </div>
+      <a href="#watch">Jump to player</a>
+    </section>
+  );
+}
 function Hero({ item, selectedEpisode, isSaved, onPlay, onSave, onDetails }) {
   return (
     <div className="hero-copy">
@@ -828,6 +848,7 @@ function App() {
       <Sidebar activeSection={activeSection} />
       <main className="main-area">
         <Topbar query={query} onQueryChange={setQuery} reminderItems={reminderItems} quality={quality} captionsOn={captionsOn} onPlay={playSelection} onReminderToggle={toggleReminder} onQualityChange={setQuality} onCaptionsToggle={() => setCaptionsOn((current) => !current)} onResetLibrary={resetLibraryState} />
+        <NowPlayingStrip item={selected} selectedEpisode={selectedEpisode} quality={quality} captionsOn={captionsOn} progress={progress[selected.id]} />
 
         <section className="watch-stage" id="watch">
           <Hero
