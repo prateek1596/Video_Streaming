@@ -34,9 +34,9 @@ The production output is generated in `dist/`.
 - Search, genre filters, and catalog sorting
 - Anime catalog cards
 - Continue-watching progress row with complete/reset controls
-- Persistent watchlist, reminders, and progress state via localStorage
+- Persistent watchlist, reminders, profile preferences, and progress state via localStorage
 - Show details modal with metadata, tags, and episode buttons
-- Latest episode queue, release reminders, and notification center
+- Latest episode queue, release reminders, notification center, and profile menu
 - Weekly release schedule and library stats
 - Responsive desktop and mobile layout
 
