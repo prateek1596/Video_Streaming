@@ -29,7 +29,7 @@ The production output is generated in `dist/`.
 ## Included
 
 - React component-based streaming interface
-- Featured watch area with video player and session details
+- Featured watch area with video player, session details, and now-playing status strip
 - Episode selector and full episode queue in the player
 - Search, genre filters, catalog sorting, and curated discovery rails
 - Anime catalog cards
