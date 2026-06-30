@@ -352,6 +352,40 @@ function WatchBrief({ item, selectedEpisode, progress }) {
     </aside>
   );
 }
+
+function EpisodeQueue({ item, selectedEpisode, progress, onEpisodeSelect }) {
+  const completion = Math.min(100, Math.max(0, Number(progress) || 0));
+
+  return (
+    <aside className="episode-queue" aria-label="Episode queue">
+      <div className="queue-heading">
+        <div>
+          <p className="eyebrow">Episodes</p>
+          <h2>{item.title}</h2>
+        </div>
+        <span>{`${selectedEpisode}/${item.episodes}`}</span>
+      </div>
+      <div className="queue-list">
+        {Array.from({ length: item.episodes }, (_, index) => {
+          const episodeNumber = index + 1;
+          const isActive = episodeNumber === selectedEpisode;
+          const isWatched = episodeNumber < selectedEpisode || (isActive && completion >= 90);
+          return (
+            <button
+              className={`queue-episode ${isActive ? "active" : ""} ${isWatched ? "watched" : ""}`}
+              key={episodeNumber}
+              type="button"
+              onClick={() => onEpisodeSelect(item.id, episodeNumber, true)}
+            >
+              <span>{`E${episodeNumber}`}</span>
+              <strong>{isActive ? `${completion}% watched` : isWatched ? "Watched" : "Ready"}</strong>
+            </button>
+          );
+        })}
+      </div>
+    </aside>
+  );
+}
 function AnimeCard({ item, isSaved, isReminderOn, onPlay, onSave, onDetails, onReminderToggle }) {
   return (
     <article className="anime-card">
@@ -765,6 +799,7 @@ function App() {
               onStepEpisode={stepEpisode}
             />
             <WatchBrief item={selected} selectedEpisode={selectedEpisode} progress={progress[selected.id]} />
+            <EpisodeQueue item={selected} selectedEpisode={selectedEpisode} progress={progress[selected.id]} onEpisodeSelect={playSelection} />
           </div>
         </section>
 
