@@ -509,6 +509,38 @@ function LibraryStats({ savedCount, reminderCount, averageProgress, nextRelease 
   );
 }
 
+
+function CollectionShelf({ collections, onPlay, onDetails }) {
+  return (
+    <div className="collection-shelf" aria-label="Curated collections">
+      {collections.map((collection) => (
+        <section className="collection-card" key={collection.title}>
+          <div>
+            <p className="eyebrow">{collection.kicker}</p>
+            <h3>{collection.title}</h3>
+          </div>
+          <div className="collection-items">
+            {collection.items.map((item) => (
+              <article className="collection-item" key={item.id}>
+                <button className="collection-art" style={{ "--poster": item.poster }} type="button" onClick={() => onDetails(item.id)}>
+                  {item.title}
+                </button>
+                <div>
+                  <strong>{item.title}</strong>
+                  <span>{`${item.genre} / ${item.mood}`}</span>
+                </div>
+                <button className="collection-play" type="button" onClick={() => onPlay(item.id, item.currentEpisode, true)}>
+                  <Play size={15} fill="currentColor" />
+                  Play
+                </button>
+              </article>
+            ))}
+          </div>
+        </section>
+      ))}
+    </div>
+  );
+}
 function ReminderQueue({ items, reminders, onReminderToggle, onPlay }) {
   return (
     <aside className="reminder-panel" aria-label="Release reminders">
@@ -668,6 +700,27 @@ function App() {
   const nextContinueTitle = continueItems[0]
     ? `${continueItems[0].title} E${currentEpisodes[continueItems[0].id] || continueItems[0].currentEpisode}`
     : "Pick a show";
+
+  const discoverCollections = useMemo(
+    () => [
+      {
+        kicker: "Popular",
+        title: "Top matches",
+        items: [...anime].sort((a, b) => b.popularity - a.popularity).slice(0, 3),
+      },
+      {
+        kicker: "Fresh",
+        title: "New this year",
+        items: anime.filter((item) => item.year === "2026").slice(0, 3),
+      },
+      {
+        kicker: "Mood",
+        title: "Comfort watches",
+        items: anime.filter((item) => ["Cozy", "Wonder", "Dreamlike"].includes(item.mood)).slice(0, 3),
+      },
+    ],
+    [],
+  );
 
   const savedItems = useMemo(() => anime.filter((item) => saved.has(item.id)), [saved]);
   const reminderItems = useMemo(() => anime.filter((item) => reminders.has(item.id)), [reminders]);
@@ -856,6 +909,7 @@ function App() {
               </label>
             </div>
           </div>
+          <CollectionShelf collections={discoverCollections} onPlay={playSelection} onDetails={setDetailsId} />
           <div className="anime-grid" aria-live="polite">
             {filteredAnime.length ? (
               filteredAnime.map((item) => (
