@@ -36,7 +36,7 @@ The production output is generated in `dist/`.
 - Continue-watching progress row with complete/reset controls
 - Persistent watchlist, reminders, and progress state via localStorage
 - Show details modal with metadata, tags, and episode buttons
-- Latest episode queue and release reminders
+- Latest episode queue, release reminders, and notification center
 - Weekly release schedule and library stats
 - Responsive desktop and mobile layout
 
