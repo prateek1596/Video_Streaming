@@ -27,6 +27,7 @@ import heroImage from "../assets/hero-anime-city.png";
 
 const storageKey = "anipulse-react-state";
 const sortOptions = ["Trending", "Newest", "Episodes", "A-Z"];
+const languageOptions = ["All audio", "Sub", "Sub / Dub"];
 
 function readStoredState() {
   try {
@@ -682,6 +683,7 @@ function App() {
   const [currentEpisodes, setCurrentEpisodes] = useState(() => initialEpisodeMap(stored?.currentEpisodes));
   const [filter, setFilter] = useState("All");
   const [sortMode, setSortMode] = useState("Trending");
+  const [languageFilter, setLanguageFilter] = useState("All audio");
   const [query, setQuery] = useState("");
   const [saved, setSaved] = useState(() => new Set(stored?.saved || ["signal-bloom", "cloud-atelier"]));
   const [reminders, setReminders] = useState(() => new Set(stored?.reminders || ["neon-ronin-zero", "signal-bloom"]));
@@ -700,8 +702,9 @@ function App() {
     const results = anime.filter((item) => {
       const searchable = `${item.title} ${item.genre} ${item.studio} ${item.year} ${item.tags.join(" ")}`.toLowerCase();
       const matchesFilter = filter === "All" || item.genre === filter;
+      const matchesLanguage = languageFilter === "All audio" || item.language === languageFilter;
       const matchesQuery = searchable.includes(normalizedQuery);
-      return matchesFilter && matchesQuery;
+      return matchesFilter && matchesLanguage && matchesQuery;
     });
 
     return [...results].sort((a, b) => {
@@ -710,7 +713,7 @@ function App() {
       if (sortMode === "A-Z") return a.title.localeCompare(b.title);
       return b.popularity - a.popularity;
     });
-  }, [filter, query, sortMode]);
+  }, [filter, languageFilter, query, sortMode]);
 
   const continueItems = useMemo(
     () => anime.filter((item) => Number(progress[item.id] ?? item.progress) > 0).slice(0, 4),
@@ -920,6 +923,14 @@ function App() {
                   </button>
                 ))}
               </div>
+              <label className="sort-control">
+                <span>Audio</span>
+                <select value={languageFilter} onChange={(event) => setLanguageFilter(event.target.value)}>
+                  {languageOptions.map((option) => (
+                    <option key={option}>{option}</option>
+                  ))}
+                </select>
+              </label>
               <label className="sort-control">
                 <span>Sort</span>
                 <select value={sortMode} onChange={(event) => setSortMode(event.target.value)}>
