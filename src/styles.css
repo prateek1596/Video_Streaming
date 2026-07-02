@@ -2190,3 +2190,94 @@ svg {
     text-align: left;
   }
 }
+
+.weekly-planner {
+  align-content: start;
+}
+
+.planner-list {
+  display: grid;
+  gap: 0.7rem;
+}
+
+.planner-row {
+  display: grid;
+  grid-template-columns: 3.4rem minmax(0, 1fr) auto;
+  gap: 0.7rem;
+  align-items: center;
+  padding-top: 0.7rem;
+  border-top: 1px solid var(--line);
+}
+
+.planner-day {
+  display: grid;
+  width: 3.4rem;
+  height: 2.65rem;
+  place-items: center;
+  border: 1px solid rgba(44, 230, 211, 0.28);
+  border-radius: 0.5rem;
+  background: rgba(44, 230, 211, 0.12);
+  color: var(--teal);
+  font-weight: 900;
+}
+
+.planner-day:hover,
+.planner-icon:hover {
+  border-color: rgba(255, 255, 255, 0.3);
+  transform: translateY(-1px);
+}
+
+.planner-copy {
+  display: grid;
+  min-width: 0;
+  gap: 0.18rem;
+}
+
+.planner-copy strong,
+.planner-copy span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.planner-copy span {
+  color: var(--muted);
+  font-size: 0.8rem;
+  font-weight: 800;
+}
+
+.planner-actions {
+  display: flex;
+  gap: 0.45rem;
+}
+
+.planner-icon {
+  display: grid;
+  width: 2.35rem;
+  height: 2.35rem;
+  place-items: center;
+  border: 1px solid var(--line);
+  border-radius: 0.5rem;
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--text);
+  transition:
+    transform 160ms ease,
+    border-color 160ms ease,
+    background 160ms ease;
+}
+
+.planner-icon.active {
+  border-color: rgba(44, 230, 211, 0.45);
+  background: rgba(44, 230, 211, 0.16);
+  color: var(--teal);
+}
+
+@media (max-width: 520px) {
+  .planner-row {
+    grid-template-columns: 3.4rem minmax(0, 1fr);
+  }
+
+  .planner-actions {
+    grid-column: 1 / -1;
+    justify-content: flex-end;
+  }
+}
