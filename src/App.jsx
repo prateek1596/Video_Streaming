@@ -726,6 +726,43 @@ function ReminderQueue({ items, reminders, onReminderToggle, onPlay }) {
     </aside>
   );
 }
+
+function WeeklyPlanner({ scheduleItems, reminders, onReminderToggle, onPlay, onDetails }) {
+  return (
+    <aside className="schedule-panel weekly-planner" aria-label="Release schedule">
+      <p className="eyebrow">Release schedule</p>
+      <h2>This week</h2>
+      <div className="planner-list">
+        {scheduleItems.map(({ day, item }) => {
+          const isReminderOn = reminders.has(item.id);
+          return (
+            <article className="planner-row" key={day}>
+              <button className="planner-day" type="button" onClick={() => onDetails(item.id)}>
+                {day}
+              </button>
+              <div className="planner-copy">
+                <strong>{item.title}</strong>
+                <span>{`${item.genre} / ${item.nextRelease}`}</span>
+              </div>
+              <div className="planner-actions">
+                <IconButton
+                  label={`${isReminderOn ? "Disable" : "Enable"} reminder for ${item.title}`}
+                  className={`planner-icon ${isReminderOn ? "active" : ""}`}
+                  onClick={() => onReminderToggle(item.id)}
+                >
+                  {isReminderOn ? <CheckCircle2 size={16} /> : <Bell size={16} />}
+                </IconButton>
+                <IconButton label={`Play ${item.title}`} className="planner-icon" onClick={() => onPlay(item.id, item.currentEpisode, true)}>
+                  <Play size={16} fill="currentColor" />
+                </IconButton>
+              </div>
+            </article>
+          );
+        })}
+      </div>
+    </aside>
+  );
+}
 function DetailsDialog({ item, isSaved, onClose, onPlay, onSave }) {
   const dialogRef = useRef(null);
 
@@ -891,7 +928,15 @@ function App() {
       .sort((a, b) => b.recommendationScore - a.recommendationScore)
       .slice(0, 4);
   }, [selected]);
-  const savedItems = useMemo(() => anime.filter((item) => saved.has(item.id)), [saved]);
+
+  const scheduleItems = useMemo(
+    () =>
+      schedule.map(([day, title]) => ({
+        day,
+        item: anime.find((candidate) => candidate.title === title) || anime[0],
+      })),
+    [],
+  );  const savedItems = useMemo(() => anime.filter((item) => saved.has(item.id)), [saved]);
   const reminderItems = useMemo(() => anime.filter((item) => reminders.has(item.id)), [reminders]);
   const libraryAverageProgress = useMemo(() => {
     if (!savedItems.length) return 0;
@@ -1158,16 +1203,13 @@ function App() {
               ))}
             </div>
           </div>
-          <aside className="schedule-panel" aria-label="Release schedule">
-            <p className="eyebrow">Release schedule</p>
-            <h2>This week</h2>
-            {schedule.map(([day, title]) => (
-              <div className="schedule-row" key={day}>
-                <span>{day}</span>
-                <strong>{title}</strong>
-              </div>
-            ))}
-          </aside>
+          <WeeklyPlanner
+            scheduleItems={scheduleItems}
+            reminders={reminders}
+            onReminderToggle={toggleReminder}
+            onPlay={playSelection}
+            onDetails={setDetailsId}
+          />
         </section>
 
         <section className="content-band" id="watchlist">
