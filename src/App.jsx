@@ -622,6 +622,47 @@ function CollectionShelf({ collections, onPlay, onDetails }) {
     </div>
   );
 }
+
+function SeasonTracker({ items, progress, currentEpisodes, onPlay, onDetails }) {
+  const trackerItems = items.length ? items : anime.slice(0, 4);
+
+  return (
+    <section className="season-tracker" aria-label="Season tracker">
+      <div className="section-heading compact-heading">
+        <div>
+          <p className="eyebrow">Tracker</p>
+          <h2>Season progress</h2>
+        </div>
+      </div>
+      <div className="tracker-list">
+        {trackerItems.map((item) => {
+          const watched = Math.min(100, Math.max(0, Number(progress[item.id] ?? item.progress) || 0));
+          const episode = currentEpisodes[item.id] || item.currentEpisode;
+          return (
+            <article className="tracker-row" key={item.id}>
+              <button className="tracker-art" style={{ "--poster": item.poster }} type="button" onClick={() => onDetails(item.id)}>
+                E{episode}
+              </button>
+              <div className="tracker-copy">
+                <div>
+                  <strong>{item.title}</strong>
+                  <span>{`${item.nextRelease} / ${item.duration}`}</span>
+                </div>
+                <div className="tracker-progress" aria-label={`${watched}% watched`}>
+                  <span style={{ width: `${watched}%` }} />
+                </div>
+              </div>
+              <button className="watch-button" type="button" onClick={() => onPlay(item.id, episode, true)}>
+                <Play size={16} fill="currentColor" />
+                Resume
+              </button>
+            </article>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
 function ReminderQueue({ items, reminders, onReminderToggle, onPlay }) {
   return (
     <aside className="reminder-panel" aria-label="Release reminders">
@@ -821,7 +862,8 @@ function App() {
       })
       .sort((a, b) => b.recommendationScore - a.recommendationScore)
       .slice(0, 4);
-  }, [selected]);  const savedItems = useMemo(() => anime.filter((item) => saved.has(item.id)), [saved]);
+  }, [selected]);
+  const savedItems = useMemo(() => anime.filter((item) => saved.has(item.id)), [saved]);
   const reminderItems = useMemo(() => anime.filter((item) => reminders.has(item.id)), [reminders]);
   const libraryAverageProgress = useMemo(() => {
     if (!savedItems.length) return 0;
@@ -1100,7 +1142,13 @@ function App() {
             averageProgress={libraryAverageProgress}
             nextRelease={nextSavedRelease}
           />
-          <div className="library-layout">
+          <SeasonTracker
+            items={savedItems}
+            progress={progress}
+            currentEpisodes={currentEpisodes}
+            onPlay={playSelection}
+            onDetails={setDetailsId}
+          />          <div className="library-layout">
             <div className="anime-grid">
               {savedItems.length ? (
                 savedItems.map((item) => (
