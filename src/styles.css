@@ -2016,3 +2016,97 @@ svg {
     scroll-snap-align: start;
   }
 }
+
+.season-tracker {
+  margin-bottom: 1rem;
+}
+
+.tracker-list {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.tracker-row {
+  display: grid;
+  grid-template-columns: 4.6rem minmax(0, 1fr) auto;
+  gap: 0.85rem;
+  align-items: center;
+  min-width: 0;
+  padding: 0.75rem;
+  border: 1px solid var(--line);
+  border-radius: 0.7rem;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.tracker-art {
+  display: grid;
+  width: 4.6rem;
+  height: 3.55rem;
+  place-items: center;
+  border: 0;
+  border-radius: 0.5rem;
+  background:
+    linear-gradient(180deg, transparent, rgba(0, 0, 0, 0.7)),
+    var(--poster);
+  color: rgba(255, 255, 255, 0.9);
+  font-weight: 900;
+}
+
+.tracker-copy {
+  display: grid;
+  min-width: 0;
+  gap: 0.55rem;
+}
+
+.tracker-copy > div:first-child {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  min-width: 0;
+}
+
+.tracker-copy strong,
+.tracker-copy span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.tracker-copy span {
+  color: var(--muted);
+  font-size: 0.84rem;
+  font-weight: 800;
+}
+
+.tracker-progress {
+  height: 0.45rem;
+  overflow: hidden;
+  border-radius: 99rem;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.tracker-progress span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--teal), var(--red));
+}
+
+@media (max-width: 680px) {
+  .tracker-row {
+    grid-template-columns: 4.25rem minmax(0, 1fr);
+  }
+
+  .tracker-art {
+    width: 4.25rem;
+    height: 3.35rem;
+  }
+
+  .tracker-row .watch-button {
+    grid-column: 1 / -1;
+  }
+
+  .tracker-copy > div:first-child {
+    flex-direction: column;
+    gap: 0.2rem;
+  }
+}
