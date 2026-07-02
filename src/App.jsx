@@ -407,6 +407,32 @@ function EpisodeQueue({ item, selectedEpisode, progress, onEpisodeSelect }) {
     </aside>
   );
 }
+
+function WatchNotes({ item, selectedEpisode, note, onNoteChange }) {
+  const maxLength = 360;
+
+  return (
+    <aside className="watch-notes" aria-label="Episode notes">
+      <div className="notes-heading">
+        <div>
+          <p className="eyebrow">Notes</p>
+          <h2>{episodeLabel(selectedEpisode)}</h2>
+        </div>
+        <span>{item.title}</span>
+      </div>
+      <textarea
+        maxLength={maxLength}
+        placeholder="Scene, quote, reaction..."
+        value={note}
+        onChange={(event) => onNoteChange(event.target.value)}
+      />
+      <div className="notes-meta">
+        <span>{`${note.length}/${maxLength}`}</span>
+        <strong>Saved locally</strong>
+      </div>
+    </aside>
+  );
+}
 function AnimeCard({ item, isSaved, isReminderOn, onPlay, onSave, onDetails, onReminderToggle }) {
   return (
     <article className="anime-card">
@@ -797,6 +823,7 @@ function App() {
 
   const selected = anime.find((item) => item.id === selectedId) || anime[0];
   const detailsItem = anime.find((item) => item.id === detailsId) || null;
+  const activeNoteKey = `${selected.id}:${selectedEpisode}`;
 
   const filteredAnime = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase();
@@ -882,9 +909,10 @@ function App() {
       progress,
       quality,
       captionsOn,
+      notes,
     };
     localStorage.setItem(storageKey, JSON.stringify(payload));
-  }, [selectedId, selectedEpisode, currentEpisodes, saved, reminders, progress, quality, captionsOn]);
+  }, [selectedId, selectedEpisode, currentEpisodes, saved, reminders, progress, quality, captionsOn, notes]);
 
   useEffect(() => {
     const sections = ["watch", "continue", "discover", "latest", "watchlist"]
@@ -956,8 +984,13 @@ function App() {
     setProgress(Object.fromEntries(anime.map((item) => [item.id, item.progress])));
     setQuality("Auto");
     setCaptionsOn(false);
+    setNotes({});
     setDetailsId(null);
     setShouldAutoPlay(false);
+  }
+
+  function updateNote(value) {
+    setNotes((current) => ({ ...current, [activeNoteKey]: value }));
   }
   function updateProgress(id, episodeNumber, watched) {
     setProgress((current) => ({ ...current, [id]: Math.max(current[id] || 0, watched) }));
@@ -995,6 +1028,12 @@ function App() {
             />
             <WatchBrief item={selected} selectedEpisode={selectedEpisode} progress={progress[selected.id]} />
             <EpisodeQueue item={selected} selectedEpisode={selectedEpisode} progress={progress[selected.id]} onEpisodeSelect={playSelection} />
+            <WatchNotes
+              item={selected}
+              selectedEpisode={selectedEpisode}
+              note={notes[activeNoteKey] || ""}
+              onNoteChange={updateNote}
+            />
           </div>
         </section>
 
@@ -1148,7 +1187,8 @@ function App() {
             currentEpisodes={currentEpisodes}
             onPlay={playSelection}
             onDetails={setDetailsId}
-          />          <div className="library-layout">
+          />
+          <div className="library-layout">
             <div className="anime-grid">
               {savedItems.length ? (
                 savedItems.map((item) => (
