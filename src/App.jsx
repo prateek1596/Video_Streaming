@@ -820,6 +820,7 @@ function App() {
   const [shouldAutoPlay, setShouldAutoPlay] = useState(false);
   const [quality, setQuality] = useState(stored?.quality || "Auto");
   const [captionsOn, setCaptionsOn] = useState(Boolean(stored?.captionsOn));
+  const [notes, setNotes] = useState(() => stored?.notes || {});
 
   const selected = anime.find((item) => item.id === selectedId) || anime[0];
   const detailsItem = anime.find((item) => item.id === detailsId) || null;
@@ -988,6 +989,7 @@ function App() {
     setDetailsId(null);
     setShouldAutoPlay(false);
   }
+
 
   function updateNote(value) {
     setNotes((current) => ({ ...current, [activeNoteKey]: value }));
