@@ -509,6 +509,66 @@ function ActivitySummary({ watchingCount, completedCount, nextUp }) {
 }
 
 
+function recommendationReason(item, selected) {
+  if (item.genre === selected.genre) return `${selected.genre} pick`;
+  if (item.language === selected.language) return item.language;
+  if (item.year === selected.year) return `Fresh ${item.year}`;
+  const sharedTag = item.tags.find((tag) => selected.tags.includes(tag));
+  return sharedTag || item.mood;
+}
+
+function ForYouRail({ items, selected, saved, reminders, onPlay, onSave, onDetails, onReminderToggle }) {
+  return (
+    <section className="for-you-rail" aria-label="Personalized recommendations">
+      <div className="section-heading compact-heading">
+        <div>
+          <p className="eyebrow">For you</p>
+          <h2>Because you watched {selected.title}</h2>
+        </div>
+      </div>
+      <div className="for-you-grid">
+        {items.map((item) => {
+          const isSaved = saved.has(item.id);
+          const isReminderOn = reminders.has(item.id);
+          return (
+            <article className="for-you-card" key={item.id}>
+              <button className="for-you-art" style={{ "--poster": item.poster }} type="button" onClick={() => onDetails(item.id)}>
+                <span>{item.title}</span>
+              </button>
+              <div className="for-you-body">
+                <div>
+                  <span className="match-pill">{`${item.popularity}% match`}</span>
+                  <strong>{item.title}</strong>
+                  <p>{recommendationReason(item, selected)}</p>
+                </div>
+                <div className="for-you-actions">
+                  <button className="watch-button" type="button" onClick={() => onPlay(item.id, item.currentEpisode, true)}>
+                    <Play size={16} fill="currentColor" />
+                    Play
+                  </button>
+                  <IconButton
+                    label={`${isSaved ? "Remove" : "Save"} ${item.title}`}
+                    className={`save-button ${isSaved ? "saved" : ""}`}
+                    onClick={() => onSave(item.id)}
+                  >
+                    {isSaved ? <BookmarkCheck size={17} /> : <Bookmark size={17} />}
+                  </IconButton>
+                  <IconButton
+                    label={`${isReminderOn ? "Disable" : "Enable"} reminder for ${item.title}`}
+                    className={`save-button reminder-save ${isReminderOn ? "saved" : ""}`}
+                    onClick={() => onReminderToggle(item.id)}
+                  >
+                    {isReminderOn ? <CheckCircle2 size={17} /> : <Bell size={17} />}
+                  </IconButton>
+                </div>
+              </div>
+            </article>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
 function LibraryStats({ savedCount, reminderCount, averageProgress, nextRelease }) {
   const stats = [
     [Library, "Saved", savedCount || "0"],
@@ -745,7 +805,23 @@ function App() {
     [],
   );
 
-  const savedItems = useMemo(() => anime.filter((item) => saved.has(item.id)), [saved]);
+
+  const recommendedItems = useMemo(() => {
+    return anime
+      .filter((item) => item.id !== selected.id)
+      .map((item) => {
+        const sharedTags = item.tags.filter((tag) => selected.tags.includes(tag)).length;
+        const score =
+          item.popularity +
+          (item.genre === selected.genre ? 18 : 0) +
+          (item.language === selected.language ? 8 : 0) +
+          (item.year === selected.year ? 6 : 0) +
+          sharedTags * 7;
+        return { ...item, recommendationScore: score };
+      })
+      .sort((a, b) => b.recommendationScore - a.recommendationScore)
+      .slice(0, 4);
+  }, [selected]);  const savedItems = useMemo(() => anime.filter((item) => saved.has(item.id)), [saved]);
   const reminderItems = useMemo(() => anime.filter((item) => reminders.has(item.id)), [reminders]);
   const libraryAverageProgress = useMemo(() => {
     if (!savedItems.length) return 0;
@@ -902,6 +978,17 @@ function App() {
           </div>
         </section>
 
+
+        <ForYouRail
+          items={recommendedItems}
+          selected={selected}
+          saved={saved}
+          reminders={reminders}
+          onPlay={playSelection}
+          onSave={toggleSave}
+          onDetails={setDetailsId}
+          onReminderToggle={toggleReminder}
+        />
         <section className="content-band" id="discover">
           <div className="section-heading">
             <div>
