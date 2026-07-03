@@ -933,6 +933,7 @@ function App() {
   const [quality, setQuality] = useState(stored?.quality || "Auto");
   const [captionsOn, setCaptionsOn] = useState(Boolean(stored?.captionsOn));
   const [notes, setNotes] = useState(() => stored?.notes || {});
+  const [partyMessages, setPartyMessages] = useState(() => stored?.partyMessages || defaultPartyMessages);
 
   const selected = anime.find((item) => item.id === selectedId) || anime[0];
   const detailsItem = anime.find((item) => item.id === detailsId) || null;
@@ -1033,7 +1034,7 @@ function App() {
       notes,
     };
     localStorage.setItem(storageKey, JSON.stringify(payload));
-  }, [selectedId, selectedEpisode, currentEpisodes, saved, reminders, progress, quality, captionsOn, notes]);
+  }, [selectedId, selectedEpisode, currentEpisodes, saved, reminders, progress, quality, captionsOn, notes, partyMessages]);
 
   useEffect(() => {
     const sections = ["watch", "continue", "discover", "latest", "watchlist"]
@@ -1343,6 +1344,7 @@ function App() {
 }
 
 export default App;
+
 
 
 
