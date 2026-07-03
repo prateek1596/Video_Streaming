@@ -991,6 +991,7 @@ function App() {
   const [captionsOn, setCaptionsOn] = useState(Boolean(stored?.captionsOn));
   const [notes, setNotes] = useState(() => stored?.notes || {});
   const [partyMessages, setPartyMessages] = useState(() => stored?.partyMessages || defaultPartyMessages);
+  const [sessionQueue, setSessionQueue] = useState(() => stored?.sessionQueue || defaultSessionQueue);
 
   const selected = anime.find((item) => item.id === selectedId) || anime[0];
   const detailsItem = anime.find((item) => item.id === detailsId) || null;
@@ -1077,6 +1078,7 @@ function App() {
     return Math.round(total / savedItems.length);
   }, [progress, savedItems]);
   const nextSavedRelease = savedItems.find((item) => reminders.has(item.id))?.nextRelease || savedItems[0]?.nextRelease;
+  const sessionQueueItems = useMemo(() => sessionQueue.map((id) => anime.find((item) => item.id === id)).filter(Boolean), [sessionQueue]);
 
   useEffect(() => {
     const payload = {
@@ -1090,9 +1092,10 @@ function App() {
       captionsOn,
       notes,
       partyMessages,
+      sessionQueue,
     };
     localStorage.setItem(storageKey, JSON.stringify(payload));
-  }, [selectedId, selectedEpisode, currentEpisodes, saved, reminders, progress, quality, captionsOn, notes, partyMessages]);
+  }, [selectedId, selectedEpisode, currentEpisodes, saved, reminders, progress, quality, captionsOn, notes, partyMessages, sessionQueue]);
 
   useEffect(() => {
     const sections = ["watch", "continue", "discover", "latest", "watchlist"]
@@ -1166,6 +1169,7 @@ function App() {
     setCaptionsOn(false);
     setNotes({});
     setPartyMessages(defaultPartyMessages);
+    setSessionQueue(defaultSessionQueue);
     setDetailsId(null);
     setShouldAutoPlay(false);
   }
@@ -1185,6 +1189,19 @@ function App() {
         ...message,
       },
     ]);
+  }
+
+
+  function addToSessionQueue(id) {
+    setSessionQueue((current) => (current.includes(id) ? current : [...current, id]));
+  }
+
+  function removeFromSessionQueue(id) {
+    setSessionQueue((current) => current.filter((itemId) => itemId !== id));
+  }
+
+  function clearSessionQueue() {
+    setSessionQueue([]);
   }
 
   function updateProgress(id, episodeNumber, watched) {
@@ -1234,6 +1251,15 @@ function App() {
               selectedEpisode={selectedEpisode}
               messages={partyMessages}
               onSendMessage={sendPartyMessage}
+            />
+            <SessionQueue
+              items={sessionQueueItems}
+              currentEpisodes={currentEpisodes}
+              selected={selected}
+              onPlay={playSelection}
+              onAddCurrent={addToSessionQueue}
+              onRemove={removeFromSessionQueue}
+              onClear={clearSessionQueue}
             />
           </div>
         </section>
