@@ -504,7 +504,7 @@ function WatchParty({ item, selectedEpisode, messages, onSendMessage }) {
           value={draft}
           onChange={(event) => setDraft(event.target.value)}
         />
-        <IconButton label="Send reaction" className="party-send">
+        <IconButton label="Send reaction" className="party-send" type="submit">
           <SendHorizontal size={17} />
         </IconButton>
       </form>
@@ -1368,6 +1368,7 @@ function App() {
 }
 
 export default App;
+
 
 
 
