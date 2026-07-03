@@ -34,10 +34,10 @@ The production output is generated in `dist/`.
 - Search, genre/audio filters, catalog sorting, and curated discovery rails
 - Anime catalog cards
 - Continue-watching progress row with complete/reset controls
-- Persistent watchlist, reminders, profile preferences, progress, notes, and watch-party messages via localStorage
+- Persistent watchlist, session queue, reminders, profile preferences, progress, notes, and watch-party messages via localStorage
 - Show details modal with metadata, tags, and episode buttons
 - Latest episode queue, release reminders, notification center, and profile menu
-- Weekly release schedule, library stats, episode notes, and watch-party reactions
+- Weekly release schedule, library stats, session queue controls, episode notes, and watch-party reactions
 - Responsive desktop and mobile layout
 
 ## Next Backend Steps
@@ -46,4 +46,5 @@ The production output is generated in `dist/`.
 - Store catalog data in a database
 - Replace the sample MP4 with licensed video assets or a legal streaming provider
 - Add subtitles, quality selection, and episode pages
+
 
