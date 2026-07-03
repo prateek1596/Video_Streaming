@@ -16,6 +16,7 @@ import Play from "lucide-react/dist/esm/icons/play.js";
 import RotateCcw from "lucide-react/dist/esm/icons/rotate-ccw.js";
 import Search from "lucide-react/dist/esm/icons/search.js";
 import Settings from "lucide-react/dist/esm/icons/settings.js";
+import SendHorizontal from "lucide-react/dist/esm/icons/send-horizontal.js";
 import ShieldCheck from "lucide-react/dist/esm/icons/shield-check.js";
 import Sparkles from "lucide-react/dist/esm/icons/sparkles.js";
 import Star from "lucide-react/dist/esm/icons/star.js";
@@ -28,6 +29,11 @@ import heroImage from "../assets/hero-anime-city.png";
 const storageKey = "anipulse-react-state";
 const sortOptions = ["Trending", "Newest", "Episodes", "A-Z"];
 const languageOptions = ["All audio", "Sub", "Sub / Dub"];
+const defaultPartyMessages = [
+  { id: "party-1", animeId: "neon-ronin-zero", episode: 1, author: "Mika", text: "The city reveal still lands every time.", tone: "Hype" },
+  { id: "party-2", animeId: "signal-bloom", episode: 7, author: "Rin", text: "That flower code has to be a map.", tone: "Theory" },
+  { id: "party-3", animeId: "cloud-atelier", episode: 11, author: "Aya", text: "Weather painting is such a beautiful power system.", tone: "Vibe" },
+];
 
 function readStoredState() {
   try {
@@ -430,6 +436,75 @@ function WatchNotes({ item, selectedEpisode, note, onNoteChange }) {
         <span>{`${note.length}/${maxLength}`}</span>
         <strong>Saved locally</strong>
       </div>
+    </aside>
+  );
+}
+function WatchParty({ item, selectedEpisode, messages, onSendMessage }) {
+  const [draft, setDraft] = useState("");
+  const activeMessages = messages.filter((message) => message.animeId === item.id && message.episode === selectedEpisode).slice(-5);
+  const viewerCount = item.popularity + selectedEpisode * 3;
+  const reactions = ["Hype", "Theory", "Wow"];
+
+  function handleSubmit(event) {
+    event.preventDefault();
+    const text = draft.trim();
+    if (!text) return;
+    onSendMessage({ animeId: item.id, episode: selectedEpisode, text });
+    setDraft("");
+  }
+
+  function sendReaction(tone) {
+    onSendMessage({ animeId: item.id, episode: selectedEpisode, text: `${tone} moment`, tone });
+  }
+
+  return (
+    <aside className="watch-party" aria-label="Watch party">
+      <div className="party-heading">
+        <div>
+          <p className="eyebrow">Watch party</p>
+          <h2>{episodeLabel(selectedEpisode)}</h2>
+        </div>
+        <span>
+          <UsersRound size={16} />
+          {viewerCount}
+        </span>
+      </div>
+      <div className="party-actions" aria-label="Watch party actions">
+        <button type="button">
+          <Share2 size={16} />
+          Invite
+        </button>
+        {reactions.map((reaction) => (
+          <button key={reaction} type="button" onClick={() => sendReaction(reaction)}>
+            <MessageCircle size={16} />
+            {reaction}
+          </button>
+        ))}
+      </div>
+      <div className="party-feed" aria-live="polite">
+        {activeMessages.length ? (
+          activeMessages.map((message) => (
+            <article className="party-message" key={message.id}>
+              <span>{message.author}</span>
+              <p>{message.text}</p>
+              <strong>{message.tone || "Live"}</strong>
+            </article>
+          ))
+        ) : (
+          <div className="party-empty">Start the episode chat for this watch session.</div>
+        )}
+      </div>
+      <form className="party-form" onSubmit={handleSubmit}>
+        <input
+          maxLength={120}
+          placeholder="Add a spoiler-free reaction"
+          value={draft}
+          onChange={(event) => setDraft(event.target.value)}
+        />
+        <IconButton label="Send reaction" className="party-send">
+          <SendHorizontal size={17} />
+        </IconButton>
+      </form>
     </aside>
   );
 }
@@ -1268,6 +1343,8 @@ function App() {
 }
 
 export default App;
+
+
 
 
 
