@@ -1032,6 +1032,7 @@ function App() {
       quality,
       captionsOn,
       notes,
+      partyMessages,
     };
     localStorage.setItem(storageKey, JSON.stringify(payload));
   }, [selectedId, selectedEpisode, currentEpisodes, saved, reminders, progress, quality, captionsOn, notes, partyMessages]);
@@ -1107,6 +1108,7 @@ function App() {
     setQuality("Auto");
     setCaptionsOn(false);
     setNotes({});
+    setPartyMessages(defaultPartyMessages);
     setDetailsId(null);
     setShouldAutoPlay(false);
   }
@@ -1115,6 +1117,19 @@ function App() {
   function updateNote(value) {
     setNotes((current) => ({ ...current, [activeNoteKey]: value }));
   }
+
+  function sendPartyMessage(message) {
+    setPartyMessages((current) => [
+      ...current.slice(-24),
+      {
+        id: `party-${Date.now()}`,
+        author: "You",
+        tone: message.tone || "Live",
+        ...message,
+      },
+    ]);
+  }
+
   function updateProgress(id, episodeNumber, watched) {
     setProgress((current) => ({ ...current, [id]: Math.max(current[id] || 0, watched) }));
     setCurrentEpisodes((current) => ({ ...current, [id]: episodeNumber }));
