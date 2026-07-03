@@ -1157,6 +1157,12 @@ function App() {
               note={notes[activeNoteKey] || ""}
               onNoteChange={updateNote}
             />
+            <WatchParty
+              item={selected}
+              selectedEpisode={selectedEpisode}
+              messages={partyMessages}
+              onSendMessage={sendPartyMessage}
+            />
           </div>
         </section>
 
@@ -1344,6 +1350,8 @@ function App() {
 }
 
 export default App;
+
+
 
 
 
