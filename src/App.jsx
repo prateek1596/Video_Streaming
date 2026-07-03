@@ -5,6 +5,7 @@ import BookmarkCheck from "lucide-react/dist/esm/icons/bookmark-check.js";
 import CalendarDays from "lucide-react/dist/esm/icons/calendar-days.js";
 import CheckCircle2 from "lucide-react/dist/esm/icons/check-circle-2.js";
 import Captions from "lucide-react/dist/esm/icons/captions.js";
+import CirclePlus from "lucide-react/dist/esm/icons/circle-plus.js";
 import ChevronLeft from "lucide-react/dist/esm/icons/chevron-left.js";
 import ChevronRight from "lucide-react/dist/esm/icons/chevron-right.js";
 import Clock3 from "lucide-react/dist/esm/icons/clock-3.js";
@@ -24,6 +25,7 @@ import Sparkles from "lucide-react/dist/esm/icons/sparkles.js";
 import Star from "lucide-react/dist/esm/icons/star.js";
 import TrendingUp from "lucide-react/dist/esm/icons/trending-up.js";
 import TvMinimalPlay from "lucide-react/dist/esm/icons/tv-minimal-play.js";
+import Trash2 from "lucide-react/dist/esm/icons/trash-2.js";
 import UsersRound from "lucide-react/dist/esm/icons/users-round.js";
 import X from "lucide-react/dist/esm/icons/x.js";
 import { anime, genres, sampleVideo, schedule } from "./data.js";
@@ -32,6 +34,7 @@ import heroImage from "../assets/hero-anime-city.png";
 const storageKey = "anipulse-react-state";
 const sortOptions = ["Trending", "Newest", "Episodes", "A-Z"];
 const languageOptions = ["All audio", "Sub", "Sub / Dub"];
+const defaultSessionQueue = ["signal-bloom", "cloud-atelier", "starfall-railway"];
 const defaultPartyMessages = [
   { id: "party-1", animeId: "neon-ronin-zero", episode: 1, author: "Mika", text: "The city reveal still lands every time.", tone: "Hype" },
   { id: "party-2", animeId: "signal-bloom", episode: 7, author: "Rin", text: "That flower code has to be a map.", tone: "Theory" },
@@ -508,6 +511,57 @@ function WatchParty({ item, selectedEpisode, messages, onSendMessage }) {
           <SendHorizontal size={17} />
         </IconButton>
       </form>
+    </aside>
+  );
+}
+function SessionQueue({ items, currentEpisodes, selected, onPlay, onAddCurrent, onRemove, onClear }) {
+  return (
+    <aside className="session-queue" aria-label="Session queue">
+      <div className="session-queue-heading">
+        <div>
+          <p className="eyebrow">Lineup</p>
+          <h2>Session queue</h2>
+        </div>
+        <span>{`${items.length} queued`}</span>
+      </div>
+      <div className="session-queue-actions">
+        <button type="button" onClick={() => onAddCurrent(selected.id)}>
+          <CirclePlus size={16} />
+          Add current
+        </button>
+        <button type="button" disabled={!items.length} onClick={onClear}>
+          <Trash2 size={16} />
+          Clear
+        </button>
+      </div>
+      <div className="session-queue-list">
+        {items.length ? (
+          items.map((item) => {
+            const episode = currentEpisodes[item.id] || item.currentEpisode;
+            return (
+              <article className="session-queue-row" key={item.id}>
+                <button className="session-queue-art" style={{ "--poster": item.poster }} type="button" onClick={() => onPlay(item.id, episode, true)}>
+                  E{episode}
+                </button>
+                <div>
+                  <strong>{item.title}</strong>
+                  <span>{`${episodeLabel(episode)} / ${item.duration}`}</span>
+                </div>
+                <div className="session-queue-row-actions">
+                  <IconButton label={`Play ${item.title}`} className="session-queue-icon" onClick={() => onPlay(item.id, episode, true)}>
+                    <Play size={16} fill="currentColor" />
+                  </IconButton>
+                  <IconButton label={`Remove ${item.title} from queue`} className="session-queue-icon" onClick={() => onRemove(item.id)}>
+                    <X size={16} />
+                  </IconButton>
+                </div>
+              </article>
+            );
+          })
+        ) : (
+          <div className="session-queue-empty">Add shows to build this watch session.</div>
+        )}
+      </div>
     </aside>
   );
 }
@@ -1368,6 +1422,7 @@ function App() {
 }
 
 export default App;
+
 
 
 
