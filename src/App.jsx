@@ -1187,6 +1187,7 @@ function App() {
   const [partyMessages, setPartyMessages] = useState(() => stored?.partyMessages || defaultPartyMessages);
   const [sessionQueue, setSessionQueue] = useState(() => stored?.sessionQueue || defaultSessionQueue);
   const [activeChapterId, setActiveChapterId] = useState(stored?.activeChapterId || null);
+  const [activeTranscriptId, setActiveTranscriptId] = useState(stored?.activeTranscriptId || null);
   const [chapterJump, setChapterJump] = useState(null);
 
   const selected = anime.find((item) => item.id === selectedId) || anime[0];
@@ -1294,9 +1295,10 @@ function App() {
       partyMessages,
       sessionQueue,
       activeChapterId,
+      activeTranscriptId,
     };
     localStorage.setItem(storageKey, JSON.stringify(payload));
-  }, [selectedId, selectedEpisode, currentEpisodes, saved, reminders, progress, quality, playbackSpeed, autoplayNext, ambientMode, skipIntro, captionsOn, notes, partyMessages, sessionQueue, activeChapterId]);
+  }, [selectedId, selectedEpisode, currentEpisodes, saved, reminders, progress, quality, playbackSpeed, autoplayNext, ambientMode, skipIntro, captionsOn, notes, partyMessages, sessionQueue, activeChapterId, activeTranscriptId]);
 
   useEffect(() => {
     const sections = ["watch", "continue", "discover", "latest", "watchlist"]
@@ -1321,6 +1323,7 @@ function App() {
     setCurrentEpisodes((current) => ({ ...current, [item.id]: nextEpisode }));
     setShouldAutoPlay(autoPlay);
     setActiveChapterId(null);
+    setActiveTranscriptId(null);
     setDetailsId(null);
     document.getElementById("watch")?.scrollIntoView({ behavior: "smooth" });
   }
@@ -1377,6 +1380,7 @@ function App() {
     setPartyMessages(defaultPartyMessages);
     setSessionQueue(defaultSessionQueue);
     setActiveChapterId(null);
+    setActiveTranscriptId(null);
     setChapterJump(null);
     setDetailsId(null);
     setShouldAutoPlay(false);
@@ -1412,10 +1416,20 @@ function App() {
     setSessionQueue([]);
   }
 
+  function requestTimelineJump(seconds) {
+    setChapterJump({ seconds, token: Date.now() });
+    setShouldAutoPlay(true);
+  }
+
   function selectChapter(chapter) {
     setActiveChapterId(chapter.id);
-    setChapterJump({ seconds: chapter.time, token: Date.now() });
-    setShouldAutoPlay(true);
+    requestTimelineJump(chapter.time);
+  }
+
+  function selectTranscriptLine(line) {
+    setActiveTranscriptId(line.id);
+    setCaptionsOn(true);
+    requestTimelineJump(line.time);
   }
 
   function updateProgress(id, episodeNumber, watched) {
@@ -1474,6 +1488,14 @@ function App() {
               selectedEpisode={selectedEpisode}
               activeChapterId={activeChapterId}
               onChapterSelect={selectChapter}
+            />
+            <EpisodeTranscript
+              item={selected}
+              selectedEpisode={selectedEpisode}
+              captionsOn={captionsOn}
+              activeTranscriptId={activeTranscriptId}
+              onTranscriptSelect={selectTranscriptLine}
+              onCaptionsToggle={() => setCaptionsOn((current) => !current)}
             />
             <EpisodeQueue item={selected} selectedEpisode={selectedEpisode} progress={progress[selected.id]} onEpisodeSelect={playSelection} />
             <WatchNotes
@@ -1684,6 +1706,7 @@ function App() {
 }
 
 export default App;
+
 
 
 
