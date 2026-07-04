@@ -2703,3 +2703,114 @@ svg {
     grid-template-columns: 1fr;
   }
 }
+
+.episode-chapters {
+  display: grid;
+  gap: 0.85rem;
+  padding: 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 0.75rem;
+  background: rgba(8, 10, 16, 0.78);
+  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.22);
+}
+
+.chapters-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.chapters-heading h2 {
+  margin: 0.15rem 0 0;
+  font-size: clamp(1.05rem, 1.7vw, 1.35rem);
+}
+
+.chapters-heading svg {
+  color: var(--red);
+}
+
+.chapter-list {
+  display: grid;
+  gap: 0.55rem;
+}
+
+.chapter-row {
+  display: grid;
+  grid-template-columns: 3.6rem minmax(0, 1fr) auto;
+  gap: 0.65rem;
+  align-items: center;
+  min-width: 0;
+  padding: 0.65rem;
+  border: 1px solid var(--line);
+  border-radius: 0.55rem;
+  background: rgba(255, 255, 255, 0.055);
+  color: var(--text);
+  text-align: left;
+  transition:
+    transform 160ms ease,
+    border-color 160ms ease,
+    background 160ms ease;
+}
+
+.chapter-row:hover {
+  transform: translateY(-1px);
+  border-color: rgba(255, 255, 255, 0.28);
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.chapter-row.active {
+  border-color: rgba(44, 230, 211, 0.48);
+  background: rgba(44, 230, 211, 0.14);
+}
+
+.chapter-row > span {
+  display: grid;
+  min-height: 2rem;
+  place-items: center;
+  border: 1px solid rgba(246, 200, 95, 0.34);
+  border-radius: 0.45rem;
+  background: rgba(246, 200, 95, 0.1);
+  color: var(--gold);
+  font-size: 0.78rem;
+  font-weight: 900;
+}
+
+.chapter-row div {
+  display: grid;
+  min-width: 0;
+  gap: 0.15rem;
+}
+
+.chapter-row strong,
+.chapter-row small {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.chapter-row small {
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+.chapter-row svg {
+  color: var(--teal);
+}
+
+.chapter-footnote {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.82rem;
+  line-height: 1.5;
+}
+
+@media (max-width: 520px) {
+  .chapter-row {
+    grid-template-columns: 3.6rem minmax(0, 1fr);
+  }
+
+  .chapter-row svg {
+    display: none;
+  }
+}
