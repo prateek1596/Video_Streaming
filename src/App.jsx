@@ -1137,6 +1137,8 @@ function App() {
   const [notes, setNotes] = useState(() => stored?.notes || {});
   const [partyMessages, setPartyMessages] = useState(() => stored?.partyMessages || defaultPartyMessages);
   const [sessionQueue, setSessionQueue] = useState(() => stored?.sessionQueue || defaultSessionQueue);
+  const [activeChapterId, setActiveChapterId] = useState(stored?.activeChapterId || null);
+  const [chapterJump, setChapterJump] = useState(null);
 
   const selected = anime.find((item) => item.id === selectedId) || anime[0];
   const detailsItem = anime.find((item) => item.id === detailsId) || null;
@@ -1242,9 +1244,10 @@ function App() {
       notes,
       partyMessages,
       sessionQueue,
+      activeChapterId,
     };
     localStorage.setItem(storageKey, JSON.stringify(payload));
-  }, [selectedId, selectedEpisode, currentEpisodes, saved, reminders, progress, quality, playbackSpeed, autoplayNext, ambientMode, skipIntro, captionsOn, notes, partyMessages, sessionQueue]);
+  }, [selectedId, selectedEpisode, currentEpisodes, saved, reminders, progress, quality, playbackSpeed, autoplayNext, ambientMode, skipIntro, captionsOn, notes, partyMessages, sessionQueue, activeChapterId]);
 
   useEffect(() => {
     const sections = ["watch", "continue", "discover", "latest", "watchlist"]
@@ -1268,6 +1271,7 @@ function App() {
     setSelectedEpisode(nextEpisode);
     setCurrentEpisodes((current) => ({ ...current, [item.id]: nextEpisode }));
     setShouldAutoPlay(autoPlay);
+    setActiveChapterId(null);
     setDetailsId(null);
     document.getElementById("watch")?.scrollIntoView({ behavior: "smooth" });
   }
@@ -1323,6 +1327,8 @@ function App() {
     setNotes({});
     setPartyMessages(defaultPartyMessages);
     setSessionQueue(defaultSessionQueue);
+    setActiveChapterId(null);
+    setChapterJump(null);
     setDetailsId(null);
     setShouldAutoPlay(false);
   }
@@ -1357,6 +1363,12 @@ function App() {
     setSessionQueue([]);
   }
 
+  function selectChapter(chapter) {
+    setActiveChapterId(chapter.id);
+    setChapterJump({ seconds: chapter.time, token: Date.now() });
+    setShouldAutoPlay(true);
+  }
+
   function updateProgress(id, episodeNumber, watched) {
     setProgress((current) => ({ ...current, [id]: Math.max(current[id] || 0, watched) }));
     setCurrentEpisodes((current) => ({ ...current, [id]: episodeNumber }));
@@ -1388,6 +1400,7 @@ function App() {
               playbackSpeed={playbackSpeed}
               autoplayNext={autoplayNext}
               skipIntro={skipIntro}
+              chapterJump={chapterJump}
               onEpisodeSelect={playSelection}
               onProgress={updateProgress}
               onQualityChange={setQuality}
@@ -1406,6 +1419,12 @@ function App() {
               onAutoplayToggle={() => setAutoplayNext((current) => !current)}
               onAmbientToggle={() => setAmbientMode((current) => !current)}
               onSkipIntroToggle={() => setSkipIntro((current) => !current)}
+            />
+            <EpisodeChapters
+              item={selected}
+              selectedEpisode={selectedEpisode}
+              activeChapterId={activeChapterId}
+              onChapterSelect={selectChapter}
             />
             <EpisodeQueue item={selected} selectedEpisode={selectedEpisode} progress={progress[selected.id]} onEpisodeSelect={playSelection} />
             <WatchNotes
@@ -1616,6 +1635,7 @@ function App() {
 }
 
 export default App;
+
 
 
 
