@@ -40,6 +40,13 @@ const storageKey = "anipulse-react-state";
 const sortOptions = ["Trending", "Newest", "Episodes", "A-Z"];
 const languageOptions = ["All audio", "Sub", "Sub / Dub"];
 const speedOptions = ["0.75x", "1x", "1.25x", "1.5x", "2x"];
+const chapterTemplates = [
+  { id: "cold-open", title: "Cold open", time: 0, detail: "Story hook and visual setup" },
+  { id: "opening", title: "Opening", time: 85, detail: "Theme sequence and credits" },
+  { id: "turn", title: "Turning point", time: 420, detail: "Conflict shifts into motion" },
+  { id: "climax", title: "Climax", time: 980, detail: "Episode peak and reveal" },
+  { id: "tag", title: "Next hook", time: 1320, detail: "Final beat before credits" },
+];
 const defaultSessionQueue = ["signal-bloom", "cloud-atelier", "starfall-railway"];
 const defaultPartyMessages = [
   { id: "party-1", animeId: "neon-ronin-zero", episode: 1, author: "Mika", text: "The city reveal still lands every time.", tone: "Hype" },
@@ -59,6 +66,13 @@ function readStoredState() {
 
 function episodeLabel(episodeNumber) {
   return `Episode ${episodeNumber}`;
+}
+
+
+function formatTimestamp(seconds) {
+  const minutes = Math.floor(seconds / 60);
+  const remainingSeconds = String(seconds % 60).padStart(2, "0");
+  return `${minutes}:${remainingSeconds}`;
 }
 
 function clampEpisode(value, item) {
@@ -268,6 +282,7 @@ function Player({
   playbackSpeed,
   autoplayNext,
   skipIntro,
+  chapterJump,
   onEpisodeSelect,
   onProgress,
   onQualityChange,
@@ -290,6 +305,19 @@ function Player({
     const player = videoRef.current;
     if (player) player.playbackRate = Number.parseFloat(playbackSpeed) || 1;
   }, [playbackSpeed]);
+
+  useEffect(() => {
+    const player = videoRef.current;
+    if (!player || !chapterJump) return undefined;
+    const seek = () => {
+      const duration = Number.isFinite(player.duration) ? player.duration : chapterJump.seconds + 2;
+      player.currentTime = Math.max(0, Math.min(duration - 1, chapterJump.seconds));
+      if (shouldAutoPlay) player.play().catch(() => {});
+    };
+    if (Number.isFinite(player.duration)) seek();
+    else player.addEventListener("loadedmetadata", seek, { once: true });
+    return () => player.removeEventListener("loadedmetadata", seek);
+  }, [chapterJump, shouldAutoPlay]);
 
   function handleTimeUpdate(event) {
     const player = event.currentTarget;
@@ -427,6 +455,43 @@ function WatchBrief({ item, selectedEpisode, progress }) {
   );
 }
 
+function EpisodeChapters({ item, selectedEpisode, activeChapterId, onChapterSelect }) {
+  const episodeOffset = (selectedEpisode - 1) * 7;
+  const chapters = chapterTemplates.map((chapter, index) => ({
+    ...chapter,
+    time: chapter.time + (index > 1 ? episodeOffset : 0),
+  }));
+
+  return (
+    <aside className="episode-chapters" aria-label="Episode chapters">
+      <div className="chapters-heading">
+        <div>
+          <p className="eyebrow">Chapters</p>
+          <h2>{episodeLabel(selectedEpisode)}</h2>
+        </div>
+        <Clapperboard size={18} />
+      </div>
+      <div className="chapter-list">
+        {chapters.map((chapter) => (
+          <button
+            className={`chapter-row ${activeChapterId === chapter.id ? "active" : ""}`}
+            key={chapter.id}
+            type="button"
+            onClick={() => onChapterSelect(chapter)}
+          >
+            <span>{formatTimestamp(chapter.time)}</span>
+            <div>
+              <strong>{chapter.title}</strong>
+              <small>{chapter.detail}</small>
+            </div>
+            <ListChecks size={16} />
+          </button>
+        ))}
+      </div>
+      <p className="chapter-footnote">Markers are tuned for {item.title} watch sessions.</p>
+    </aside>
+  );
+}
 function PlaybackPreferences({ playbackSpeed, autoplayNext, ambientMode, skipIntro, onSpeedChange, onAutoplayToggle, onAmbientToggle, onSkipIntroToggle }) {
   return (
     <aside className="playback-preferences" aria-label="Playback preferences">
@@ -1551,6 +1616,7 @@ function App() {
 }
 
 export default App;
+
 
 
 
