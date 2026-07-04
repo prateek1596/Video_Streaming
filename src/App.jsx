@@ -1062,6 +1062,10 @@ function App() {
   const [activeSection, setActiveSection] = useState("watch");
   const [shouldAutoPlay, setShouldAutoPlay] = useState(false);
   const [quality, setQuality] = useState(stored?.quality || "Auto");
+  const [playbackSpeed, setPlaybackSpeed] = useState(stored?.playbackSpeed || "1x");
+  const [autoplayNext, setAutoplayNext] = useState(stored?.autoplayNext ?? true);
+  const [ambientMode, setAmbientMode] = useState(Boolean(stored?.ambientMode));
+  const [skipIntro, setSkipIntro] = useState(Boolean(stored?.skipIntro));
   const [captionsOn, setCaptionsOn] = useState(Boolean(stored?.captionsOn));
   const [notes, setNotes] = useState(() => stored?.notes || {});
   const [partyMessages, setPartyMessages] = useState(() => stored?.partyMessages || defaultPartyMessages);
@@ -1163,13 +1167,17 @@ function App() {
       reminders: Array.from(reminders),
       progress,
       quality,
+      playbackSpeed,
+      autoplayNext,
+      ambientMode,
+      skipIntro,
       captionsOn,
       notes,
       partyMessages,
       sessionQueue,
     };
     localStorage.setItem(storageKey, JSON.stringify(payload));
-  }, [selectedId, selectedEpisode, currentEpisodes, saved, reminders, progress, quality, captionsOn, notes, partyMessages, sessionQueue]);
+  }, [selectedId, selectedEpisode, currentEpisodes, saved, reminders, progress, quality, playbackSpeed, autoplayNext, ambientMode, skipIntro, captionsOn, notes, partyMessages, sessionQueue]);
 
   useEffect(() => {
     const sections = ["watch", "continue", "discover", "latest", "watchlist"]
@@ -1240,6 +1248,10 @@ function App() {
     setReminders(new Set(["neon-ronin-zero", "signal-bloom"]));
     setProgress(Object.fromEntries(anime.map((item) => [item.id, item.progress])));
     setQuality("Auto");
+    setPlaybackSpeed("1x");
+    setAutoplayNext(true);
+    setAmbientMode(false);
+    setSkipIntro(false);
     setCaptionsOn(false);
     setNotes({});
     setPartyMessages(defaultPartyMessages);
@@ -1284,7 +1296,7 @@ function App() {
   }
 
   return (
-    <div className="app-shell">
+    <div className={`app-shell ${ambientMode ? "ambient-mode" : ""}`}>
       <Sidebar activeSection={activeSection} />
       <main className="main-area">
         <Topbar query={query} onQueryChange={setQuery} reminderItems={reminderItems} quality={quality} captionsOn={captionsOn} onPlay={playSelection} onReminderToggle={toggleReminder} onQualityChange={setQuality} onCaptionsToggle={() => setCaptionsOn((current) => !current)} onResetLibrary={resetLibraryState} />
@@ -1306,13 +1318,28 @@ function App() {
               shouldAutoPlay={shouldAutoPlay}
               quality={quality}
               captionsOn={captionsOn}
+              playbackSpeed={playbackSpeed}
+              autoplayNext={autoplayNext}
+              skipIntro={skipIntro}
               onEpisodeSelect={playSelection}
               onProgress={updateProgress}
               onQualityChange={setQuality}
               onCaptionsToggle={() => setCaptionsOn((current) => !current)}
+              onSpeedChange={setPlaybackSpeed}
+              onSkipIntroToggle={() => setSkipIntro((current) => !current)}
               onStepEpisode={stepEpisode}
             />
             <WatchBrief item={selected} selectedEpisode={selectedEpisode} progress={progress[selected.id]} />
+            <PlaybackPreferences
+              playbackSpeed={playbackSpeed}
+              autoplayNext={autoplayNext}
+              ambientMode={ambientMode}
+              skipIntro={skipIntro}
+              onSpeedChange={setPlaybackSpeed}
+              onAutoplayToggle={() => setAutoplayNext((current) => !current)}
+              onAmbientToggle={() => setAmbientMode((current) => !current)}
+              onSkipIntroToggle={() => setSkipIntro((current) => !current)}
+            />
             <EpisodeQueue item={selected} selectedEpisode={selectedEpisode} progress={progress[selected.id]} onEpisodeSelect={playSelection} />
             <WatchNotes
               item={selected}
@@ -1522,6 +1549,7 @@ function App() {
 }
 
 export default App;
+
 
 
 
