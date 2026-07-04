@@ -9,6 +9,7 @@ import CirclePlus from "lucide-react/dist/esm/icons/circle-plus.js";
 import ChevronLeft from "lucide-react/dist/esm/icons/chevron-left.js";
 import ChevronRight from "lucide-react/dist/esm/icons/chevron-right.js";
 import Clock3 from "lucide-react/dist/esm/icons/clock-3.js";
+import Gauge from "lucide-react/dist/esm/icons/gauge.js";
 import Home from "lucide-react/dist/esm/icons/home.js";
 import Info from "lucide-react/dist/esm/icons/info.js";
 import Library from "lucide-react/dist/esm/icons/library.js";
@@ -20,12 +21,14 @@ import Search from "lucide-react/dist/esm/icons/search.js";
 import Settings from "lucide-react/dist/esm/icons/settings.js";
 import SendHorizontal from "lucide-react/dist/esm/icons/send-horizontal.js";
 import ShieldCheck from "lucide-react/dist/esm/icons/shield-check.js";
+import SkipForward from "lucide-react/dist/esm/icons/skip-forward.js";
 import Share2 from "lucide-react/dist/esm/icons/share-2.js";
 import Sparkles from "lucide-react/dist/esm/icons/sparkles.js";
 import Star from "lucide-react/dist/esm/icons/star.js";
 import TrendingUp from "lucide-react/dist/esm/icons/trending-up.js";
 import TvMinimalPlay from "lucide-react/dist/esm/icons/tv-minimal-play.js";
 import Trash2 from "lucide-react/dist/esm/icons/trash-2.js";
+import WandSparkles from "lucide-react/dist/esm/icons/wand-sparkles.js";
 import UsersRound from "lucide-react/dist/esm/icons/users-round.js";
 import X from "lucide-react/dist/esm/icons/x.js";
 import { anime, genres, sampleVideo, schedule } from "./data.js";
@@ -34,6 +37,7 @@ import heroImage from "../assets/hero-anime-city.png";
 const storageKey = "anipulse-react-state";
 const sortOptions = ["Trending", "Newest", "Episodes", "A-Z"];
 const languageOptions = ["All audio", "Sub", "Sub / Dub"];
+const speedOptions = ["0.75x", "1x", "1.25x", "1.5x", "2x"];
 const defaultSessionQueue = ["signal-bloom", "cloud-atelier", "starfall-railway"];
 const defaultPartyMessages = [
   { id: "party-1", animeId: "neon-ronin-zero", episode: 1, author: "Mika", text: "The city reveal still lands every time.", tone: "Hype" },
@@ -1448,6 +1452,7 @@ function App() {
 }
 
 export default App;
+
 
 
 
