@@ -12,6 +12,7 @@ import ChevronRight from "lucide-react/dist/esm/icons/chevron-right.js";
 import Clock3 from "lucide-react/dist/esm/icons/clock-3.js";
 import Gauge from "lucide-react/dist/esm/icons/gauge.js";
 import ListChecks from "lucide-react/dist/esm/icons/list-checks.js";
+import ScrollText from "lucide-react/dist/esm/icons/scroll-text.js";
 import Home from "lucide-react/dist/esm/icons/home.js";
 import Info from "lucide-react/dist/esm/icons/info.js";
 import Library from "lucide-react/dist/esm/icons/library.js";
