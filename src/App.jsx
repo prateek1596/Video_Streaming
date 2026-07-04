@@ -263,10 +263,15 @@ function Player({
   shouldAutoPlay,
   quality,
   captionsOn,
+  playbackSpeed,
+  autoplayNext,
+  skipIntro,
   onEpisodeSelect,
   onProgress,
   onQualityChange,
   onCaptionsToggle,
+  onSpeedChange,
+  onSkipIntroToggle,
   onStepEpisode,
 }) {
   const videoRef = useRef(null);
@@ -275,8 +280,14 @@ function Player({
     const player = videoRef.current;
     if (!player) return;
     player.load();
+    player.playbackRate = Number.parseFloat(playbackSpeed) || 1;
     if (shouldAutoPlay) player.play().catch(() => {});
-  }, [item.id, selectedEpisode, shouldAutoPlay]);
+  }, [item.id, selectedEpisode, playbackSpeed, shouldAutoPlay]);
+
+  useEffect(() => {
+    const player = videoRef.current;
+    if (player) player.playbackRate = Number.parseFloat(playbackSpeed) || 1;
+  }, [playbackSpeed]);
 
   function handleTimeUpdate(event) {
     const player = event.currentTarget;
@@ -287,7 +298,13 @@ function Player({
 
   function handleEnded() {
     onProgress(item.id, selectedEpisode, 100);
-    if (selectedEpisode < item.episodes) onStepEpisode(1, true);
+    if (autoplayNext && selectedEpisode < item.episodes) onStepEpisode(1, true);
+  }
+
+  function skipIntroAhead() {
+    const player = videoRef.current;
+    if (!player) return;
+    player.currentTime = Math.min((player.duration || 100) - 1, player.currentTime + 85);
   }
 
   return (
@@ -328,10 +345,28 @@ function Player({
             <option>480p</option>
           </select>
         </label>
+        <label className="select-control">
+          <span>Speed</span>
+          <select value={playbackSpeed} onChange={(event) => onSpeedChange(event.target.value)}>
+            {speedOptions.map((option) => (
+              <option key={option}>{option}</option>
+            ))}
+          </select>
+        </label>
         <button className={`caption-toggle ${captionsOn ? "active" : ""}`} type="button" onClick={onCaptionsToggle}>
           <Captions size={18} />
           <span>{captionsOn ? "Captions on" : "Captions off"}</span>
         </button>
+        <button className={`caption-toggle ${skipIntro ? "active" : ""}`} type="button" onClick={onSkipIntroToggle}>
+          <SkipForward size={18} />
+          <span>{skipIntro ? "Skip intro on" : "Skip intro off"}</span>
+        </button>
+        {skipIntro && (
+          <button className="caption-toggle" type="button" onClick={skipIntroAhead}>
+            <SkipForward size={18} />
+            <span>Jump intro</span>
+          </button>
+        )}
       </div>
       <div className="season-strip" aria-label="Episodes">
         {Array.from({ length: Math.min(item.episodes, 12) }, (_, index) => index + 1).map((episodeNumber) => (
@@ -390,6 +425,41 @@ function WatchBrief({ item, selectedEpisode, progress }) {
   );
 }
 
+function PlaybackPreferences({ playbackSpeed, autoplayNext, ambientMode, skipIntro, onSpeedChange, onAutoplayToggle, onAmbientToggle, onSkipIntroToggle }) {
+  return (
+    <aside className="playback-preferences" aria-label="Playback preferences">
+      <div className="preferences-heading">
+        <div>
+          <p className="eyebrow">Preferences</p>
+          <h2>Playback setup</h2>
+        </div>
+        <Gauge size={18} />
+      </div>
+      <label className="preference-select">
+        <span>Speed</span>
+        <select value={playbackSpeed} onChange={(event) => onSpeedChange(event.target.value)}>
+          {speedOptions.map((option) => (
+            <option key={option}>{option}</option>
+          ))}
+        </select>
+      </label>
+      <div className="preference-toggles">
+        <button className={autoplayNext ? "active" : ""} type="button" onClick={onAutoplayToggle}>
+          <Play size={16} fill="currentColor" />
+          Autoplay next
+        </button>
+        <button className={skipIntro ? "active" : ""} type="button" onClick={onSkipIntroToggle}>
+          <SkipForward size={16} />
+          Skip intro
+        </button>
+        <button className={ambientMode ? "active" : ""} type="button" onClick={onAmbientToggle}>
+          <WandSparkles size={16} />
+          Ambient glow
+        </button>
+      </div>
+    </aside>
+  );
+}
 function EpisodeQueue({ item, selectedEpisode, progress, onEpisodeSelect }) {
   const completion = Math.min(100, Math.max(0, Number(progress) || 0));
 
@@ -1452,6 +1522,8 @@ function App() {
 }
 
 export default App;
+
+
 
 
 
