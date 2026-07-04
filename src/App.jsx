@@ -310,11 +310,11 @@ function Player({
     const player = videoRef.current;
     if (!player || !chapterJump) return undefined;
     const seek = () => {
-      const duration = Number.isFinite(player.duration) ? player.duration : chapterJump.seconds + 2;
+      const duration = Number.isFinite(player.duration) && player.duration > 0 ? player.duration : chapterJump.seconds + 2;
       player.currentTime = Math.max(0, Math.min(duration - 1, chapterJump.seconds));
       if (shouldAutoPlay) player.play().catch(() => {});
     };
-    if (Number.isFinite(player.duration)) seek();
+    if (player.readyState >= 1) seek();
     else player.addEventListener("loadedmetadata", seek, { once: true });
     return () => player.removeEventListener("loadedmetadata", seek);
   }, [chapterJump, shouldAutoPlay]);
