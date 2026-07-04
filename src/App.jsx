@@ -48,6 +48,14 @@ const chapterTemplates = [
   { id: "climax", title: "Climax", time: 980, detail: "Episode peak and reveal" },
   { id: "tag", title: "Next hook", time: 1320, detail: "Final beat before credits" },
 ];
+const transcriptTemplates = [
+  { id: "line-1", time: 12, speaker: "Narrator", text: "The city wakes before the neon has a chance to fade." },
+  { id: "line-2", time: 96, speaker: "Lead", text: "If memories can be edited, truth has to leave fingerprints." },
+  { id: "line-3", time: 248, speaker: "Partner", text: "The broadcast tower is not sending a signal. It is asking for help." },
+  { id: "line-4", time: 514, speaker: "Lead", text: "Then we climb before someone decides to erase the question." },
+  { id: "line-5", time: 742, speaker: "Archivist", text: "Every missing frame points back to the same midnight train." },
+  { id: "line-6", time: 1036, speaker: "Lead", text: "No more reruns. We finish this live." },
+];
 const defaultSessionQueue = ["signal-bloom", "cloud-atelier", "starfall-railway"];
 const defaultPartyMessages = [
   { id: "party-1", animeId: "neon-ronin-zero", episode: 1, author: "Mika", text: "The city reveal still lands every time.", tone: "Hype" },
@@ -490,6 +498,46 @@ function EpisodeChapters({ item, selectedEpisode, activeChapterId, onChapterSele
         ))}
       </div>
       <p className="chapter-footnote">Markers are tuned for {item.title} watch sessions.</p>
+    </aside>
+  );
+}
+function EpisodeTranscript({ item, selectedEpisode, captionsOn, activeTranscriptId, onTranscriptSelect, onCaptionsToggle }) {
+  const episodeOffset = (selectedEpisode - 1) * 5;
+  const lines = transcriptTemplates.map((line, index) => ({
+    ...line,
+    time: line.time + index * episodeOffset,
+  }));
+
+  return (
+    <aside className="episode-transcript" aria-label="Episode transcript">
+      <div className="transcript-heading">
+        <div>
+          <p className="eyebrow">Transcript</p>
+          <h2>{captionsOn ? "Captions live" : "Captions preview"}</h2>
+        </div>
+        <ScrollText size={18} />
+      </div>
+      <button className={`transcript-caption-toggle ${captionsOn ? "active" : ""}`} type="button" onClick={onCaptionsToggle}>
+        <Captions size={16} />
+        {captionsOn ? "Captions enabled" : "Enable captions"}
+      </button>
+      <div className="transcript-list">
+        {lines.map((line) => (
+          <button
+            className={`transcript-line ${activeTranscriptId === line.id ? "active" : ""}`}
+            key={line.id}
+            type="button"
+            onClick={() => onTranscriptSelect(line)}
+          >
+            <span>{formatTimestamp(line.time)}</span>
+            <div>
+              <strong>{line.speaker}</strong>
+              <p>{line.text}</p>
+            </div>
+          </button>
+        ))}
+      </div>
+      <p className="transcript-footnote">Preview transcript for {item.title} {episodeLabel(selectedEpisode)}.</p>
     </aside>
   );
 }
@@ -1636,6 +1684,7 @@ function App() {
 }
 
 export default App;
+
 
 
 
