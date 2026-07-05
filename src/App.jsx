@@ -465,6 +465,59 @@ function WatchBrief({ item, selectedEpisode, progress }) {
   );
 }
 
+function EpisodeRecap({ item, selectedEpisode, progress, note, feedback, captionsOn, activeChapterId, activeTranscriptId, isReminderOn, onComplete, onAddToQueue, onToggleReminder }) {
+  const completion = Math.min(100, Math.max(0, Number(progress) || 0));
+  const rating = feedback?.rating || 0;
+  const tagCount = feedback?.tags?.length || 0;
+  const noteCount = note.trim().length;
+  const summaryItems = [
+    [TrendingUp, "Progress", `${completion}%`],
+    [Star, "Rating", rating ? `${rating}/5` : "Open"],
+    [Captions, "Captions", captionsOn ? "On" : "Off"],
+    [ListChecks, "Markers", `${activeChapterId ? 1 : 0}/${activeTranscriptId ? 1 : 0}`],
+  ];
+
+  return (
+    <aside className="episode-recap" aria-label="Episode recap">
+      <div className="recap-heading">
+        <div>
+          <p className="eyebrow">Recap</p>
+          <h2>{`${item.title} / ${episodeLabel(selectedEpisode)}`}</h2>
+        </div>
+        <span>{tagCount ? `${tagCount} reaction tags` : "No reaction tags"}</span>
+      </div>
+      <div className="recap-grid">
+        {summaryItems.map(([Icon, label, value]) => (
+          <div className="recap-stat" key={label}>
+            <Icon size={17} fill={label === "Rating" && rating ? "currentColor" : "none"} />
+            <span>{label}</span>
+            <strong>{value}</strong>
+          </div>
+        ))}
+      </div>
+      <div className="recap-progress" aria-label={`${completion}% watched`}>
+        <span style={{ width: `${completion}%` }} />
+      </div>
+      <p className="recap-copy">
+        {noteCount ? `${noteCount} note characters saved for this episode.` : "No private notes saved for this episode yet."}
+      </p>
+      <div className="recap-actions">
+        <button type="button" onClick={onComplete}>
+          <CheckCircle2 size={16} />
+          Complete
+        </button>
+        <button type="button" onClick={onAddToQueue}>
+          <CirclePlus size={16} />
+          Queue
+        </button>
+        <button className={isReminderOn ? "active" : ""} type="button" onClick={onToggleReminder}>
+          <Bell size={16} />
+          {isReminderOn ? "Reminder on" : "Remind"}
+        </button>
+      </div>
+    </aside>
+  );
+}
 function EpisodeChapters({ item, selectedEpisode, activeChapterId, onChapterSelect }) {
   const episodeOffset = (selectedEpisode - 1) * 7;
   const chapters = chapterTemplates.map((chapter, index) => ({
@@ -1775,6 +1828,7 @@ function App() {
 }
 
 export default App;
+
 
 
 
