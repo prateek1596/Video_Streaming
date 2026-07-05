@@ -29,7 +29,7 @@ The production output is generated in `dist/`.
 ## Included
 
 - React component-based streaming interface
-- Featured watch area with video player, chapter markers, timed transcript, session details, and now-playing status strip
+- Featured watch area with video player, chapter markers, timed transcript, episode recap, session details, and now-playing status strip
 - Episode selector and full episode queue in the player
 - Search, genre/audio filters, catalog sorting, and curated discovery rails
 - Anime catalog cards
@@ -37,7 +37,7 @@ The production output is generated in `dist/`.
 - Persistent watchlist, session queue, playback preferences, reminders, profile preferences, progress, notes, episode feedback, and watch-party messages via localStorage
 - Show details modal with metadata, tags, and episode buttons
 - Latest episode queue, release reminders, notification center, and profile menu
-- Weekly release schedule, library stats, session queue controls, chapter jumps, transcript jumps, playback setup, episode notes, feedback, and watch-party reactions
+- Weekly release schedule, library stats, session queue controls, chapter jumps, transcript jumps, episode recap, playback setup, episode notes, feedback, and watch-party reactions
 - Responsive desktop and mobile layout
 
 ## Next Backend Steps
@@ -46,6 +46,7 @@ The production output is generated in `dist/`.
 - Store catalog data in a database
 - Replace the sample MP4 with licensed video assets or a legal streaming provider
 - Add subtitles, quality selection, and episode pages
+
 
 
 
