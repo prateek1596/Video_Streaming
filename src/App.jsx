@@ -1589,6 +1589,20 @@ function App() {
               onStepEpisode={stepEpisode}
             />
             <WatchBrief item={selected} selectedEpisode={selectedEpisode} progress={progress[selected.id]} />
+            <EpisodeRecap
+              item={selected}
+              selectedEpisode={selectedEpisode}
+              progress={progress[selected.id]}
+              note={notes[activeNoteKey] || ""}
+              feedback={episodeFeedback[activeNoteKey]}
+              captionsOn={captionsOn}
+              activeChapterId={activeChapterId}
+              activeTranscriptId={activeTranscriptId}
+              isReminderOn={reminders.has(selected.id)}
+              onComplete={() => markComplete(selected.id, selectedEpisode)}
+              onAddToQueue={() => addToSessionQueue(selected.id)}
+              onToggleReminder={() => toggleReminder(selected.id)}
+            />
             <PlaybackPreferences
               playbackSpeed={playbackSpeed}
               autoplayNext={autoplayNext}
@@ -1828,6 +1842,7 @@ function App() {
 }
 
 export default App;
+
 
 
 
