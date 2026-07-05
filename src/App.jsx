@@ -57,6 +57,7 @@ const transcriptTemplates = [
   { id: "line-6", time: 1036, speaker: "Lead", text: "No more reruns. We finish this live." },
 ];
 const defaultSessionQueue = ["signal-bloom", "cloud-atelier", "starfall-railway"];
+const reactionTags = ["Hype", "Cozy", "Mystery", "Tearjerker", "Rewatch"];
 const defaultPartyMessages = [
   { id: "party-1", animeId: "neon-ronin-zero", episode: 1, author: "Mika", text: "The city reveal still lands every time.", tone: "Hype" },
   { id: "party-2", animeId: "signal-bloom", episode: 7, author: "Rin", text: "That flower code has to be a map.", tone: "Theory" },
@@ -635,6 +636,61 @@ function WatchNotes({ item, selectedEpisode, note, onNoteChange }) {
     </aside>
   );
 }
+function EpisodeFeedback({ item, selectedEpisode, feedback, onFeedbackChange }) {
+  const current = feedback || { rating: 0, tags: [], reaction: "" };
+  const tags = current.tags || [];
+
+  function updateFeedback(patch) {
+    onFeedbackChange({ ...current, ...patch });
+  }
+
+  function toggleTag(tag) {
+    const nextTags = tags.includes(tag) ? tags.filter((value) => value !== tag) : [...tags, tag];
+    updateFeedback({ tags: nextTags });
+  }
+
+  return (
+    <aside className="episode-feedback" aria-label="Episode feedback">
+      <div className="feedback-heading">
+        <div>
+          <p className="eyebrow">Reaction</p>
+          <h2>{episodeLabel(selectedEpisode)}</h2>
+        </div>
+        <span>{item.title}</span>
+      </div>
+      <div className="rating-row" aria-label="Episode rating">
+        {[1, 2, 3, 4, 5].map((value) => (
+          <button
+            className={value <= current.rating ? "active" : ""}
+            key={value}
+            type="button"
+            aria-label={`Rate ${value} stars`}
+            onClick={() => updateFeedback({ rating: value })}
+          >
+            <Star size={18} fill="currentColor" />
+          </button>
+        ))}
+      </div>
+      <div className="reaction-tags" aria-label="Reaction tags">
+        {reactionTags.map((tag) => (
+          <button className={tags.includes(tag) ? "active" : ""} key={tag} type="button" onClick={() => toggleTag(tag)}>
+            {tag}
+          </button>
+        ))}
+      </div>
+      <input
+        maxLength={96}
+        placeholder="One-line reaction"
+        value={current.reaction || ""}
+        onChange={(event) => updateFeedback({ reaction: event.target.value })}
+      />
+      <div className="feedback-meta">
+        <span>{current.rating ? `${current.rating}/5 stars` : "Not rated"}</span>
+        <strong>{tags.length ? `${tags.length} tags` : "No tags"}</strong>
+      </div>
+    </aside>
+  );
+}
 function WatchParty({ item, selectedEpisode, messages, onSendMessage }) {
   const [draft, setDraft] = useState("");
   const activeMessages = messages.filter((message) => message.animeId === item.id && message.episode === selectedEpisode).slice(-5);
@@ -1184,6 +1240,7 @@ function App() {
   const [skipIntro, setSkipIntro] = useState(Boolean(stored?.skipIntro));
   const [captionsOn, setCaptionsOn] = useState(Boolean(stored?.captionsOn));
   const [notes, setNotes] = useState(() => stored?.notes || {});
+  const [episodeFeedback, setEpisodeFeedback] = useState(() => stored?.episodeFeedback || {});
   const [partyMessages, setPartyMessages] = useState(() => stored?.partyMessages || defaultPartyMessages);
   const [sessionQueue, setSessionQueue] = useState(() => stored?.sessionQueue || defaultSessionQueue);
   const [activeChapterId, setActiveChapterId] = useState(stored?.activeChapterId || null);
@@ -1292,13 +1349,14 @@ function App() {
       skipIntro,
       captionsOn,
       notes,
+      episodeFeedback,
       partyMessages,
       sessionQueue,
       activeChapterId,
       activeTranscriptId,
     };
     localStorage.setItem(storageKey, JSON.stringify(payload));
-  }, [selectedId, selectedEpisode, currentEpisodes, saved, reminders, progress, quality, playbackSpeed, autoplayNext, ambientMode, skipIntro, captionsOn, notes, partyMessages, sessionQueue, activeChapterId, activeTranscriptId]);
+  }, [selectedId, selectedEpisode, currentEpisodes, saved, reminders, progress, quality, playbackSpeed, autoplayNext, ambientMode, skipIntro, captionsOn, notes, episodeFeedback, partyMessages, sessionQueue, activeChapterId, activeTranscriptId]);
 
   useEffect(() => {
     const sections = ["watch", "continue", "discover", "latest", "watchlist"]
@@ -1377,6 +1435,7 @@ function App() {
     setSkipIntro(false);
     setCaptionsOn(false);
     setNotes({});
+    setEpisodeFeedback({});
     setPartyMessages(defaultPartyMessages);
     setSessionQueue(defaultSessionQueue);
     setActiveChapterId(null);
@@ -1389,6 +1448,10 @@ function App() {
 
   function updateNote(value) {
     setNotes((current) => ({ ...current, [activeNoteKey]: value }));
+  }
+
+  function updateEpisodeFeedback(value) {
+    setEpisodeFeedback((current) => ({ ...current, [activeNoteKey]: value }));
   }
 
   function sendPartyMessage(message) {
@@ -1503,6 +1566,12 @@ function App() {
               selectedEpisode={selectedEpisode}
               note={notes[activeNoteKey] || ""}
               onNoteChange={updateNote}
+            />
+            <EpisodeFeedback
+              item={selected}
+              selectedEpisode={selectedEpisode}
+              feedback={episodeFeedback[activeNoteKey]}
+              onFeedbackChange={updateEpisodeFeedback}
             />
             <WatchParty
               item={selected}
@@ -1706,6 +1775,8 @@ function App() {
 }
 
 export default App;
+
+
 
 
 
