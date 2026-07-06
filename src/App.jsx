@@ -85,6 +85,10 @@ function formatTimestamp(seconds) {
   return `${minutes}:${remainingSeconds}`;
 }
 
+function durationMinutes(duration) {
+  return Number(String(duration).match(/\d+/)?.[0] || 24);
+}
+
 function clampEpisode(value, item) {
   return Math.min(Math.max(Number(value) || item.currentEpisode, 1), item.episodes);
 }
@@ -1048,6 +1052,76 @@ function LibraryStats({ savedCount, reminderCount, averageProgress, nextRelease 
 }
 
 
+function WatchGoals({ items, progress, currentEpisodes, reminders, onPlay, onMarkComplete, onReminderToggle }) {
+  const goalItems = items.length ? items : anime.slice(0, 3);
+  const weeklyTarget = 180;
+  const watchedMinutes = goalItems.reduce((sum, item) => {
+    const watched = Math.min(100, Math.max(0, Number(progress[item.id] ?? item.progress) || 0));
+    return sum + Math.round(durationMinutes(item.duration) * (watched / 100));
+  }, 0);
+  const weeklyPercent = Math.min(100, Math.round((watchedMinutes / weeklyTarget) * 100));
+  const completedShows = goalItems.filter((item) => Number(progress[item.id] ?? item.progress) >= 100).length;
+  const activeShows = goalItems.filter((item) => Number(progress[item.id] ?? item.progress) > 0).length;
+  const focusItem = goalItems.find((item) => Number(progress[item.id] ?? item.progress) < 100) || goalItems[0];
+  const focusEpisode = currentEpisodes[focusItem.id] || focusItem.currentEpisode;
+  const focusProgress = Math.min(100, Math.max(0, Number(progress[focusItem.id] ?? focusItem.progress) || 0));
+  const focusReminder = reminders.has(focusItem.id);
+  const stats = [
+    [Clock3, "Minutes", `${watchedMinutes}/${weeklyTarget}`],
+    [TrendingUp, "Weekly goal", `${weeklyPercent}%`],
+    [CheckCircle2, "Completed", completedShows || "0"],
+    [TvMinimalPlay, "Active", activeShows || "0"],
+  ];
+
+  return (
+    <section className="watch-goals" aria-label="Watch goals">
+      <div className="goals-heading">
+        <div>
+          <p className="eyebrow">Goals</p>
+          <h2>Weekly watch plan</h2>
+        </div>
+        <span>{items.length ? "Based on saved anime" : "Starter plan"}</span>
+      </div>
+      <div className="goal-meter" aria-label={`${weeklyPercent}% of weekly watch goal`}>
+        <span style={{ width: `${weeklyPercent}%` }} />
+      </div>
+      <div className="goals-grid">
+        {stats.map(([Icon, label, value]) => (
+          <div className="goal-stat" key={label}>
+            <Icon size={17} />
+            <span>{label}</span>
+            <strong>{value}</strong>
+          </div>
+        ))}
+      </div>
+      <article className="goal-focus">
+        <button className="goal-art" style={{ "--poster": focusItem.poster }} type="button" onClick={() => onPlay(focusItem.id, focusEpisode, true)}>
+          E{focusEpisode}
+        </button>
+        <div>
+          <span>Focus next</span>
+          <strong>{focusItem.title}</strong>
+          <small>{`${focusProgress}% watched / ${focusItem.nextRelease}`}</small>
+        </div>
+        <div className="goal-actions">
+          <button type="button" onClick={() => onPlay(focusItem.id, focusEpisode, true)}>
+            <Play size={15} fill="currentColor" />
+            Resume
+          </button>
+          <button type="button" onClick={() => onMarkComplete(focusItem.id, focusEpisode)}>
+            <CheckCircle2 size={15} />
+            Complete
+          </button>
+          <button className={focusReminder ? "active" : ""} type="button" onClick={() => onReminderToggle(focusItem.id)}>
+            <Bell size={15} />
+            {focusReminder ? "Alert on" : "Alert"}
+          </button>
+        </div>
+      </article>
+    </section>
+  );
+}
+
 function CollectionShelf({ collections, onPlay, onDetails }) {
   return (
     <div className="collection-shelf" aria-label="Curated collections">
@@ -1799,6 +1873,15 @@ function App() {
             averageProgress={libraryAverageProgress}
             nextRelease={nextSavedRelease}
           />
+          <WatchGoals
+            items={savedItems}
+            progress={progress}
+            currentEpisodes={currentEpisodes}
+            reminders={reminders}
+            onPlay={playSelection}
+            onMarkComplete={markComplete}
+            onReminderToggle={toggleReminder}
+          />
           <SeasonTracker
             items={savedItems}
             progress={progress}
@@ -1842,6 +1925,7 @@ function App() {
 }
 
 export default App;
+
 
 
 
