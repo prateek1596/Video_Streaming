@@ -1030,6 +1030,83 @@ function ForYouRail({ items, selected, saved, reminders, onPlay, onSave, onDetai
     </section>
   );
 }
+function BrowsePulse({ items, totalCount, selected, saved, reminders, onPlay, onSave, onDetails, onReminderToggle, onResetFilters }) {
+  const hasMatches = items.length > 0;
+  const pulseItems = hasMatches ? items : [selected];
+  const topPick = [...pulseItems].sort((a, b) => b.popularity - a.popularity)[0];
+  const countBy = (field) =>
+    Object.entries(
+      pulseItems.reduce((acc, item) => {
+        acc[item[field]] = (acc[item[field]] || 0) + 1;
+        return acc;
+      }, {}),
+    ).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))[0]?.[0] || "Mixed";
+  const savedMatches = items.filter((item) => saved.has(item.id)).length;
+  const alertMatches = items.filter((item) => reminders.has(item.id)).length;
+  const isSaved = saved.has(topPick.id);
+  const isReminderOn = reminders.has(topPick.id);
+  const stats = [
+    [Search, "Matches", `${items.length}/${totalCount}`],
+    [Clapperboard, "Genre", countBy("genre")],
+    [Sparkles, "Mood", countBy("mood")],
+    [Bell, "Alerts", `${alertMatches}/${Math.max(items.length, 1)}`],
+  ];
+
+  return (
+    <section className="browse-pulse" aria-label="Browse pulse">
+      <div className="browse-pulse-heading">
+        <div>
+          <p className="eyebrow">Pulse</p>
+          <h2>{hasMatches ? "Browse pulse" : "No matches yet"}</h2>
+        </div>
+        <span>{hasMatches ? `${savedMatches} saved in view` : "Reset the lens"}</span>
+      </div>
+      <div className="browse-pulse-grid">
+        {stats.map(([Icon, label, value]) => (
+          <div className="browse-pulse-stat" key={label}>
+            <Icon size={17} />
+            <span>{label}</span>
+            <strong>{value}</strong>
+          </div>
+        ))}
+      </div>
+      <article className="browse-pulse-focus">
+        <button className="browse-pulse-art" style={{ "--poster": topPick.poster }} type="button" onClick={() => onDetails(topPick.id)}>
+          {topPick.title}
+        </button>
+        <div>
+          <span>{hasMatches ? `${topPick.popularity}% match / ${topPick.studio}` : "Try clearing search and filters"}</span>
+          <strong>{topPick.title}</strong>
+          <p>{hasMatches ? topPick.description : "Your current browse settings are too narrow for the sample catalog."}</p>
+        </div>
+        <div className="browse-pulse-actions">
+          {hasMatches ? (
+            <>
+              <button type="button" onClick={() => onPlay(topPick.id, topPick.currentEpisode, true)}>
+                <Play size={15} fill="currentColor" />
+                Play
+              </button>
+              <button className={isSaved ? "active" : ""} type="button" onClick={() => onSave(topPick.id)}>
+                {isSaved ? <BookmarkCheck size={15} /> : <Bookmark size={15} />}
+                {isSaved ? "Saved" : "Save"}
+              </button>
+              <button className={isReminderOn ? "active" : ""} type="button" onClick={() => onReminderToggle(topPick.id)}>
+                <Bell size={15} />
+                {isReminderOn ? "Alert on" : "Alert"}
+              </button>
+            </>
+          ) : (
+            <button type="button" onClick={onResetFilters}>
+              <RotateCcw size={15} />
+              Reset filters
+            </button>
+          )}
+        </div>
+      </article>
+    </section>
+  );
+}
+
 function StudioSpotlight({ items, selected, saved, reminders, onPlay, onSave, onDetails, onReminderToggle }) {
   const studioStats = Object.values(
     items.reduce((acc, item) => {
@@ -1771,6 +1848,13 @@ function App() {
     if (selectedId === id) setSelectedEpisode(item.currentEpisode);
   }
 
+  function resetBrowseFilters() {
+    setFilter("All");
+    setLanguageFilter("All audio");
+    setSortMode("Trending");
+    setQuery("");
+  }
+
   function resetLibraryState() {
     setSelectedId(anime[0].id);
     setSelectedEpisode(anime[0].currentEpisode);
@@ -2027,6 +2111,18 @@ function App() {
               </label>
             </div>
           </div>
+          <BrowsePulse
+            items={filteredAnime}
+            totalCount={anime.length}
+            selected={selected}
+            saved={saved}
+            reminders={reminders}
+            onPlay={playSelection}
+            onSave={toggleSave}
+            onDetails={setDetailsId}
+            onReminderToggle={toggleReminder}
+            onResetFilters={resetBrowseFilters}
+          />
           <StudioSpotlight
             items={filteredAnime.length ? filteredAnime : anime}
             selected={selected}
@@ -2177,6 +2273,7 @@ function App() {
 }
 
 export default App;
+
 
 
 
