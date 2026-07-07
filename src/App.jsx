@@ -1030,6 +1030,84 @@ function ForYouRail({ items, selected, saved, reminders, onPlay, onSave, onDetai
     </section>
   );
 }
+function StudioSpotlight({ items, selected, saved, reminders, onPlay, onSave, onDetails, onReminderToggle }) {
+  const studioStats = Object.values(
+    items.reduce((acc, item) => {
+      if (!acc[item.studio]) acc[item.studio] = { studio: item.studio, items: [], totalPopularity: 0 };
+      acc[item.studio].items.push(item);
+      acc[item.studio].totalPopularity += item.popularity;
+      return acc;
+    }, {}),
+  ).sort((a, b) => b.totalPopularity - a.totalPopularity || a.studio.localeCompare(b.studio));
+  const topStudio = studioStats[0] || { studio: selected.studio, items: [selected], totalPopularity: selected.popularity };
+  const spotlight = [...topStudio.items].sort((a, b) => {
+    const aBoost = a.genre === selected.genre ? 18 : 0;
+    const bBoost = b.genre === selected.genre ? 18 : 0;
+    return b.popularity + bBoost - (a.popularity + aBoost);
+  })[0];
+  const savedCount = topStudio.items.filter((item) => saved.has(item.id)).length;
+  const alertCount = topStudio.items.filter((item) => reminders.has(item.id)).length;
+  const moodFocus = Object.entries(
+    topStudio.items.reduce((acc, item) => {
+      acc[item.mood] = (acc[item.mood] || 0) + 1;
+      return acc;
+    }, {}),
+  ).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))[0]?.[0] || spotlight.mood;
+  const isSaved = saved.has(spotlight.id);
+  const isReminderOn = reminders.has(spotlight.id);
+  const stats = [
+    [Clapperboard, "Studio", topStudio.studio],
+    [Sparkles, "Mood", moodFocus],
+    [Bookmark, "Saved", `${savedCount}/${topStudio.items.length}`],
+    [Bell, "Alerts", `${alertCount}/${topStudio.items.length}`],
+  ];
+
+  return (
+    <section className="studio-spotlight" aria-label="Studio spotlight">
+      <div className="spotlight-heading">
+        <div>
+          <p className="eyebrow">Studio</p>
+          <h2>Studio spotlight</h2>
+        </div>
+        <span>{`${spotlight.popularity}% audience heat`}</span>
+      </div>
+      <div className="spotlight-grid">
+        {stats.map(([Icon, label, value]) => (
+          <div className="spotlight-stat" key={label}>
+            <Icon size={17} />
+            <span>{label}</span>
+            <strong>{value}</strong>
+          </div>
+        ))}
+      </div>
+      <article className="spotlight-feature">
+        <button className="spotlight-art" style={{ "--poster": spotlight.poster }} type="button" onClick={() => onDetails(spotlight.id)}>
+          {spotlight.title}
+        </button>
+        <div>
+          <span>{`${spotlight.genre} / ${spotlight.language} / ${spotlight.nextRelease}`}</span>
+          <strong>{spotlight.title}</strong>
+          <p>{spotlight.description}</p>
+        </div>
+        <div className="spotlight-actions">
+          <button type="button" onClick={() => onPlay(spotlight.id, spotlight.currentEpisode, true)}>
+            <Play size={15} fill="currentColor" />
+            Play
+          </button>
+          <button className={isSaved ? "active" : ""} type="button" onClick={() => onSave(spotlight.id)}>
+            {isSaved ? <BookmarkCheck size={15} /> : <Bookmark size={15} />}
+            {isSaved ? "Saved" : "Save"}
+          </button>
+          <button className={isReminderOn ? "active" : ""} type="button" onClick={() => onReminderToggle(spotlight.id)}>
+            <Bell size={15} />
+            {isReminderOn ? "Alert on" : "Alert"}
+          </button>
+        </div>
+      </article>
+    </section>
+  );
+}
+
 function LibraryStats({ savedCount, reminderCount, averageProgress, nextRelease }) {
   const stats = [
     [Library, "Saved", savedCount || "0"],
@@ -1949,6 +2027,16 @@ function App() {
               </label>
             </div>
           </div>
+          <StudioSpotlight
+            items={filteredAnime.length ? filteredAnime : anime}
+            selected={selected}
+            saved={saved}
+            reminders={reminders}
+            onPlay={playSelection}
+            onSave={toggleSave}
+            onDetails={setDetailsId}
+            onReminderToggle={toggleReminder}
+          />
           <CollectionShelf collections={discoverCollections} onPlay={playSelection} onDetails={setDetailsId} />
           <div className="anime-grid" aria-live="polite">
             {filteredAnime.length ? (
@@ -2089,6 +2177,7 @@ function App() {
 }
 
 export default App;
+
 
 
 
