@@ -1122,6 +1122,82 @@ function WatchGoals({ items, progress, currentEpisodes, reminders, onPlay, onMar
   );
 }
 
+function LibraryInsights({ items, progress, currentEpisodes, reminders, onPlay, onDetails, onReminderToggle }) {
+  const insightItems = items.length ? items : anime.slice(0, 4);
+  const countBy = (field) => {
+    const counts = insightItems.reduce((acc, item) => {
+      acc[item[field]] = (acc[item[field]] || 0) + 1;
+      return acc;
+    }, {});
+    return Object.entries(counts).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))[0]?.[0] || "Mixed";
+  };
+  const watchedMinutes = insightItems.reduce((sum, item) => {
+    const watched = Math.min(100, Math.max(0, Number(progress[item.id] ?? item.progress) || 0));
+    return sum + Math.round(durationMinutes(item.duration) * (watched / 100));
+  }, 0);
+  const nextPick = [...insightItems]
+    .sort((a, b) => {
+      const aDone = Number(progress[a.id] ?? a.progress) >= 100;
+      const bDone = Number(progress[b.id] ?? b.progress) >= 100;
+      if (aDone !== bDone) return aDone ? 1 : -1;
+      return b.popularity - a.popularity;
+    })[0];
+  const nextEpisode = currentEpisodes[nextPick.id] || nextPick.currentEpisode;
+  const nextProgress = Math.min(100, Math.max(0, Number(progress[nextPick.id] ?? nextPick.progress) || 0));
+  const isReminderOn = reminders.has(nextPick.id);
+  const stats = [
+    [Sparkles, "Mood", countBy("mood")],
+    [Clapperboard, "Genre", countBy("genre")],
+    [Clock3, "Watched", `${watchedMinutes}m`],
+    [Bell, "Alerts", `${insightItems.filter((item) => reminders.has(item.id)).length}/${insightItems.length}`],
+  ];
+
+  return (
+    <section className="library-insights" aria-label="Library insights">
+      <div className="insights-heading">
+        <div>
+          <p className="eyebrow">Insights</p>
+          <h2>Library pulse</h2>
+        </div>
+        <span>{items.length ? `${items.length} saved shows tracked` : "Starter taste profile"}</span>
+      </div>
+      <div className="insights-grid">
+        {stats.map(([Icon, label, value]) => (
+          <div className="insight-stat" key={label}>
+            <Icon size={17} />
+            <span>{label}</span>
+            <strong>{value}</strong>
+          </div>
+        ))}
+      </div>
+      <article className="insight-focus">
+        <button className="insight-art" style={{ "--poster": nextPick.poster }} type="button" onClick={() => onDetails(nextPick.id)}>
+          {nextPick.genre}
+        </button>
+        <div>
+          <span>Recommended next</span>
+          <strong>{nextPick.title}</strong>
+          <small>{`${episodeLabel(nextEpisode)} / ${nextProgress}% watched / ${nextPick.mood}`}</small>
+        </div>
+        <div className="insight-actions">
+          <button type="button" onClick={() => onPlay(nextPick.id, nextEpisode, true)}>
+            <Play size={15} fill="currentColor" />
+            Resume
+          </button>
+          <button type="button" onClick={() => onDetails(nextPick.id)}>
+            <Info size={15} />
+            Details
+          </button>
+          <button className={isReminderOn ? "active" : ""} type="button" onClick={() => onReminderToggle(nextPick.id)}>
+            <Bell size={15} />
+            {isReminderOn ? "Alert on" : "Alert"}
+          </button>
+        </div>
+      </article>
+    </section>
+  );
+}
+
 function CollectionShelf({ collections, onPlay, onDetails }) {
   return (
     <div className="collection-shelf" aria-label="Curated collections">
@@ -1451,7 +1527,8 @@ function App() {
         item: anime.find((candidate) => candidate.title === title) || anime[0],
       })),
     [],
-  );  const savedItems = useMemo(() => anime.filter((item) => saved.has(item.id)), [saved]);
+  );
+  const savedItems = useMemo(() => anime.filter((item) => saved.has(item.id)), [saved]);
   const reminderItems = useMemo(() => anime.filter((item) => reminders.has(item.id)), [reminders]);
   const libraryAverageProgress = useMemo(() => {
     if (!savedItems.length) return 0;
@@ -1882,6 +1959,15 @@ function App() {
             onMarkComplete={markComplete}
             onReminderToggle={toggleReminder}
           />
+          <LibraryInsights
+            items={savedItems}
+            progress={progress}
+            currentEpisodes={currentEpisodes}
+            reminders={reminders}
+            onPlay={playSelection}
+            onDetails={setDetailsId}
+            onReminderToggle={toggleReminder}
+          />
           <SeasonTracker
             items={savedItems}
             progress={progress}
@@ -1925,6 +2011,7 @@ function App() {
 }
 
 export default App;
+
 
 
 
