@@ -1308,6 +1308,74 @@ function ReminderQueue({ items, reminders, onReminderToggle, onPlay }) {
   );
 }
 
+function PremiereRadar({ scheduleItems, reminders, progress, onReminderToggle, onPlay, onDetails }) {
+  const radarItems = scheduleItems.map(({ item }) => item);
+  const spotlight = radarItems
+    .filter((item) => Number(progress[item.id] ?? item.progress) < 100)
+    .sort((a, b) => (reminders.has(b.id) ? 12 : 0) + b.popularity - ((reminders.has(a.id) ? 12 : 0) + a.popularity))[0] || radarItems[0];
+  const spotlightDay = scheduleItems.find(({ item }) => item.id === spotlight.id)?.day || "Soon";
+  const alertCount = radarItems.filter((item) => reminders.has(item.id)).length;
+  const averageProgress = Math.round(radarItems.reduce((sum, item) => sum + Number(progress[item.id] ?? item.progress), 0) / radarItems.length);
+  const genreFocus = Object.entries(
+    radarItems.reduce((acc, item) => {
+      acc[item.genre] = (acc[item.genre] || 0) + 1;
+      return acc;
+    }, {}),
+  ).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))[0]?.[0] || "Mixed";
+  const isReminderOn = reminders.has(spotlight.id);
+  const stats = [
+    [CalendarDays, "Premieres", radarItems.length],
+    [Bell, "Alerts", `${alertCount}/${radarItems.length}`],
+    [TrendingUp, "Progress", `${averageProgress}%`],
+    [Clapperboard, "Focus", genreFocus],
+  ];
+
+  return (
+    <aside className="premiere-radar" aria-label="Premiere radar">
+      <div className="radar-heading">
+        <div>
+          <p className="eyebrow">Radar</p>
+          <h2>Premiere radar</h2>
+        </div>
+        <span>{`${spotlightDay} pick`}</span>
+      </div>
+      <div className="radar-grid">
+        {stats.map(([Icon, label, value]) => (
+          <div className="radar-stat" key={label}>
+            <Icon size={17} />
+            <span>{label}</span>
+            <strong>{value}</strong>
+          </div>
+        ))}
+      </div>
+      <article className="radar-focus">
+        <button className="radar-art" style={{ "--poster": spotlight.poster }} type="button" onClick={() => onDetails(spotlight.id)}>
+          E{spotlight.currentEpisode}
+        </button>
+        <div>
+          <span>{`${spotlight.nextRelease} / ${spotlight.mood}`}</span>
+          <strong>{spotlight.title}</strong>
+          <small>{spotlight.description}</small>
+        </div>
+      </article>
+      <div className="radar-actions">
+        <button type="button" onClick={() => onPlay(spotlight.id, spotlight.currentEpisode, true)}>
+          <Play size={15} fill="currentColor" />
+          Play
+        </button>
+        <button type="button" onClick={() => onDetails(spotlight.id)}>
+          <Info size={15} />
+          Details
+        </button>
+        <button className={isReminderOn ? "active" : ""} type="button" onClick={() => onReminderToggle(spotlight.id)}>
+          <Bell size={15} />
+          {isReminderOn ? "Alert on" : "Alert"}
+        </button>
+      </div>
+    </aside>
+  );
+}
+
 function WeeklyPlanner({ scheduleItems, reminders, onReminderToggle, onPlay, onDetails }) {
   return (
     <aside className="schedule-panel weekly-planner" aria-label="Release schedule">
@@ -1928,13 +1996,23 @@ function App() {
               ))}
             </div>
           </div>
-          <WeeklyPlanner
-            scheduleItems={scheduleItems}
-            reminders={reminders}
-            onReminderToggle={toggleReminder}
-            onPlay={playSelection}
-            onDetails={setDetailsId}
-          />
+          <div className="release-side">
+            <PremiereRadar
+              scheduleItems={scheduleItems}
+              reminders={reminders}
+              progress={progress}
+              onReminderToggle={toggleReminder}
+              onPlay={playSelection}
+              onDetails={setDetailsId}
+            />
+            <WeeklyPlanner
+              scheduleItems={scheduleItems}
+              reminders={reminders}
+              onReminderToggle={toggleReminder}
+              onPlay={playSelection}
+              onDetails={setDetailsId}
+            />
+          </div>
         </section>
 
         <section className="content-band" id="watchlist">
@@ -2011,6 +2089,7 @@ function App() {
 }
 
 export default App;
+
 
 
 
