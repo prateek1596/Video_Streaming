@@ -36,8 +36,8 @@ The production output is generated in `dist/`.
 - Continue-watching progress row with complete/reset controls
 - Persistent watchlist, session queue, watch goals, library insights, playback preferences, reminders, profile preferences, progress, notes, episode feedback, and watch-party messages via localStorage
 - Show details modal with metadata, tags, and episode buttons
-- Latest episode queue, release reminders, notification center, and profile menu
-- Weekly release schedule, library stats, watch goals, library insights, session queue controls, chapter jumps, transcript jumps, episode recap, playback setup, episode notes, feedback, and watch-party reactions
+- Latest episode queue, premiere radar, release reminders, notification center, and profile menu
+- Weekly release schedule, premiere radar, library stats, watch goals, library insights, session queue controls, chapter jumps, transcript jumps, episode recap, playback setup, episode notes, feedback, and watch-party reactions
 - Responsive desktop and mobile layout
 
 ## Next Backend Steps
@@ -46,6 +46,7 @@ The production output is generated in `dist/`.
 - Store catalog data in a database
 - Replace the sample MP4 with licensed video assets or a legal streaming provider
 - Add subtitles, quality selection, and episode pages
+
 
 
 
