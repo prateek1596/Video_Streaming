@@ -599,6 +599,53 @@ function EpisodeTranscript({ item, selectedEpisode, captionsOn, activeTranscript
     </aside>
   );
 }
+function EpisodeToolkit({ playbackSpeed, captionsOn, skipIntro, ambientMode, activeChapterId, activeTranscriptId, onSpeedChange, onCaptionsToggle, onSkipIntroToggle, onAmbientToggle, onOpeningJump }) {
+  const currentSpeedIndex = speedOptions.indexOf(playbackSpeed);
+  const nextSpeed = speedOptions[(currentSpeedIndex + 1) % speedOptions.length] || "1x";
+  const markerCount = Number(Boolean(activeChapterId)) + Number(Boolean(activeTranscriptId));
+  const tools = [
+    [Captions, "Captions", captionsOn ? "On" : "Off", captionsOn, onCaptionsToggle],
+    [SkipForward, "Skip intro", skipIntro ? "On" : "Off", skipIntro, onSkipIntroToggle],
+    [WandSparkles, "Ambient", ambientMode ? "On" : "Off", ambientMode, onAmbientToggle],
+    [Gauge, "Speed", playbackSpeed, false, () => onSpeedChange(nextSpeed)],
+  ];
+
+  return (
+    <aside className="episode-toolkit" aria-label="Episode toolkit">
+      <div className="toolkit-heading">
+        <div>
+          <p className="eyebrow">Toolkit</p>
+          <h2>Episode controls</h2>
+        </div>
+        <span>{`${markerCount}/2 markers`}</span>
+      </div>
+      <div className="toolkit-grid">
+        {tools.map(([Icon, label, value, isActive, onClick]) => (
+          <button className={isActive ? "active" : ""} key={label} type="button" onClick={onClick}>
+            <Icon size={17} />
+            <span>{label}</span>
+            <strong>{value}</strong>
+          </button>
+        ))}
+      </div>
+      <div className="toolkit-actions">
+        <button type="button" onClick={onOpeningJump}>
+          <ScrollText size={16} />
+          Opening jump
+        </button>
+        <label>
+          <span>Speed</span>
+          <select value={playbackSpeed} onChange={(event) => onSpeedChange(event.target.value)}>
+            {speedOptions.map((option) => (
+              <option key={option}>{option}</option>
+            ))}
+          </select>
+        </label>
+      </div>
+    </aside>
+  );
+}
+
 function PlaybackPreferences({ playbackSpeed, autoplayNext, ambientMode, skipIntro, onSpeedChange, onAutoplayToggle, onAmbientToggle, onSkipIntroToggle }) {
   return (
     <aside className="playback-preferences" aria-label="Playback preferences">
@@ -2054,6 +2101,19 @@ function App() {
               onAddToQueue={() => addToSessionQueue(selected.id)}
               onToggleReminder={() => toggleReminder(selected.id)}
             />
+            <EpisodeToolkit
+              playbackSpeed={playbackSpeed}
+              captionsOn={captionsOn}
+              skipIntro={skipIntro}
+              ambientMode={ambientMode}
+              activeChapterId={activeChapterId}
+              activeTranscriptId={activeTranscriptId}
+              onSpeedChange={setPlaybackSpeed}
+              onCaptionsToggle={() => setCaptionsOn((current) => !current)}
+              onSkipIntroToggle={() => setSkipIntro((current) => !current)}
+              onAmbientToggle={() => setAmbientMode((current) => !current)}
+              onOpeningJump={() => requestTimelineJump(85)}
+            />
             <PlaybackPreferences
               playbackSpeed={playbackSpeed}
               autoplayNext={autoplayNext}
@@ -2353,6 +2413,7 @@ function App() {
 }
 
 export default App;
+
 
 
 
