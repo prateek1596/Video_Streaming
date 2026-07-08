@@ -817,6 +817,76 @@ function WatchParty({ item, selectedEpisode, messages, onSendMessage }) {
     </aside>
   );
 }
+function QueueMixer({ items, selected, currentEpisodes, progress, onPlay, onAddCurrent, onRemove, onClear }) {
+  const nextItem = items.find((item) => item.id !== selected.id) || items[0] || selected;
+  const nextEpisode = currentEpisodes[nextItem.id] || nextItem.currentEpisode;
+  const totalMinutes = items.reduce((sum, item) => sum + durationMinutes(item.duration), 0);
+  const averageProgress = items.length
+    ? Math.round(items.reduce((sum, item) => sum + Number(progress[item.id] ?? item.progress), 0) / items.length)
+    : Number(progress[selected.id] ?? selected.progress) || 0;
+  const genreMix = Object.entries(
+    (items.length ? items : [selected]).reduce((acc, item) => {
+      acc[item.genre] = (acc[item.genre] || 0) + 1;
+      return acc;
+    }, {}),
+  ).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))[0]?.[0] || selected.genre;
+  const stats = [
+    [ListVideo, "Queued", items.length || "0"],
+    [Clock3, "Runtime", `${totalMinutes || durationMinutes(selected.duration)}m`],
+    [Gauge, "Progress", `${averageProgress}%`],
+    [Clapperboard, "Mix", genreMix],
+  ];
+
+  return (
+    <aside className="queue-mixer" aria-label="Queue mixer">
+      <div className="queue-mixer-heading">
+        <div>
+          <p className="eyebrow">Mixer</p>
+          <h2>Queue mixer</h2>
+        </div>
+        <span>{items.length ? "Session ready" : "Build a lineup"}</span>
+      </div>
+      <div className="queue-mixer-grid">
+        {stats.map(([Icon, label, value]) => (
+          <div className="queue-mixer-stat" key={label}>
+            <Icon size={17} />
+            <span>{label}</span>
+            <strong>{value}</strong>
+          </div>
+        ))}
+      </div>
+      <article className="queue-mixer-focus">
+        <button className="queue-mixer-art" style={{ "--poster": nextItem.poster }} type="button" onClick={() => onPlay(nextItem.id, nextEpisode, true)}>
+          E{nextEpisode}
+        </button>
+        <div>
+          <span>{items.length ? "Up next" : "Current pick"}</span>
+          <strong>{nextItem.title}</strong>
+          <small>{`${episodeLabel(nextEpisode)} / ${nextItem.duration} / ${nextItem.mood}`}</small>
+        </div>
+      </article>
+      <div className="queue-mixer-actions">
+        <button type="button" onClick={() => onPlay(nextItem.id, nextEpisode, true)}>
+          <Play size={15} fill="currentColor" />
+          Play next
+        </button>
+        <button type="button" onClick={() => onAddCurrent(selected.id)}>
+          <CirclePlus size={15} />
+          Add current
+        </button>
+        <button type="button" disabled={!items.length} onClick={() => onRemove(nextItem.id)}>
+          <X size={15} />
+          Remove next
+        </button>
+        <button type="button" disabled={!items.length} onClick={onClear}>
+          <Trash2 size={15} />
+          Clear
+        </button>
+      </div>
+    </aside>
+  );
+}
+
 function SessionQueue({ items, currentEpisodes, selected, onPlay, onAddCurrent, onRemove, onClear }) {
   return (
     <aside className="session-queue" aria-label="Session queue">
@@ -2027,6 +2097,16 @@ function App() {
               messages={partyMessages}
               onSendMessage={sendPartyMessage}
             />
+            <QueueMixer
+              items={sessionQueueItems}
+              selected={selected}
+              currentEpisodes={currentEpisodes}
+              progress={progress}
+              onPlay={playSelection}
+              onAddCurrent={addToSessionQueue}
+              onRemove={removeFromSessionQueue}
+              onClear={clearSessionQueue}
+            />
             <SessionQueue
               items={sessionQueueItems}
               currentEpisodes={currentEpisodes}
@@ -2273,6 +2353,7 @@ function App() {
 }
 
 export default App;
+
 
 
 
