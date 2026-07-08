@@ -2462,7 +2462,15 @@ function App() {
             onDetails={setDetailsId}
             onReminderToggle={toggleReminder}
           />
-          <SeasonTracker
+          <TasteProfile
+            items={savedItems}
+            progress={progress}
+            currentEpisodes={currentEpisodes}
+            reminders={reminders}
+            onPlay={playSelection}
+            onDetails={setDetailsId}
+            onReminderToggle={toggleReminder}
+          />          <SeasonTracker
             items={savedItems}
             progress={progress}
             currentEpisodes={currentEpisodes}
@@ -2505,6 +2513,7 @@ function App() {
 }
 
 export default App;
+
 
 
 
