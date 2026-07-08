@@ -1470,6 +1470,98 @@ function LibraryInsights({ items, progress, currentEpisodes, reminders, onPlay, 
   );
 }
 
+function TasteProfile({ items, progress, currentEpisodes, reminders, onPlay, onDetails, onReminderToggle }) {
+  const profileItems = items.length ? items : anime.slice(0, 5);
+  const countValues = (field) =>
+    Object.entries(
+      profileItems.reduce((acc, item) => {
+        acc[item[field]] = (acc[item[field]] || 0) + 1;
+        return acc;
+      }, {}),
+    ).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
+  const genreCounts = countValues("genre");
+  const moodCounts = countValues("mood");
+  const studioCounts = countValues("studio");
+  const topGenre = genreCounts[0]?.[0] || "Mixed";
+  const topMood = moodCounts[0]?.[0] || "Varied";
+  const topStudio = studioCounts[0]?.[0] || "Rotating";
+  const matchItems = profileItems.filter((item) => item.genre === topGenre || item.mood === topMood);
+  const nextMatch = [...(matchItems.length ? matchItems : profileItems)]
+    .sort((a, b) => {
+      const aProgress = Number(progress[a.id] ?? a.progress) || 0;
+      const bProgress = Number(progress[b.id] ?? b.progress) || 0;
+      if ((aProgress >= 100) !== (bProgress >= 100)) return aProgress >= 100 ? 1 : -1;
+      return b.popularity - a.popularity;
+    })[0];
+  const nextEpisode = currentEpisodes[nextMatch.id] || nextMatch.currentEpisode;
+  const isReminderOn = reminders.has(nextMatch.id);
+  const insightRows = [
+    [Sparkles, "Mood", topMood, moodCounts],
+    [Clapperboard, "Genre", topGenre, genreCounts],
+    [UsersRound, "Studio", topStudio, studioCounts],
+  ];
+
+  return (
+    <section className="taste-profile" aria-label="Taste profile">
+      <div className="taste-heading">
+        <div>
+          <p className="eyebrow">Taste</p>
+          <h2>Viewing profile</h2>
+        </div>
+        <span>{items.length ? "Saved library" : "Starter signal"}</span>
+      </div>
+      <div className="taste-grid">
+        {insightRows.map(([Icon, label, value, counts]) => {
+          const maxCount = counts[0]?.[1] || 1;
+          return (
+            <article className="taste-card" key={label}>
+              <div className="taste-card-head">
+                <Icon size={17} />
+                <span>{label}</span>
+                <strong>{value}</strong>
+              </div>
+              <div className="taste-bars">
+                {counts.slice(0, 3).map(([name, count]) => (
+                  <div className="taste-bar" key={name}>
+                    <span>{name}</span>
+                    <div aria-label={`${name} appears ${count} time${count === 1 ? "" : "s"}`}>
+                      <i style={{ width: `${Math.max(18, Math.round((count / maxCount) * 100))}%` }} />
+                    </div>
+                    <strong>{count}</strong>
+                  </div>
+                ))}
+              </div>
+            </article>
+          );
+        })}
+      </div>
+      <article className="taste-next">
+        <button className="taste-art" style={{ "--poster": nextMatch.poster }} type="button" onClick={() => onDetails(nextMatch.id)}>
+          {nextMatch.genre}
+        </button>
+        <div>
+          <span>Best fit next</span>
+          <strong>{nextMatch.title}</strong>
+          <small>{`${episodeLabel(nextEpisode)} / ${nextMatch.mood} / ${nextMatch.studio}`}</small>
+        </div>
+        <div className="taste-actions">
+          <button type="button" onClick={() => onPlay(nextMatch.id, nextEpisode, true)}>
+            <Play size={15} fill="currentColor" />
+            Play
+          </button>
+          <button type="button" onClick={() => onDetails(nextMatch.id)}>
+            <Info size={15} />
+            Details
+          </button>
+          <button className={isReminderOn ? "active" : ""} type="button" onClick={() => onReminderToggle(nextMatch.id)}>
+            <Bell size={15} />
+            {isReminderOn ? "Alert on" : "Alert"}
+          </button>
+        </div>
+      </article>
+    </section>
+  );
+}
 function CollectionShelf({ collections, onPlay, onDetails }) {
   return (
     <div className="collection-shelf" aria-label="Curated collections">
@@ -2413,6 +2505,7 @@ function App() {
 }
 
 export default App;
+
 
 
 
