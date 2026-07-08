@@ -3629,6 +3629,240 @@ svg {
   }
 }
 
+.taste-profile {
+  display: grid;
+  gap: 0.85rem;
+  margin-bottom: 1rem;
+  padding: 1rem;
+  border: 1px solid rgba(44, 230, 211, 0.18);
+  border-radius: 0.7rem;
+  background: linear-gradient(145deg, rgba(44, 230, 211, 0.08), rgba(255, 255, 255, 0.055));
+}
+
+.taste-heading {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.taste-heading h2 {
+  margin: 0.15rem 0 0;
+  font-size: clamp(1.2rem, 2vw, 1.55rem);
+}
+
+.taste-heading > span {
+  min-width: 0;
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 800;
+  overflow-wrap: anywhere;
+  text-align: right;
+}
+
+.taste-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.65rem;
+}
+
+.taste-card {
+  display: grid;
+  min-width: 0;
+  gap: 0.7rem;
+  padding: 0.8rem;
+  border: 1px solid var(--line);
+  border-radius: 0.58rem;
+  background: rgba(8, 10, 16, 0.34);
+}
+
+.taste-card-head {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 0.18rem 0.45rem;
+  align-items: center;
+  min-width: 0;
+}
+
+.taste-card-head svg {
+  grid-row: span 2;
+  color: var(--teal);
+}
+
+.taste-card-head span,
+.taste-next span,
+.taste-next small {
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+.taste-card-head span {
+  text-transform: uppercase;
+}
+
+.taste-card-head strong,
+.taste-next strong {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.taste-bars {
+  display: grid;
+  gap: 0.55rem;
+}
+
+.taste-bar {
+  display: grid;
+  grid-template-columns: minmax(4.8rem, 0.6fr) minmax(0, 1fr) auto;
+  gap: 0.5rem;
+  align-items: center;
+  min-width: 0;
+}
+
+.taste-bar span {
+  min-width: 0;
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 800;
+  overflow-wrap: anywhere;
+}
+
+.taste-bar div {
+  height: 0.5rem;
+  overflow: hidden;
+  border-radius: 99rem;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.taste-bar i {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--teal), var(--gold));
+}
+
+.taste-bar strong {
+  color: var(--text);
+  font-size: 0.82rem;
+}
+
+.taste-next {
+  display: grid;
+  grid-template-columns: 5rem minmax(0, 1fr) auto;
+  gap: 0.85rem;
+  align-items: center;
+  min-width: 0;
+}
+
+.taste-art {
+  display: grid;
+  width: 5rem;
+  height: 3.8rem;
+  place-items: center;
+  border: 0;
+  border-radius: 0.55rem;
+  background: var(--poster);
+  color: #fff;
+  font-size: 0.72rem;
+  font-weight: 900;
+  overflow-wrap: anywhere;
+  text-align: center;
+}
+
+.taste-next > div {
+  display: grid;
+  min-width: 0;
+  gap: 0.16rem;
+}
+
+.taste-actions {
+  display: flex;
+  gap: 0.45rem;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.taste-actions button {
+  display: inline-flex;
+  min-width: 0;
+  min-height: 2.35rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  padding: 0 0.7rem;
+  border: 1px solid var(--line);
+  border-radius: 0.5rem;
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--text);
+  font-weight: 800;
+  transition:
+    transform 160ms ease,
+    border-color 160ms ease,
+    background 160ms ease;
+}
+
+.taste-actions button:hover {
+  transform: translateY(-1px);
+  border-color: rgba(255, 255, 255, 0.28);
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.taste-actions button.active {
+  border-color: rgba(44, 230, 211, 0.45);
+  background: rgba(44, 230, 211, 0.14);
+  color: var(--teal);
+}
+
+@media (max-width: 960px) {
+  .taste-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 860px) {
+  .taste-next {
+    grid-template-columns: 4.5rem minmax(0, 1fr);
+  }
+
+  .taste-actions {
+    grid-column: 1 / -1;
+    justify-content: stretch;
+  }
+
+  .taste-actions button {
+    flex: 1 1 8rem;
+  }
+}
+
+@media (max-width: 520px) {
+  .taste-heading {
+    align-items: start;
+    flex-direction: column;
+    gap: 0.35rem;
+  }
+
+  .taste-heading > span {
+    text-align: left;
+  }
+
+  .taste-bar {
+    grid-template-columns: minmax(0, 0.8fr) minmax(0, 1fr) auto;
+  }
+
+  .taste-next {
+    grid-template-columns: 1fr;
+  }
+
+  .taste-art {
+    width: 100%;
+  }
+
+  .taste-actions {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+}
 .release-side {
   display: grid;
   gap: 1rem;
@@ -4536,3 +4770,4 @@ svg {
     grid-template-columns: 1fr;
   }
 }
+
