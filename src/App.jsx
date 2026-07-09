@@ -1740,6 +1740,80 @@ function PremiereRadar({ scheduleItems, reminders, progress, onReminderToggle, o
   );
 }
 
+function ReleaseBoard({ scheduleItems, reminders, progress, onReminderToggle, onPlay, onDetails }) {
+  const releaseItems = scheduleItems.map(({ day, item }) => ({ day, item }));
+  const alertCount = releaseItems.filter(({ item }) => reminders.has(item.id)).length;
+  const readyCount = releaseItems.filter(({ item }) => Number(progress[item.id] ?? item.progress) < 100).length;
+  const watchPick = [...releaseItems]
+    .sort((a, b) => {
+      const aProgress = Number(progress[a.item.id] ?? a.item.progress) || 0;
+      const bProgress = Number(progress[b.item.id] ?? b.item.progress) || 0;
+      if ((aProgress >= 100) !== (bProgress >= 100)) return aProgress >= 100 ? 1 : -1;
+      if (reminders.has(a.item.id) !== reminders.has(b.item.id)) return reminders.has(a.item.id) ? -1 : 1;
+      return b.item.popularity - a.item.popularity;
+    })[0];
+  const coverage = Math.round((alertCount / Math.max(1, releaseItems.length)) * 100);
+  const isReminderOn = reminders.has(watchPick.item.id);
+
+  return (
+    <aside className="release-board" aria-label="Release board">
+      <div className="release-board-heading">
+        <div>
+          <p className="eyebrow">Board</p>
+          <h2>Tonight picks</h2>
+        </div>
+        <span>{`${coverage}% alert coverage`}</span>
+      </div>
+      <div className="release-board-meter" aria-label={`${coverage}% of weekly releases have alerts`}>
+        <span style={{ width: `${coverage}%` }} />
+      </div>
+      <div className="release-board-grid">
+        <div>
+          <CalendarDays size={17} />
+          <span>Ready</span>
+          <strong>{readyCount}</strong>
+        </div>
+        <div>
+          <Bell size={17} />
+          <span>Alerts</span>
+          <strong>{`${alertCount}/${releaseItems.length}`}</strong>
+        </div>
+      </div>
+      <article className="release-board-pick">
+        <button className="release-board-art" style={{ "--poster": watchPick.item.poster }} type="button" onClick={() => onDetails(watchPick.item.id)}>
+          {watchPick.day}
+        </button>
+        <div>
+          <span>{`${watchPick.item.nextRelease} / ${watchPick.item.genre}`}</span>
+          <strong>{watchPick.item.title}</strong>
+          <small>{`${watchPick.item.mood} / Episode ${watchPick.item.currentEpisode}`}</small>
+        </div>
+      </article>
+      <div className="release-board-days" aria-label="Weekly release alert status">
+        {releaseItems.map(({ day, item }) => (
+          <button className={reminders.has(item.id) ? "active" : ""} key={day} type="button" onClick={() => onReminderToggle(item.id)}>
+            <span>{day}</span>
+            {reminders.has(item.id) ? <CheckCircle2 size={14} /> : <Bell size={14} />}
+          </button>
+        ))}
+      </div>
+      <div className="release-board-actions">
+        <button type="button" onClick={() => onPlay(watchPick.item.id, watchPick.item.currentEpisode, true)}>
+          <Play size={15} fill="currentColor" />
+          Play pick
+        </button>
+        <button type="button" onClick={() => onDetails(watchPick.item.id)}>
+          <Info size={15} />
+          Details
+        </button>
+        <button className={isReminderOn ? "active" : ""} type="button" onClick={() => onReminderToggle(watchPick.item.id)}>
+          <Bell size={15} />
+          {isReminderOn ? "Alert on" : "Alert"}
+        </button>
+      </div>
+    </aside>
+  );
+}
 function WeeklyPlanner({ scheduleItems, reminders, onReminderToggle, onPlay, onDetails }) {
   return (
     <aside className="schedule-panel weekly-planner" aria-label="Release schedule">
@@ -2421,7 +2495,14 @@ function App() {
               onPlay={playSelection}
               onDetails={setDetailsId}
             />
-            <WeeklyPlanner
+            <ReleaseBoard
+              scheduleItems={scheduleItems}
+              reminders={reminders}
+              progress={progress}
+              onReminderToggle={toggleReminder}
+              onPlay={playSelection}
+              onDetails={setDetailsId}
+            />            <WeeklyPlanner
               scheduleItems={scheduleItems}
               reminders={reminders}
               onReminderToggle={toggleReminder}
@@ -2513,6 +2594,8 @@ function App() {
 }
 
 export default App;
+
+
 
 
 
