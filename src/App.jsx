@@ -1032,6 +1032,75 @@ function AnimeCard({ item, isSaved, isReminderOn, onPlay, onSave, onDetails, onR
   );
 }
 
+function ResumeCoach({ items, progress, currentEpisodes, onPlay, onMarkComplete, onResetProgress }) {
+  const coachItems = items.length ? items : anime.filter((item) => Number(progress[item.id] ?? item.progress) > 0).slice(0, 3);
+  const focusItem = [...coachItems]
+    .sort((a, b) => {
+      const aProgress = Number(progress[a.id] ?? a.progress) || 0;
+      const bProgress = Number(progress[b.id] ?? b.progress) || 0;
+      const aDistance = Math.abs(75 - aProgress);
+      const bDistance = Math.abs(75 - bProgress);
+      if (aDistance !== bDistance) return aDistance - bDistance;
+      return b.popularity - a.popularity;
+    })[0] || anime[0];
+  const focusProgress = Math.min(100, Math.max(0, Number(progress[focusItem.id] ?? focusItem.progress) || 0));
+  const focusEpisode = currentEpisodes[focusItem.id] || focusItem.currentEpisode;
+  const nextMilestone = focusProgress >= 90 ? "Final stretch" : focusProgress >= 55 ? "Halfway push" : "Warm start";
+  const remainingPercent = Math.max(0, 100 - focusProgress);
+  const stats = [
+    [TrendingUp, "Momentum", `${focusProgress}%`],
+    [Clock3, "Left", `${remainingPercent}%`],
+    [ListChecks, "Queue", coachItems.length || "0"],
+  ];
+
+  return (
+    <section className="resume-coach" aria-label="Resume coach">
+      <div className="resume-coach-heading">
+        <div>
+          <p className="eyebrow">Coach</p>
+          <h2>Best resume path</h2>
+        </div>
+        <span>{nextMilestone}</span>
+      </div>
+      <article className="resume-coach-focus">
+        <button className="resume-coach-art" style={{ "--poster": focusItem.poster }} type="button" onClick={() => onPlay(focusItem.id, focusEpisode, true)}>
+          E{focusEpisode}
+        </button>
+        <div>
+          <span>{`${focusItem.genre} / ${focusItem.mood}`}</span>
+          <strong>{focusItem.title}</strong>
+          <small>{`${episodeLabel(focusEpisode)} / ${focusItem.duration} / ${focusItem.nextRelease}`}</small>
+        </div>
+      </article>
+      <div className="resume-coach-meter" aria-label={`${focusProgress}% watched`}>
+        <span style={{ width: `${focusProgress}%` }} />
+      </div>
+      <div className="resume-coach-stats">
+        {stats.map(([Icon, label, value]) => (
+          <div key={label}>
+            <Icon size={16} />
+            <span>{label}</span>
+            <strong>{value}</strong>
+          </div>
+        ))}
+      </div>
+      <div className="resume-coach-actions">
+        <button type="button" onClick={() => onPlay(focusItem.id, focusEpisode, true)}>
+          <Play size={15} fill="currentColor" />
+          Resume
+        </button>
+        <button type="button" onClick={() => onMarkComplete(focusItem.id, focusEpisode)}>
+          <CheckCircle2 size={15} />
+          Complete
+        </button>
+        <button type="button" onClick={() => onResetProgress(focusItem.id)}>
+          <RotateCcw size={15} />
+          Reset
+        </button>
+      </div>
+    </section>
+  );
+}
 function ContinueCard({ item, progress, onPlay, onMarkComplete, onResetProgress }) {
   return (
     <article className="continue-card">
@@ -2595,6 +2664,7 @@ function App() {
 }
 
 export default App;
+
 
 
 
