@@ -2502,7 +2502,8 @@ function App() {
               onReminderToggle={toggleReminder}
               onPlay={playSelection}
               onDetails={setDetailsId}
-            />            <WeeklyPlanner
+            />
+            <WeeklyPlanner
               scheduleItems={scheduleItems}
               reminders={reminders}
               onReminderToggle={toggleReminder}
@@ -2594,6 +2595,7 @@ function App() {
 }
 
 export default App;
+
 
 
 
