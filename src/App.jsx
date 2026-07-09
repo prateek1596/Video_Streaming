@@ -2422,6 +2422,14 @@ function App() {
             </div>
           </div>
           <ActivitySummary watchingCount={continueItems.length} completedCount={completedCount} nextUp={nextContinueTitle} />
+          <ResumeCoach
+            items={continueItems}
+            progress={progress}
+            currentEpisodes={currentEpisodes}
+            onPlay={playSelection}
+            onMarkComplete={markComplete}
+            onResetProgress={resetProgress}
+          />
           <div className="continue-grid">
             {continueItems.map((item) => (
               <ContinueCard
@@ -2664,6 +2672,7 @@ function App() {
 }
 
 export default App;
+
 
 
 
