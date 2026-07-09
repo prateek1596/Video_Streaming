@@ -1034,7 +1034,8 @@ function AnimeCard({ item, isSaved, isReminderOn, onPlay, onSave, onDetails, onR
 
 function ResumeCoach({ items, progress, currentEpisodes, onPlay, onMarkComplete, onResetProgress }) {
   const coachItems = items.length ? items : anime.filter((item) => Number(progress[item.id] ?? item.progress) > 0).slice(0, 3);
-  const focusItem = [...coachItems]
+  const activeCoachItems = coachItems.filter((item) => Number(progress[item.id] ?? item.progress) < 100);
+  const focusItem = [...(activeCoachItems.length ? activeCoachItems : coachItems)]
     .sort((a, b) => {
       const aProgress = Number(progress[a.id] ?? a.progress) || 0;
       const bProgress = Number(progress[b.id] ?? b.progress) || 0;
@@ -2672,6 +2673,7 @@ function App() {
 }
 
 export default App;
+
 
 
 
