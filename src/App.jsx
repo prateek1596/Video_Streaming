@@ -2593,7 +2593,8 @@ function App() {
             onReset={resetBrowseFilters}
             onPlay={playSelection}
             onDetails={setDetailsId}
-          />          <StudioSpotlight
+          />
+          <StudioSpotlight
             items={filteredAnime.length ? filteredAnime : anime}
             selected={selected}
             saved={saved}
@@ -2759,6 +2760,7 @@ function App() {
 }
 
 export default App;
+
 
 
 
