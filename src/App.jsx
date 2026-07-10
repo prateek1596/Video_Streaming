@@ -1294,6 +1294,78 @@ function BrowsePulse({ items, totalCount, selected, saved, reminders, onPlay, on
   );
 }
 
+function DiscoveryLens({ items, totalCount, query, filter, languageFilter, sortMode, onQueryChange, onFilterChange, onLanguageChange, onSortChange, onReset, onPlay, onDetails }) {
+  const hasMatches = items.length > 0;
+  const lensPick = hasMatches ? items[0] : anime[0];
+  const activeFilters = [query.trim(), filter !== "All" ? filter : "", languageFilter !== "All audio" ? languageFilter : "", sortMode !== "Trending" ? sortMode : ""].filter(Boolean);
+  const coverage = Math.round((items.length / Math.max(1, totalCount)) * 100);
+  const quickTags = lensPick.tags.slice(0, 3);
+  const stats = [
+    [Search, "Lens", activeFilters.length || "0"],
+    [TvMinimalPlay, "Catalog", `${items.length}/${totalCount}`],
+    [TrendingUp, "Coverage", `${coverage}%`],
+  ];
+
+  return (
+    <section className="discovery-lens" aria-label="Discovery lens">
+      <div className="discovery-lens-heading">
+        <div>
+          <p className="eyebrow">Lens</p>
+          <h2>{hasMatches ? "Search direction" : "Broaden search"}</h2>
+        </div>
+        <span>{activeFilters.length ? activeFilters.join(" / ") : "Open catalog"}</span>
+      </div>
+      <div className="discovery-lens-grid">
+        {stats.map(([Icon, label, value]) => (
+          <div key={label}>
+            <Icon size={16} />
+            <span>{label}</span>
+            <strong>{value}</strong>
+          </div>
+        ))}
+      </div>
+      <article className="discovery-lens-pick">
+        <button className="discovery-lens-art" style={{ "--poster": lensPick.poster }} type="button" onClick={() => onDetails(lensPick.id)}>
+          {lensPick.genre}
+        </button>
+        <div>
+          <span>{`${lensPick.language} / ${lensPick.studio}`}</span>
+          <strong>{lensPick.title}</strong>
+          <small>{`${lensPick.mood} / ${lensPick.popularity}% match / ${lensPick.year}`}</small>
+        </div>
+      </article>
+      <div className="discovery-lens-tags" aria-label="Suggested search tags">
+        {quickTags.map((tag) => (
+          <button key={tag} type="button" onClick={() => onQueryChange(tag)}>
+            {tag}
+          </button>
+        ))}
+      </div>
+      <div className="discovery-lens-actions">
+        <button type="button" onClick={() => onPlay(lensPick.id, lensPick.currentEpisode, true)}>
+          <Play size={15} fill="currentColor" />
+          Play pick
+        </button>
+        <button type="button" onClick={() => onFilterChange(lensPick.genre)}>
+          <Clapperboard size={15} />
+          {lensPick.genre === "Slice of Life" ? "Slice" : lensPick.genre}
+        </button>
+        <button type="button" onClick={() => onLanguageChange(lensPick.language)}>
+          <Captions size={15} />
+          Audio
+        </button>
+        <button type="button" onClick={() => onSortChange(sortMode === "Trending" ? "Newest" : "Trending")}>
+          <TrendingUp size={15} />
+          {sortMode === "Trending" ? "Newest" : "Trending"}
+        </button>
+        <button type="button" onClick={onReset}>
+          <RotateCcw size={15} />
+          Reset
+        </button>
+      </div>
+    </section>
+  );
+}
 function StudioSpotlight({ items, selected, saved, reminders, onPlay, onSave, onDetails, onReminderToggle }) {
   const studioStats = Object.values(
     items.reduce((acc, item) => {
@@ -2507,7 +2579,21 @@ function App() {
             onReminderToggle={toggleReminder}
             onResetFilters={resetBrowseFilters}
           />
-          <StudioSpotlight
+          <DiscoveryLens
+            items={filteredAnime}
+            totalCount={anime.length}
+            query={query}
+            filter={filter}
+            languageFilter={languageFilter}
+            sortMode={sortMode}
+            onQueryChange={setQuery}
+            onFilterChange={setFilter}
+            onLanguageChange={setLanguageFilter}
+            onSortChange={setSortMode}
+            onReset={resetBrowseFilters}
+            onPlay={playSelection}
+            onDetails={setDetailsId}
+          />          <StudioSpotlight
             items={filteredAnime.length ? filteredAnime : anime}
             selected={selected}
             saved={saved}
@@ -2673,6 +2759,8 @@ function App() {
 }
 
 export default App;
+
+
 
 
 
