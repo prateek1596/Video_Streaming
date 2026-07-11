@@ -2175,6 +2175,7 @@ function App() {
   const [episodeFeedback, setEpisodeFeedback] = useState(() => stored?.episodeFeedback || {});
   const [partyMessages, setPartyMessages] = useState(() => stored?.partyMessages || defaultPartyMessages);
   const [sessionQueue, setSessionQueue] = useState(() => stored?.sessionQueue || defaultSessionQueue);
+  const [downloaded, setDownloaded] = useState(() => new Set(stored?.downloaded || ["signal-bloom"]));
   const [activeChapterId, setActiveChapterId] = useState(stored?.activeChapterId || null);
   const [activeTranscriptId, setActiveTranscriptId] = useState(stored?.activeTranscriptId || null);
   const [chapterJump, setChapterJump] = useState(null);
@@ -2285,11 +2286,12 @@ function App() {
       episodeFeedback,
       partyMessages,
       sessionQueue,
+      downloaded: Array.from(downloaded),
       activeChapterId,
       activeTranscriptId,
     };
     localStorage.setItem(storageKey, JSON.stringify(payload));
-  }, [selectedId, selectedEpisode, currentEpisodes, saved, reminders, progress, quality, playbackSpeed, autoplayNext, ambientMode, skipIntro, captionsOn, notes, episodeFeedback, partyMessages, sessionQueue, activeChapterId, activeTranscriptId]);
+  }, [selectedId, selectedEpisode, currentEpisodes, saved, reminders, progress, quality, playbackSpeed, autoplayNext, ambientMode, skipIntro, captionsOn, notes, episodeFeedback, partyMessages, sessionQueue, downloaded, activeChapterId, activeTranscriptId]);
 
   useEffect(() => {
     const sections = ["watch", "continue", "discover", "latest", "watchlist"]
@@ -2378,6 +2380,7 @@ function App() {
     setEpisodeFeedback({});
     setPartyMessages(defaultPartyMessages);
     setSessionQueue(defaultSessionQueue);
+    setDownloaded(new Set(["signal-bloom"]));
     setActiveChapterId(null);
     setActiveTranscriptId(null);
     setChapterJump(null);
@@ -2417,6 +2420,19 @@ function App() {
 
   function clearSessionQueue() {
     setSessionQueue([]);
+  }
+
+  function toggleDownload(id) {
+    setDownloaded((current) => {
+      const next = new Set(current);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }
+
+  function clearDownloads() {
+    setDownloaded(new Set());
   }
 
   function requestTimelineJump(seconds) {
@@ -2825,6 +2841,16 @@ function App() {
               )}
             </div>
             <ReminderQueue items={savedItems.length ? savedItems : anime.slice(0, 3)} reminders={reminders} onReminderToggle={toggleReminder} onPlay={playSelection} />
+            <OfflineDownloads
+              items={savedItems}
+              downloaded={downloaded}
+              progress={progress}
+              currentEpisodes={currentEpisodes}
+              onToggleDownload={toggleDownload}
+              onClearDownloads={clearDownloads}
+              onPlay={playSelection}
+              onDetails={setDetailsId}
+            />
           </div>
         </section>
       </main>
