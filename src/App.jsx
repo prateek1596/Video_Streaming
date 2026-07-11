@@ -10,6 +10,7 @@ import CirclePlus from "lucide-react/dist/esm/icons/circle-plus.js";
 import ChevronLeft from "lucide-react/dist/esm/icons/chevron-left.js";
 import ChevronRight from "lucide-react/dist/esm/icons/chevron-right.js";
 import Clock3 from "lucide-react/dist/esm/icons/clock-3.js";
+import Download from "lucide-react/dist/esm/icons/download.js";
 import Gauge from "lucide-react/dist/esm/icons/gauge.js";
 import ListChecks from "lucide-react/dist/esm/icons/list-checks.js";
 import ScrollText from "lucide-react/dist/esm/icons/scroll-text.js";
@@ -1465,6 +1466,86 @@ function LibraryStats({ savedCount, reminderCount, averageProgress, nextRelease 
   );
 }
 
+function OfflineDownloads({ items, downloaded, progress, currentEpisodes, onToggleDownload, onClearDownloads, onPlay, onDetails }) {
+  const downloadItems = items.length ? items : anime.slice(0, 3);
+  const downloadedItems = downloadItems.filter((item) => downloaded.has(item.id));
+  const storageUsed = downloadedItems.reduce((sum, item) => sum + Math.round(durationMinutes(item.duration) * item.episodes * 0.09), 0);
+  const storageLimit = 24;
+  const storagePercent = Math.min(100, Math.round((storageUsed / storageLimit) * 100));
+  const nextOffline = downloadedItems[0] || downloadItems[0];
+  const nextEpisode = currentEpisodes[nextOffline.id] || nextOffline.currentEpisode;
+  const nextProgress = Math.min(100, Math.max(0, Number(progress[nextOffline.id] ?? nextOffline.progress) || 0));
+
+  return (
+    <aside className="offline-downloads" aria-label="Smart downloads">
+      <div className="offline-heading">
+        <div>
+          <p className="eyebrow">Offline</p>
+          <h2>Smart downloads</h2>
+        </div>
+        <span>{`${downloadedItems.length}/${downloadItems.length} ready`}</span>
+      </div>
+      <div className="offline-meter" aria-label={`${storagePercent}% offline storage used`}>
+        <span style={{ width: `${storagePercent}%` }} />
+      </div>
+      <div className="offline-stats">
+        <div>
+          <Download size={17} />
+          <span>Storage</span>
+          <strong>{`${storageUsed.toFixed(1)} GB`}</strong>
+        </div>
+        <div>
+          <ShieldCheck size={17} />
+          <span>Mode</span>
+          <strong>{downloadedItems.length ? "Travel ready" : "Online only"}</strong>
+        </div>
+      </div>
+      <article className="offline-focus">
+        <button className="offline-art" style={{ "--poster": nextOffline.poster }} type="button" onClick={() => onDetails(nextOffline.id)}>
+          E{nextEpisode}
+        </button>
+        <div>
+          <span>{downloaded.has(nextOffline.id) ? "Available offline" : "Suggested download"}</span>
+          <strong>{nextOffline.title}</strong>
+          <small>{`${nextProgress}% watched / ${nextOffline.duration} episodes`}</small>
+        </div>
+      </article>
+      <div className="offline-list">
+        {downloadItems.map((item) => {
+          const isDownloaded = downloaded.has(item.id);
+          return (
+            <article className="offline-row" key={item.id}>
+              <button className="offline-row-art" style={{ "--poster": item.poster }} type="button" onClick={() => onDetails(item.id)}>
+                {item.genre}
+              </button>
+              <div>
+                <strong>{item.title}</strong>
+                <span>{`${item.episodes} eps / ${item.language}`}</span>
+              </div>
+              <IconButton
+                label={`${isDownloaded ? "Remove offline copy of" : "Download"} ${item.title}`}
+                className={`offline-toggle ${isDownloaded ? "active" : ""}`}
+                onClick={() => onToggleDownload(item.id)}
+              >
+                {isDownloaded ? <CheckCircle2 size={17} /> : <Download size={17} />}
+              </IconButton>
+            </article>
+          );
+        })}
+      </div>
+      <div className="offline-actions">
+        <button type="button" onClick={() => onPlay(nextOffline.id, nextEpisode, true)}>
+          <Play size={15} fill="currentColor" />
+          Play
+        </button>
+        <button type="button" onClick={onClearDownloads} disabled={!downloadedItems.length}>
+          <Trash2 size={15} />
+          Clear
+        </button>
+      </div>
+    </aside>
+  );
+}
 
 function WatchGoals({ items, progress, currentEpisodes, reminders, onPlay, onMarkComplete, onReminderToggle }) {
   const goalItems = items.length ? items : anime.slice(0, 3);
