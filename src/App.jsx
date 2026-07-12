@@ -798,9 +798,22 @@ function EpisodeFeedback({ item, selectedEpisode, feedback, onFeedbackChange }) 
 }
 function WatchParty({ item, selectedEpisode, messages, onSendMessage }) {
   const [draft, setDraft] = useState("");
+  const [pollVotes, setPollVotes] = useState({});
   const activeMessages = messages.filter((message) => message.animeId === item.id && message.episode === selectedEpisode).slice(-5);
   const viewerCount = item.popularity + selectedEpisode * 3;
   const reactions = ["Hype", "Theory", "Wow"];
+  const pollKey = `${item.id}:${selectedEpisode}`;
+  const pollOptions = [
+    { id: "twist", label: "Plot twist" },
+    { id: "fight", label: "Fight scene" },
+    { id: "quiet", label: "Quiet beat" },
+  ];
+  const activeVote = pollVotes[pollKey];
+  const seededVotes = pollOptions.map((option, index) => ({
+    ...option,
+    votes: Math.max(3, Math.round((item.popularity + selectedEpisode * (index + 2)) / (index + 3))),
+  }));
+  const pollTotal = seededVotes.reduce((sum, option) => sum + option.votes + (activeVote === option.id ? 1 : 0), 0);
 
   function handleSubmit(event) {
     event.preventDefault();
@@ -812,6 +825,10 @@ function WatchParty({ item, selectedEpisode, messages, onSendMessage }) {
 
   function sendReaction(tone) {
     onSendMessage({ animeId: item.id, episode: selectedEpisode, text: `${tone} moment`, tone });
+  }
+
+  function votePoll(optionId) {
+    setPollVotes((current) => ({ ...current, [pollKey]: optionId }));
   }
 
   return (
@@ -838,7 +855,25 @@ function WatchParty({ item, selectedEpisode, messages, onSendMessage }) {
           </button>
         ))}
       </div>
-      <div className="party-feed" aria-live="polite">
+      <div className="party-poll" aria-label="Live episode poll">
+        <div className="party-poll-heading">
+          <span>Live pulse</span>
+          <strong>{activeVote ? "Vote locked" : "Pick the standout"}</strong>
+        </div>
+        <div className="party-poll-options">
+          {seededVotes.map((option) => {
+            const votes = option.votes + (activeVote === option.id ? 1 : 0);
+            const percent = Math.round((votes / pollTotal) * 100);
+            return (
+              <button className={activeVote === option.id ? "active" : ""} key={option.id} type="button" onClick={() => votePoll(option.id)}>
+                <span>{option.label}</span>
+                <strong>{percent}%</strong>
+                <i style={{ width: `${percent}%` }} />
+              </button>
+            );
+          })}
+        </div>
+      </div>      <div className="party-feed" aria-live="polite">
         {activeMessages.length ? (
           activeMessages.map((message) => (
             <article className="party-message" key={message.id}>
