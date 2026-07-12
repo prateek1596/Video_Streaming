@@ -647,6 +647,62 @@ function EpisodeToolkit({ playbackSpeed, captionsOn, skipIntro, ambientMode, act
   );
 }
 
+function StreamHealth({ item, selectedEpisode, quality, playbackSpeed, captionsOn, dataSaver, isDownloaded, progress, onDataSaverToggle, onQualityChange }) {
+  const qualityRates = { Auto: 1.8, "1080p": 3.2, "720p": 1.7, "480p": 0.8 };
+  const baseRate = qualityRates[quality] || qualityRates.Auto;
+  const adjustedRate = dataSaver ? baseRate * 0.62 : baseRate;
+  const hourlyData = adjustedRate * 450;
+  const completion = Math.min(100, Math.max(0, Number(progress) || 0));
+  const bufferScore = Math.min(99, Math.round(62 + item.popularity / 4 + (isDownloaded ? 18 : 0) - (quality === "1080p" && !dataSaver ? 8 : 0)));
+  const healthLabel = isDownloaded ? "Offline ready" : bufferScore > 82 ? "Stable" : "Adaptive";
+  const stats = [
+    [Gauge, "Buffer", `${bufferScore}%`],
+    [Download, "Data/hr", `${Math.round(hourlyData)} MB`],
+    [Captions, "Captions", captionsOn ? "On" : "Off"],
+    [Clock3, "Progress", `${completion}%`],
+  ];
+
+  return (
+    <aside className="stream-health" aria-label="Stream health">
+      <div className="stream-health-heading">
+        <div>
+          <p className="eyebrow">Stream</p>
+          <h2>{healthLabel}</h2>
+        </div>
+        <span>{`${quality} / ${playbackSpeed}`}</span>
+      </div>
+      <div className="stream-health-grid">
+        {stats.map(([Icon, label, value]) => (
+          <div className="stream-health-stat" key={label}>
+            <Icon size={17} />
+            <span>{label}</span>
+            <strong>{value}</strong>
+          </div>
+        ))}
+      </div>
+      <div className="stream-health-meter" aria-label={`${bufferScore}% buffer confidence`}>
+        <span style={{ width: `${bufferScore}%` }} />
+      </div>
+      <div className="stream-quality-row" aria-label="Quick quality selection">
+        {["Auto", "1080p", "720p", "480p"].map((option) => (
+          <button className={quality === option ? "active" : ""} key={option} type="button" onClick={() => onQualityChange(option)}>
+            {option}
+          </button>
+        ))}
+      </div>
+      <button className={`stream-saver ${dataSaver ? "active" : ""}`} type="button" onClick={onDataSaverToggle}>
+        <ShieldCheck size={16} />
+        <span>{dataSaver ? "Data saver on" : "Data saver off"}</span>
+        <strong>{isDownloaded ? "Using offline copy" : `${Math.round(hourlyData)} MB/hr`}</strong>
+      </button>
+      <p className="stream-health-copy">
+        {isDownloaded
+          ? `${item.title} ${episodeLabel(selectedEpisode)} is available without streaming.`
+          : `Adaptive playback will prioritize ${dataSaver ? "lower data use" : "visual quality"} for this session.`}
+      </p>
+    </aside>
+  );
+}
 function PlaybackPreferences({ playbackSpeed, autoplayNext, ambientMode, skipIntro, onSpeedChange, onAutoplayToggle, onAmbientToggle, onSkipIntroToggle }) {
   return (
     <aside className="playback-preferences" aria-label="Playback preferences">
@@ -2207,6 +2263,7 @@ function App() {
   const [ambientMode, setAmbientMode] = useState(Boolean(stored?.ambientMode));
   const [skipIntro, setSkipIntro] = useState(Boolean(stored?.skipIntro));
   const [captionsOn, setCaptionsOn] = useState(Boolean(stored?.captionsOn));
+  const [dataSaver, setDataSaver] = useState(Boolean(stored?.dataSaver));
   const [notes, setNotes] = useState(() => stored?.notes || {});
   const [episodeFeedback, setEpisodeFeedback] = useState(() => stored?.episodeFeedback || {});
   const [partyMessages, setPartyMessages] = useState(() => stored?.partyMessages || defaultPartyMessages);
@@ -2318,6 +2375,7 @@ function App() {
       ambientMode,
       skipIntro,
       captionsOn,
+      dataSaver,
       notes,
       episodeFeedback,
       partyMessages,
@@ -2327,7 +2385,7 @@ function App() {
       activeTranscriptId,
     };
     localStorage.setItem(storageKey, JSON.stringify(payload));
-  }, [selectedId, selectedEpisode, currentEpisodes, saved, reminders, progress, quality, playbackSpeed, autoplayNext, ambientMode, skipIntro, captionsOn, notes, episodeFeedback, partyMessages, sessionQueue, downloaded, activeChapterId, activeTranscriptId]);
+  }, [selectedId, selectedEpisode, currentEpisodes, saved, reminders, progress, quality, playbackSpeed, autoplayNext, ambientMode, skipIntro, captionsOn, dataSaver, notes, episodeFeedback, partyMessages, sessionQueue, downloaded, activeChapterId, activeTranscriptId]);
 
   useEffect(() => {
     const sections = ["watch", "continue", "discover", "latest", "watchlist"]
@@ -2412,6 +2470,7 @@ function App() {
     setAmbientMode(false);
     setSkipIntro(false);
     setCaptionsOn(false);
+    setDataSaver(false);
     setNotes({});
     setEpisodeFeedback({});
     setPartyMessages(defaultPartyMessages);
@@ -2565,7 +2624,18 @@ function App() {
               onAmbientToggle={() => setAmbientMode((current) => !current)}
               onSkipIntroToggle={() => setSkipIntro((current) => !current)}
             />
-            <EpisodeChapters
+            <StreamHealth
+              item={selected}
+              selectedEpisode={selectedEpisode}
+              quality={quality}
+              playbackSpeed={playbackSpeed}
+              captionsOn={captionsOn}
+              dataSaver={dataSaver}
+              isDownloaded={downloaded.has(selected.id)}
+              progress={progress[selected.id]}
+              onDataSaverToggle={() => setDataSaver((current) => !current)}
+              onQualityChange={setQuality}
+            />            <EpisodeChapters
               item={selected}
               selectedEpisode={selectedEpisode}
               activeChapterId={activeChapterId}
