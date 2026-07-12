@@ -873,7 +873,8 @@ function WatchParty({ item, selectedEpisode, messages, onSendMessage }) {
             );
           })}
         </div>
-      </div>      <div className="party-feed" aria-live="polite">
+      </div>
+      <div className="party-feed" aria-live="polite">
         {activeMessages.length ? (
           activeMessages.map((message) => (
             <article className="party-message" key={message.id}>
