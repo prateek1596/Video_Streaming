@@ -2265,7 +2265,8 @@ function DetailsDialog({ item, isSaved, isReminderOn, progress, currentEpisode, 
                 </div>
               ))}
             </div>
-          </div>          <div className="dialog-actions">
+          </div>
+          <div className="dialog-actions">
             <button className="primary-button" type="button" onClick={() => onPlay(item.id, item.currentEpisode, true)}>
               <Play size={18} fill="currentColor" />
               Play episode {item.currentEpisode}
