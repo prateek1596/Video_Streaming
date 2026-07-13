@@ -2506,6 +2506,10 @@ function App() {
   }
 
 
+  function updateSubtitleLanguage(value) {
+    setSubtitleLanguage(value);
+    setCaptionsOn(value !== "Off");
+  }
   function updateNote(value) {
     setNotes((current) => ({ ...current, [activeNoteKey]: value }));
   }
@@ -2577,7 +2581,7 @@ function App() {
     <div className={`app-shell ${ambientMode ? "ambient-mode" : ""}`}>
       <Sidebar activeSection={activeSection} />
       <main className="main-area">
-        <Topbar query={query} onQueryChange={setQuery} reminderItems={reminderItems} quality={quality} captionsOn={captionsOn} subtitleLanguage={subtitleLanguage} onPlay={playSelection} onReminderToggle={toggleReminder} onQualityChange={setQuality} onSubtitleLanguageChange={setSubtitleLanguage} onCaptionsToggle={() => setCaptionsOn((current) => !current)} onResetLibrary={resetLibraryState} />
+        <Topbar query={query} onQueryChange={setQuery} reminderItems={reminderItems} quality={quality} captionsOn={captionsOn} subtitleLanguage={subtitleLanguage} onPlay={playSelection} onReminderToggle={toggleReminder} onQualityChange={setQuality} onSubtitleLanguageChange={updateSubtitleLanguage} onCaptionsToggle={() => setCaptionsOn((current) => !current)} onResetLibrary={resetLibraryState} />
         <NowPlayingStrip item={selected} selectedEpisode={selectedEpisode} quality={quality} captionsOn={captionsOn} subtitleLanguage={subtitleLanguage} progress={progress[selected.id]} />
 
         <section className="watch-stage" id="watch">
@@ -2605,7 +2609,7 @@ function App() {
               onProgress={updateProgress}
               onQualityChange={setQuality}
               onCaptionsToggle={() => setCaptionsOn((current) => !current)}
-              onSubtitleLanguageChange={setSubtitleLanguage}
+              onSubtitleLanguageChange={updateSubtitleLanguage}
               onSpeedChange={setPlaybackSpeed}
               onSkipIntroToggle={() => setSkipIntro((current) => !current)}
               onStepEpisode={stepEpisode}
