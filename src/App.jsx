@@ -42,6 +42,7 @@ const storageKey = "anipulse-react-state";
 const sortOptions = ["Trending", "Newest", "Episodes", "A-Z"];
 const languageOptions = ["All audio", "Sub", "Sub / Dub"];
 const speedOptions = ["0.75x", "1x", "1.25x", "1.5x", "2x"];
+const subtitleOptions = ["English", "Hindi", "Japanese", "Spanish", "Off"];
 const chapterTemplates = [
   { id: "cold-open", title: "Cold open", time: 0, detail: "Story hook and visual setup" },
   { id: "opening", title: "Opening", time: 85, detail: "Theme sequence and credits" },
@@ -138,7 +139,7 @@ function Sidebar({ activeSection }) {
   );
 }
 
-function Topbar({ query, onQueryChange, reminderItems, quality, captionsOn, onPlay, onReminderToggle, onQualityChange, onCaptionsToggle, onResetLibrary }) {
+function Topbar({ query, onQueryChange, reminderItems, quality, captionsOn, subtitleLanguage, onPlay, onReminderToggle, onQualityChange, onSubtitleLanguageChange, onCaptionsToggle, onResetLibrary }) {
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
 
@@ -221,6 +222,14 @@ function Topbar({ query, onQueryChange, reminderItems, quality, captionsOn, onPl
                   <option>480p</option>
                 </select>
               </label>
+              <label className="profile-field">
+                <span>Subtitle language</span>
+                <select value={subtitleLanguage} onChange={(event) => onSubtitleLanguageChange(event.target.value)}>
+                  {subtitleOptions.map((option) => (
+                    <option key={option}>{option}</option>
+                  ))}
+                </select>
+              </label>
               <button className={`profile-toggle ${captionsOn ? "active" : ""}`} type="button" onClick={onCaptionsToggle}>
                 <Captions size={17} />
                 {captionsOn ? "Captions enabled" : "Captions disabled"}
@@ -238,7 +247,7 @@ function Topbar({ query, onQueryChange, reminderItems, quality, captionsOn, onPl
 }
 
 
-function NowPlayingStrip({ item, selectedEpisode, quality, captionsOn, progress }) {
+function NowPlayingStrip({ item, selectedEpisode, quality, captionsOn, subtitleLanguage, progress }) {
   const completion = Math.min(100, Math.max(0, Number(progress) || 0));
 
   return (
@@ -250,7 +259,7 @@ function NowPlayingStrip({ item, selectedEpisode, quality, captionsOn, progress 
       </div>
       <div className="strip-meta">
         <span>{quality}</span>
-        <span>{captionsOn ? "Captions on" : "Captions off"}</span>
+        <span>{captionsOn ? `${subtitleLanguage} captions` : "Captions off"}</span>
         <span>{`${completion}% watched`}</span>
       </div>
       <a href="#watch">Jump to player</a>
@@ -294,6 +303,7 @@ function Player({
   shouldAutoPlay,
   quality,
   captionsOn,
+  subtitleLanguage,
   playbackSpeed,
   autoplayNext,
   skipIntro,
@@ -302,6 +312,7 @@ function Player({
   onProgress,
   onQualityChange,
   onCaptionsToggle,
+  onSubtitleLanguageChange,
   onSpeedChange,
   onSkipIntroToggle,
   onStepEpisode,
@@ -400,8 +411,16 @@ function Player({
         </label>
         <button className={`caption-toggle ${captionsOn ? "active" : ""}`} type="button" onClick={onCaptionsToggle}>
           <Captions size={18} />
-          <span>{captionsOn ? "Captions on" : "Captions off"}</span>
+          <span>{captionsOn ? `${subtitleLanguage} captions` : "Captions off"}</span>
         </button>
+        <label className="select-control subtitle-select">
+          <span>Subs</span>
+          <select value={subtitleLanguage} onChange={(event) => onSubtitleLanguageChange(event.target.value)}>
+            {subtitleOptions.map((option) => (
+              <option key={option}>{option}</option>
+            ))}
+          </select>
+        </label>
         <button className={`caption-toggle ${skipIntro ? "active" : ""}`} type="button" onClick={onSkipIntroToggle}>
           <SkipForward size={18} />
           <span>{skipIntro ? "Skip intro on" : "Skip intro off"}</span>
@@ -2263,6 +2282,7 @@ function App() {
   const [ambientMode, setAmbientMode] = useState(Boolean(stored?.ambientMode));
   const [skipIntro, setSkipIntro] = useState(Boolean(stored?.skipIntro));
   const [captionsOn, setCaptionsOn] = useState(Boolean(stored?.captionsOn));
+  const [subtitleLanguage, setSubtitleLanguage] = useState(stored?.subtitleLanguage || "English");
   const [dataSaver, setDataSaver] = useState(Boolean(stored?.dataSaver));
   const [notes, setNotes] = useState(() => stored?.notes || {});
   const [episodeFeedback, setEpisodeFeedback] = useState(() => stored?.episodeFeedback || {});
@@ -2375,6 +2395,7 @@ function App() {
       ambientMode,
       skipIntro,
       captionsOn,
+      subtitleLanguage,
       dataSaver,
       notes,
       episodeFeedback,
@@ -2385,7 +2406,7 @@ function App() {
       activeTranscriptId,
     };
     localStorage.setItem(storageKey, JSON.stringify(payload));
-  }, [selectedId, selectedEpisode, currentEpisodes, saved, reminders, progress, quality, playbackSpeed, autoplayNext, ambientMode, skipIntro, captionsOn, dataSaver, notes, episodeFeedback, partyMessages, sessionQueue, downloaded, activeChapterId, activeTranscriptId]);
+  }, [selectedId, selectedEpisode, currentEpisodes, saved, reminders, progress, quality, playbackSpeed, autoplayNext, ambientMode, skipIntro, captionsOn, subtitleLanguage, dataSaver, notes, episodeFeedback, partyMessages, sessionQueue, downloaded, activeChapterId, activeTranscriptId]);
 
   useEffect(() => {
     const sections = ["watch", "continue", "discover", "latest", "watchlist"]
@@ -2470,6 +2491,7 @@ function App() {
     setAmbientMode(false);
     setSkipIntro(false);
     setCaptionsOn(false);
+    setSubtitleLanguage("English");
     setDataSaver(false);
     setNotes({});
     setEpisodeFeedback({});
@@ -2555,8 +2577,8 @@ function App() {
     <div className={`app-shell ${ambientMode ? "ambient-mode" : ""}`}>
       <Sidebar activeSection={activeSection} />
       <main className="main-area">
-        <Topbar query={query} onQueryChange={setQuery} reminderItems={reminderItems} quality={quality} captionsOn={captionsOn} onPlay={playSelection} onReminderToggle={toggleReminder} onQualityChange={setQuality} onCaptionsToggle={() => setCaptionsOn((current) => !current)} onResetLibrary={resetLibraryState} />
-        <NowPlayingStrip item={selected} selectedEpisode={selectedEpisode} quality={quality} captionsOn={captionsOn} progress={progress[selected.id]} />
+        <Topbar query={query} onQueryChange={setQuery} reminderItems={reminderItems} quality={quality} captionsOn={captionsOn} subtitleLanguage={subtitleLanguage} onPlay={playSelection} onReminderToggle={toggleReminder} onQualityChange={setQuality} onSubtitleLanguageChange={setSubtitleLanguage} onCaptionsToggle={() => setCaptionsOn((current) => !current)} onResetLibrary={resetLibraryState} />
+        <NowPlayingStrip item={selected} selectedEpisode={selectedEpisode} quality={quality} captionsOn={captionsOn} subtitleLanguage={subtitleLanguage} progress={progress[selected.id]} />
 
         <section className="watch-stage" id="watch">
           <Hero
@@ -2574,6 +2596,7 @@ function App() {
               shouldAutoPlay={shouldAutoPlay}
               quality={quality}
               captionsOn={captionsOn}
+              subtitleLanguage={subtitleLanguage}
               playbackSpeed={playbackSpeed}
               autoplayNext={autoplayNext}
               skipIntro={skipIntro}
@@ -2582,6 +2605,7 @@ function App() {
               onProgress={updateProgress}
               onQualityChange={setQuality}
               onCaptionsToggle={() => setCaptionsOn((current) => !current)}
+              onSubtitleLanguageChange={setSubtitleLanguage}
               onSpeedChange={setPlaybackSpeed}
               onSkipIntroToggle={() => setSkipIntro((current) => !current)}
               onStepEpisode={stepEpisode}
@@ -2635,7 +2659,8 @@ function App() {
               progress={progress[selected.id]}
               onDataSaverToggle={() => setDataSaver((current) => !current)}
               onQualityChange={setQuality}
-            />            <EpisodeChapters
+            />
+            <EpisodeChapters
               item={selected}
               selectedEpisode={selectedEpisode}
               activeChapterId={activeChapterId}
