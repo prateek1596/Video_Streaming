@@ -2184,7 +2184,7 @@ function WeeklyPlanner({ scheduleItems, reminders, onReminderToggle, onPlay, onD
     </aside>
   );
 }
-function DetailsDialog({ item, isSaved, onClose, onPlay, onSave }) {
+function DetailsDialog({ item, isSaved, isReminderOn, progress, currentEpisode, onClose, onPlay, onSave, onReminderToggle }) {
   const dialogRef = useRef(null);
 
   useEffect(() => {
@@ -2203,6 +2203,16 @@ function DetailsDialog({ item, isSaved, onClose, onPlay, onSave }) {
   }, [onClose]);
 
   if (!item) return <dialog className="details-dialog" ref={dialogRef} />;
+
+  const completion = Math.min(100, Math.max(0, Number(progress ?? item.progress) || 0));
+  const nextEpisode = clampEpisode(currentEpisode || item.currentEpisode, item);
+  const remainingEpisodes = Math.max(0, item.episodes - nextEpisode + 1);
+  const seasonStats = [
+    [TrendingUp, "Watched", `${completion}%`],
+    [ListVideo, "Next", `E${nextEpisode}`],
+    [Clock3, "Left", `${remainingEpisodes} eps`],
+    [Bell, "Alert", isReminderOn ? "On" : "Off"],
+  ];
 
   return (
     <dialog className="details-dialog" ref={dialogRef} onClick={(event) => event.target === dialogRef.current && onClose()}>
@@ -2232,7 +2242,30 @@ function DetailsDialog({ item, isSaved, onClose, onPlay, onSave }) {
               </div>
             ))}
           </div>
-          <div className="dialog-actions">
+          <div className="dialog-season-guide" aria-label="Season guide">
+            <div className="dialog-guide-heading">
+              <div>
+                <span>Season guide</span>
+                <strong>{`${completion}% watched`}</strong>
+              </div>
+              <button className={isReminderOn ? "active" : ""} type="button" onClick={() => onReminderToggle(item.id)}>
+                <Bell size={15} />
+                {isReminderOn ? "Alert on" : "Alert"}
+              </button>
+            </div>
+            <div className="dialog-guide-meter" aria-label={`${completion}% watched`}>
+              <span style={{ width: `${completion}%` }} />
+            </div>
+            <div className="dialog-guide-grid">
+              {seasonStats.map(([Icon, label, value]) => (
+                <div key={label}>
+                  <Icon size={16} />
+                  <span>{label}</span>
+                  <strong>{value}</strong>
+                </div>
+              ))}
+            </div>
+          </div>          <div className="dialog-actions">
             <button className="primary-button" type="button" onClick={() => onPlay(item.id, item.currentEpisode, true)}>
               <Play size={18} fill="currentColor" />
               Play episode {item.currentEpisode}
@@ -2993,9 +3026,13 @@ function App() {
       <DetailsDialog
         item={detailsItem}
         isSaved={detailsItem ? saved.has(detailsItem.id) : false}
+        isReminderOn={detailsItem ? reminders.has(detailsItem.id) : false}
+        progress={detailsItem ? progress[detailsItem.id] : 0}
+        currentEpisode={detailsItem ? currentEpisodes[detailsItem.id] : 1}
         onClose={() => setDetailsId(null)}
         onPlay={playSelection}
         onSave={toggleSave}
+        onReminderToggle={toggleReminder}
       />
     </div>
   );
