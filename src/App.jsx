@@ -1467,6 +1467,10 @@ function DiscoveryLens({ items, totalCount, query, filter, languageFilter, ratin
           <Captions size={15} />
           Audio
         </button>
+        <button type="button" onClick={() => onRatingChange(lensPick.rating)}>
+          <ShieldCheck size={15} />
+          Rating
+        </button>
         <button type="button" onClick={() => onSortChange(sortMode === "Trending" ? "Newest" : "Trending")}>
           <TrendingUp size={15} />
           {sortMode === "Trending" ? "Newest" : "Trending"}
@@ -2834,7 +2838,8 @@ function App() {
                     <option key={option}>{option}</option>
                   ))}
                 </select>
-              </label>              <label className="sort-control">
+              </label>
+              <label className="sort-control">
                 <span>Sort</span>
                 <select value={sortMode} onChange={(event) => setSortMode(event.target.value)}>
                   {sortOptions.map((option) => (
@@ -2862,10 +2867,12 @@ function App() {
             query={query}
             filter={filter}
             languageFilter={languageFilter}
+            ratingFilter={ratingFilter}
             sortMode={sortMode}
             onQueryChange={setQuery}
             onFilterChange={setFilter}
             onLanguageChange={setLanguageFilter}
+            onRatingChange={setRatingFilter}
             onSortChange={setSortMode}
             onReset={resetBrowseFilters}
             onPlay={playSelection}
