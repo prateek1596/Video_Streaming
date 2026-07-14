@@ -41,6 +41,7 @@ import heroImage from "../assets/hero-anime-city.png";
 const storageKey = "anipulse-react-state";
 const sortOptions = ["Trending", "Newest", "Episodes", "A-Z"];
 const languageOptions = ["All audio", "Sub", "Sub / Dub"];
+const ratingOptions = ["All ratings", "TV-PG", "TV-14", "PG-13"];
 const speedOptions = ["0.75x", "1x", "1.25x", "1.5x", "2x"];
 const subtitleOptions = ["English", "Hindi", "Japanese", "Spanish", "Off"];
 const chapterTemplates = [
@@ -1406,10 +1407,10 @@ function BrowsePulse({ items, totalCount, selected, saved, reminders, onPlay, on
   );
 }
 
-function DiscoveryLens({ items, totalCount, query, filter, languageFilter, sortMode, onQueryChange, onFilterChange, onLanguageChange, onSortChange, onReset, onPlay, onDetails }) {
+function DiscoveryLens({ items, totalCount, query, filter, languageFilter, ratingFilter, sortMode, onQueryChange, onFilterChange, onLanguageChange, onRatingChange, onSortChange, onReset, onPlay, onDetails }) {
   const hasMatches = items.length > 0;
   const lensPick = hasMatches ? items[0] : anime[0];
-  const activeFilters = [query.trim(), filter !== "All" ? filter : "", languageFilter !== "All audio" ? languageFilter : "", sortMode !== "Trending" ? sortMode : ""].filter(Boolean);
+  const activeFilters = [query.trim(), filter !== "All" ? filter : "", languageFilter !== "All audio" ? languageFilter : "", ratingFilter !== "All ratings" ? ratingFilter : "", sortMode !== "Trending" ? sortMode : ""].filter(Boolean);
   const coverage = Math.round((items.length / Math.max(1, totalCount)) * 100);
   const quickTags = lensPick.tags.slice(0, 3);
   const stats = [
@@ -2303,6 +2304,7 @@ function App() {
   const [filter, setFilter] = useState("All");
   const [sortMode, setSortMode] = useState("Trending");
   const [languageFilter, setLanguageFilter] = useState("All audio");
+  const [ratingFilter, setRatingFilter] = useState("All ratings");
   const [query, setQuery] = useState("");
   const [saved, setSaved] = useState(() => new Set(stored?.saved || ["signal-bloom", "cloud-atelier"]));
   const [reminders, setReminders] = useState(() => new Set(stored?.reminders || ["neon-ronin-zero", "signal-bloom"]));
@@ -2337,8 +2339,9 @@ function App() {
       const searchable = `${item.title} ${item.genre} ${item.studio} ${item.year} ${item.tags.join(" ")}`.toLowerCase();
       const matchesFilter = filter === "All" || item.genre === filter;
       const matchesLanguage = languageFilter === "All audio" || item.language === languageFilter;
+      const matchesRating = ratingFilter === "All ratings" || item.rating === ratingFilter;
       const matchesQuery = searchable.includes(normalizedQuery);
-      return matchesFilter && matchesLanguage && matchesQuery;
+      return matchesFilter && matchesLanguage && matchesRating && matchesQuery;
     });
 
     return [...results].sort((a, b) => {
@@ -2347,7 +2350,7 @@ function App() {
       if (sortMode === "A-Z") return a.title.localeCompare(b.title);
       return b.popularity - a.popularity;
     });
-  }, [filter, languageFilter, query, sortMode]);
+  }, [filter, languageFilter, ratingFilter, query, sortMode]);
 
   const continueItems = useMemo(
     () => anime.filter((item) => Number(progress[item.id] ?? item.progress) > 0).slice(0, 4),
@@ -2508,6 +2511,7 @@ function App() {
   function resetBrowseFilters() {
     setFilter("All");
     setLanguageFilter("All audio");
+    setRatingFilter("All ratings");
     setSortMode("Trending");
     setQuery("");
   }
@@ -2824,6 +2828,13 @@ function App() {
                 </select>
               </label>
               <label className="sort-control">
+                <span>Rating</span>
+                <select value={ratingFilter} onChange={(event) => setRatingFilter(event.target.value)}>
+                  {ratingOptions.map((option) => (
+                    <option key={option}>{option}</option>
+                  ))}
+                </select>
+              </label>              <label className="sort-control">
                 <span>Sort</span>
                 <select value={sortMode} onChange={(event) => setSortMode(event.target.value)}>
                   {sortOptions.map((option) => (
