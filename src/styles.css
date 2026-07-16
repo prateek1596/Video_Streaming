@@ -1192,6 +1192,57 @@ svg {
   font: inherit;
 }
 
+.card-progress-summary {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 0.45rem;
+  align-items: center;
+  min-width: 0;
+  color: var(--muted);
+  font-size: 0.76rem;
+  font-weight: 850;
+}
+
+.card-progress-summary span,
+.card-progress-summary em {
+  display: inline-flex;
+  min-height: 1.55rem;
+  align-items: center;
+  padding: 0 0.45rem;
+  border: 1px solid var(--line);
+  border-radius: 99rem;
+  background: rgba(255, 255, 255, 0.055);
+  font-style: normal;
+  white-space: nowrap;
+}
+
+.card-progress-summary span {
+  color: var(--teal);
+}
+
+.card-progress-summary strong {
+  min-width: 0;
+  color: var(--text);
+  overflow-wrap: anywhere;
+}
+
+.card-progress-summary em {
+  color: var(--gold);
+}
+
+.card-progress-track {
+  height: 0.42rem;
+  overflow: hidden;
+  border-radius: 99rem;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.card-progress-track span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--teal), var(--red));
+}
 .card-tags,
 .tag-row {
   display: flex;
