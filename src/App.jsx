@@ -2908,6 +2908,9 @@ function App() {
                   item={item}
                   isSaved={saved.has(item.id)}
                   isReminderOn={reminders.has(item.id)}
+                  progress={progress[item.id]}
+                  currentEpisode={currentEpisodes[item.id]}
+                  isDownloaded={downloaded.has(item.id)}
                   onPlay={playSelection}
                   onSave={toggleSave}
                   onDetails={setDetailsId}
@@ -3028,7 +3031,10 @@ function App() {
                     item={item}
                     isSaved={saved.has(item.id)}
                     isReminderOn={reminders.has(item.id)}
-                    onPlay={playSelection}
+                  progress={progress[item.id]}
+                  currentEpisode={currentEpisodes[item.id]}
+                  isDownloaded={downloaded.has(item.id)}
+                  onPlay={playSelection}
                     onSave={toggleSave}
                     onDetails={setDetailsId}
                     onReminderToggle={toggleReminder}
