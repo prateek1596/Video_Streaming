@@ -1098,7 +1098,10 @@ function SessionQueue({ items, currentEpisodes, selected, onPlay, onAddCurrent, 
     </aside>
   );
 }
-function AnimeCard({ item, isSaved, isReminderOn, onPlay, onSave, onDetails, onReminderToggle }) {
+function AnimeCard({ item, isSaved, isReminderOn, progress, currentEpisode, isDownloaded, onPlay, onSave, onDetails, onReminderToggle }) {
+  const watched = Math.min(100, Math.max(0, Number(progress ?? item.progress) || 0));
+  const episode = clampEpisode(currentEpisode || item.currentEpisode, item);
+
   return (
     <article className="anime-card">
       <button
@@ -1114,6 +1117,14 @@ function AnimeCard({ item, isSaved, isReminderOn, onPlay, onSave, onDetails, onR
         <div>
           <strong>{item.title}</strong>
           <div className="anime-card-meta">{`${item.genre} / ${item.rating} / ${item.episodes} eps`}</div>
+          <div className="card-progress-summary">
+            <span>{`E${episode}`}</span>
+            <strong>{`${watched}% watched`}</strong>
+            <em>{isDownloaded ? "Offline" : item.nextRelease}</em>
+          </div>
+          <div className="card-progress-track" aria-label={`${watched}% watched`}>
+            <span style={{ width: `${watched}%` }} />
+          </div>
           <div className="card-tags">
             {item.tags.slice(0, 2).map((tag) => (
               <span key={tag}>{tag}</span>
