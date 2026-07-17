@@ -1025,7 +1025,7 @@ function QueueMixer({ items, selected, currentEpisodes, progress, sessionTarget,
           </div>
         ))}
       </div>
-            <div className="queue-targets" aria-label="Session length target">
+      <div className="queue-targets" aria-label="Session length target">
         {sessionTargets.map((option) => (
           <button className={target.id === option.id ? "active" : ""} key={option.id} type="button" onClick={() => onSessionTargetChange(option.id)}>
             <span>{option.label}</span>
@@ -1035,7 +1035,8 @@ function QueueMixer({ items, selected, currentEpisodes, progress, sessionTarget,
       </div>
       <div className="queue-target-meter" aria-label={`${fitPercent}% of ${target.label} session filled`}>
         <span style={{ width: `${fitPercent}%` }} />
-      </div><article className="queue-mixer-focus">
+      </div>
+      <article className="queue-mixer-focus">
         <button className="queue-mixer-art" style={{ "--poster": nextItem.poster }} type="button" onClick={() => onPlay(nextItem.id, nextEpisode, true)}>
           E{nextEpisode}
         </button>
