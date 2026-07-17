@@ -60,6 +60,11 @@ const transcriptTemplates = [
   { id: "line-6", time: 1036, speaker: "Lead", text: "No more reruns. We finish this live." },
 ];
 const defaultSessionQueue = ["signal-bloom", "cloud-atelier", "starfall-railway"];
+const sessionTargets = [
+  { id: "short", label: "Short", minutes: 45 },
+  { id: "balanced", label: "Balanced", minutes: 90 },
+  { id: "marathon", label: "Marathon", minutes: 150 },
+];
 const reactionTags = ["Hype", "Cozy", "Mystery", "Tearjerker", "Rewatch"];
 const defaultPartyMessages = [
   { id: "party-1", animeId: "neon-ronin-zero", episode: 1, author: "Mika", text: "The city reveal still lands every time.", tone: "Hype" },
@@ -977,10 +982,14 @@ function WatchParty({ item, selectedEpisode, messages, onSendMessage }) {
     </aside>
   );
 }
-function QueueMixer({ items, selected, currentEpisodes, progress, onPlay, onAddCurrent, onRemove, onClear }) {
+function QueueMixer({ items, selected, currentEpisodes, progress, sessionTarget, onSessionTargetChange, onPlay, onAddCurrent, onRemove, onClear }) {
   const nextItem = items.find((item) => item.id !== selected.id) || items[0] || selected;
   const nextEpisode = currentEpisodes[nextItem.id] || nextItem.currentEpisode;
   const totalMinutes = items.reduce((sum, item) => sum + durationMinutes(item.duration), 0);
+  const target = sessionTargets.find((option) => option.id === sessionTarget) || sessionTargets[1];
+  const targetMinutes = target.minutes;
+  const fitPercent = Math.min(100, Math.round(((totalMinutes || durationMinutes(selected.duration)) / targetMinutes) * 100));
+  const remainingMinutes = Math.max(0, targetMinutes - (totalMinutes || durationMinutes(selected.duration)));
   const averageProgress = items.length
     ? Math.round(items.reduce((sum, item) => sum + Number(progress[item.id] ?? item.progress), 0) / items.length)
     : Number(progress[selected.id] ?? selected.progress) || 0;
@@ -994,6 +1003,7 @@ function QueueMixer({ items, selected, currentEpisodes, progress, onPlay, onAddC
     [ListVideo, "Queued", items.length || "0"],
     [Clock3, "Runtime", `${totalMinutes || durationMinutes(selected.duration)}m`],
     [Gauge, "Progress", `${averageProgress}%`],
+    [ShieldCheck, "Fit", `${fitPercent}%`],
     [Clapperboard, "Mix", genreMix],
   ];
 
@@ -1004,7 +1014,7 @@ function QueueMixer({ items, selected, currentEpisodes, progress, onPlay, onAddC
           <p className="eyebrow">Mixer</p>
           <h2>Queue mixer</h2>
         </div>
-        <span>{items.length ? "Session ready" : "Build a lineup"}</span>
+        <span>{items.length ? `${remainingMinutes}m left` : `${target.label} plan`}</span>
       </div>
       <div className="queue-mixer-grid">
         {stats.map(([Icon, label, value]) => (
@@ -1015,7 +1025,17 @@ function QueueMixer({ items, selected, currentEpisodes, progress, onPlay, onAddC
           </div>
         ))}
       </div>
-      <article className="queue-mixer-focus">
+            <div className="queue-targets" aria-label="Session length target">
+        {sessionTargets.map((option) => (
+          <button className={target.id === option.id ? "active" : ""} key={option.id} type="button" onClick={() => onSessionTargetChange(option.id)}>
+            <span>{option.label}</span>
+            <strong>{`${option.minutes}m`}</strong>
+          </button>
+        ))}
+      </div>
+      <div className="queue-target-meter" aria-label={`${fitPercent}% of ${target.label} session filled`}>
+        <span style={{ width: `${fitPercent}%` }} />
+      </div><article className="queue-mixer-focus">
         <button className="queue-mixer-art" style={{ "--poster": nextItem.poster }} type="button" onClick={() => onPlay(nextItem.id, nextEpisode, true)}>
           E{nextEpisode}
         </button>
@@ -2339,6 +2359,7 @@ function App() {
   const [episodeFeedback, setEpisodeFeedback] = useState(() => stored?.episodeFeedback || {});
   const [partyMessages, setPartyMessages] = useState(() => stored?.partyMessages || defaultPartyMessages);
   const [sessionQueue, setSessionQueue] = useState(() => stored?.sessionQueue || defaultSessionQueue);
+  const [sessionTarget, setSessionTarget] = useState(stored?.sessionTarget || "balanced");
   const [downloaded, setDownloaded] = useState(() => new Set(stored?.downloaded || ["signal-bloom"]));
   const [activeChapterId, setActiveChapterId] = useState(stored?.activeChapterId || null);
   const [activeTranscriptId, setActiveTranscriptId] = useState(stored?.activeTranscriptId || null);
@@ -2453,12 +2474,13 @@ function App() {
       episodeFeedback,
       partyMessages,
       sessionQueue,
+      sessionTarget,
       downloaded: Array.from(downloaded),
       activeChapterId,
       activeTranscriptId,
     };
     localStorage.setItem(storageKey, JSON.stringify(payload));
-  }, [selectedId, selectedEpisode, currentEpisodes, saved, reminders, progress, quality, playbackSpeed, autoplayNext, ambientMode, skipIntro, captionsOn, subtitleLanguage, dataSaver, notes, episodeFeedback, partyMessages, sessionQueue, downloaded, activeChapterId, activeTranscriptId]);
+  }, [selectedId, selectedEpisode, currentEpisodes, saved, reminders, progress, quality, playbackSpeed, autoplayNext, ambientMode, skipIntro, captionsOn, subtitleLanguage, dataSaver, notes, episodeFeedback, partyMessages, sessionQueue, sessionTarget, downloaded, activeChapterId, activeTranscriptId]);
 
   useEffect(() => {
     const sections = ["watch", "continue", "discover", "latest", "watchlist"]
@@ -2550,6 +2572,7 @@ function App() {
     setEpisodeFeedback({});
     setPartyMessages(defaultPartyMessages);
     setSessionQueue(defaultSessionQueue);
+    setSessionTarget("balanced");
     setDownloaded(new Set(["signal-bloom"]));
     setActiveChapterId(null);
     setActiveTranscriptId(null);
@@ -2755,6 +2778,8 @@ function App() {
               selected={selected}
               currentEpisodes={currentEpisodes}
               progress={progress}
+              sessionTarget={sessionTarget}
+              onSessionTargetChange={setSessionTarget}
               onPlay={playSelection}
               onAddCurrent={addToSessionQueue}
               onRemove={removeFromSessionQueue}
