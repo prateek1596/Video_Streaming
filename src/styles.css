@@ -5484,6 +5484,66 @@ svg {
   overflow-wrap: anywhere;
 }
 
+.queue-targets {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.5rem;
+}
+
+.queue-targets button {
+  display: grid;
+  gap: 0.18rem;
+  min-width: 0;
+  min-height: 2.55rem;
+  padding: 0.55rem 0.65rem;
+  border: 1px solid var(--line);
+  border-radius: 0.5rem;
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--text);
+  text-align: left;
+  font-weight: 850;
+}
+
+.queue-targets button span,
+.queue-targets button strong {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.queue-targets button span {
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.queue-targets button strong {
+  color: var(--gold);
+}
+
+.queue-targets button.active {
+  border-color: rgba(44, 230, 211, 0.48);
+  background: rgba(44, 230, 211, 0.14);
+}
+
+.queue-targets button.active span,
+.queue-targets button.active strong {
+  color: var(--teal);
+}
+
+.queue-target-meter {
+  height: 0.5rem;
+  overflow: hidden;
+  border-radius: 99rem;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.queue-target-meter span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--teal), var(--gold));
+}
 .queue-mixer-focus {
   display: grid;
   grid-template-columns: 4.6rem minmax(0, 1fr);
