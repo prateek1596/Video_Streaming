@@ -2419,6 +2419,8 @@ function App() {
   const [sessionQueue, setSessionQueue] = useState(() => stored?.sessionQueue || defaultSessionQueue);
   const [sessionTarget, setSessionTarget] = useState(stored?.sessionTarget || "balanced");
   const [downloaded, setDownloaded] = useState(() => new Set(stored?.downloaded || ["signal-bloom"]));
+  const [activeProfileId, setActiveProfileId] = useState(stored?.activeProfileId || viewerProfiles[0].id);
+  const [roomMode, setRoomMode] = useState(stored?.roomMode || "Solo");
   const [activeChapterId, setActiveChapterId] = useState(stored?.activeChapterId || null);
   const [activeTranscriptId, setActiveTranscriptId] = useState(stored?.activeTranscriptId || null);
   const [chapterJump, setChapterJump] = useState(null);
@@ -2534,6 +2536,8 @@ function App() {
       sessionQueue,
       sessionTarget,
       downloaded: Array.from(downloaded),
+      activeProfileId,
+      roomMode,
       activeChapterId,
       activeTranscriptId,
     };
@@ -2632,6 +2636,8 @@ function App() {
     setSessionQueue(defaultSessionQueue);
     setSessionTarget("balanced");
     setDownloaded(new Set(["signal-bloom"]));
+    setActiveProfileId(viewerProfiles[0].id);
+    setRoomMode("Solo");
     setActiveChapterId(null);
     setActiveTranscriptId(null);
     setChapterJump(null);
@@ -2797,6 +2803,16 @@ function App() {
               progress={progress[selected.id]}
               onDataSaverToggle={() => setDataSaver((current) => !current)}
               onQualityChange={setQuality}
+            />
+            <WatchRoom
+              profile={activeProfile}
+              roomMode={roomMode}
+              sessionTarget={sessionTarget}
+              queueCount={sessionQueueItems.length}
+              reminderCount={reminderItems.length}
+              downloadedCount={downloaded.size}
+              onProfileChange={setActiveProfileId}
+              onRoomModeChange={setRoomMode}
             />
             <EpisodeChapters
               item={selected}
@@ -3159,6 +3175,7 @@ function App() {
 }
 
 export default App;
+
 
 
 
