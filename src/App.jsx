@@ -65,6 +65,12 @@ const sessionTargets = [
   { id: "balanced", label: "Balanced", minutes: 90 },
   { id: "marathon", label: "Marathon", minutes: 150 },
 ];
+const viewerProfiles = [
+  { id: "pr", name: "Prateek", initials: "PR", taste: "Action arcs", accent: "teal" },
+  { id: "mk", name: "Mika", initials: "MK", taste: "Cozy nights", accent: "gold" },
+  { id: "rn", name: "Rin", initials: "RN", taste: "Mystery runs", accent: "red" },
+];
+const roomModes = ["Solo", "Together", "Focus"];
 const reactionTags = ["Hype", "Cozy", "Mystery", "Tearjerker", "Rewatch"];
 const defaultPartyMessages = [
   { id: "party-1", animeId: "neon-ronin-zero", episode: 1, author: "Mika", text: "The city reveal still lands every time.", tone: "Hype" },
@@ -725,6 +731,57 @@ function StreamHealth({ item, selectedEpisode, quality, playbackSpeed, captionsO
           ? `${item.title} ${episodeLabel(selectedEpisode)} is available without streaming.`
           : `Adaptive playback will prioritize ${dataSaver ? "lower data use" : "visual quality"} for this session.`}
       </p>
+    </aside>
+  );
+}
+function WatchRoom({ profile, roomMode, sessionTarget, queueCount, reminderCount, downloadedCount, onProfileChange, onRoomModeChange }) {
+  const roomLabel = roomMode === "Together" ? "Shared room" : roomMode === "Focus" ? "Quiet room" : "Solo room";
+  const stats = [
+    [UsersRound, "Profile", profile.name],
+    [ListVideo, "Queue", `${queueCount} ready`],
+    [Bell, "Alerts", `${reminderCount} on`],
+    [Download, "Offline", `${downloadedCount} saved`],
+  ];
+
+  return (
+    <aside className="watch-room" aria-label="Watch room">
+      <div className="watch-room-heading">
+        <div>
+          <p className="eyebrow">Room</p>
+          <h2>{roomLabel}</h2>
+        </div>
+        <span>{sessionTarget} session</span>
+      </div>
+      <div className="room-profile-row" aria-label="Viewer profiles">
+        {viewerProfiles.map((item) => (
+          <button
+            className={`${profile.id === item.id ? "active" : ""} ${item.accent}`}
+            key={item.id}
+            type="button"
+            onClick={() => onProfileChange(item.id)}
+            title={item.name}
+          >
+            <strong>{item.initials}</strong>
+            <span>{item.taste}</span>
+          </button>
+        ))}
+      </div>
+      <div className="room-mode-row" aria-label="Room mode">
+        {roomModes.map((mode) => (
+          <button className={roomMode === mode ? "active" : ""} key={mode} type="button" onClick={() => onRoomModeChange(mode)}>
+            {mode}
+          </button>
+        ))}
+      </div>
+      <div className="room-stat-grid">
+        {stats.map(([Icon, label, value]) => (
+          <div className="room-stat" key={label}>
+            <Icon size={17} />
+            <span>{label}</span>
+            <strong>{value}</strong>
+          </div>
+        ))}
+      </div>
     </aside>
   );
 }
@@ -2481,7 +2538,7 @@ function App() {
       activeTranscriptId,
     };
     localStorage.setItem(storageKey, JSON.stringify(payload));
-  }, [selectedId, selectedEpisode, currentEpisodes, saved, reminders, progress, quality, playbackSpeed, autoplayNext, ambientMode, skipIntro, captionsOn, subtitleLanguage, dataSaver, notes, episodeFeedback, partyMessages, sessionQueue, sessionTarget, downloaded, activeChapterId, activeTranscriptId]);
+  }, [selectedId, selectedEpisode, currentEpisodes, saved, reminders, progress, quality, playbackSpeed, autoplayNext, ambientMode, skipIntro, captionsOn, subtitleLanguage, dataSaver, notes, episodeFeedback, partyMessages, sessionQueue, sessionTarget, downloaded, activeProfileId, roomMode, activeChapterId, activeTranscriptId]);
 
   useEffect(() => {
     const sections = ["watch", "continue", "discover", "latest", "watchlist"]
@@ -3041,7 +3098,8 @@ function App() {
             onPlay={playSelection}
             onDetails={setDetailsId}
             onReminderToggle={toggleReminder}
-          />          <SeasonTracker
+          />
+          <SeasonTracker
             items={savedItems}
             progress={progress}
             currentEpisodes={currentEpisodes}
@@ -3101,6 +3159,7 @@ function App() {
 }
 
 export default App;
+
 
 
 
