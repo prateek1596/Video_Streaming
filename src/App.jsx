@@ -2427,6 +2427,7 @@ function App() {
 
   const selected = anime.find((item) => item.id === selectedId) || anime[0];
   const detailsItem = anime.find((item) => item.id === detailsId) || null;
+  const activeProfile = viewerProfiles.find((profile) => profile.id === activeProfileId) || viewerProfiles[0];
   const activeNoteKey = `${selected.id}:${selectedEpisode}`;
 
   const filteredAnime = useMemo(() => {
@@ -3175,6 +3176,7 @@ function App() {
 }
 
 export default App;
+
 
 
 
