@@ -18,6 +18,7 @@ import Home from "lucide-react/dist/esm/icons/home.js";
 import Info from "lucide-react/dist/esm/icons/info.js";
 import Library from "lucide-react/dist/esm/icons/library.js";
 import ListVideo from "lucide-react/dist/esm/icons/list-video.js";
+import Lock from "lucide-react/dist/esm/icons/lock.js";
 import MessageCircle from "lucide-react/dist/esm/icons/message-circle.js";
 import Play from "lucide-react/dist/esm/icons/play.js";
 import RotateCcw from "lucide-react/dist/esm/icons/rotate-ccw.js";
@@ -44,6 +45,8 @@ const languageOptions = ["All audio", "Sub", "Sub / Dub"];
 const ratingOptions = ["All ratings", "TV-PG", "TV-14", "PG-13"];
 const speedOptions = ["0.75x", "1x", "1.25x", "1.5x", "2x"];
 const subtitleOptions = ["English", "Hindi", "Japanese", "Spanish", "Off"];
+const maturityOptions = ["TV-PG", "PG-13", "TV-14"];
+const ratingRank = { "TV-PG": 1, "PG-13": 2, "TV-14": 3 };
 const chapterTemplates = [
   { id: "cold-open", title: "Cold open", time: 0, detail: "Story hook and visual setup" },
   { id: "opening", title: "Opening", time: 85, detail: "Theme sequence and credits" },
@@ -105,6 +108,10 @@ function durationMinutes(duration) {
 
 function clampEpisode(value, item) {
   return Math.min(Math.max(Number(value) || item.currentEpisode, 1), item.episodes);
+}
+
+function isWithinMaturityLimit(item, maturityLimit) {
+  return (ratingRank[item.rating] || 0) <= (ratingRank[maturityLimit] || ratingRank["TV-14"]);
 }
 
 function initialEpisodeMap(storedEpisodes) {
@@ -782,6 +789,54 @@ function WatchRoom({ profile, roomMode, sessionTarget, queueCount, reminderCount
           </div>
         ))}
       </div>
+    </aside>
+  );
+}
+function MaturityGuard({ maturityLimit, blockedCount, visibleCount, selected, onMaturityLimitChange }) {
+  const isOpen = maturityLimit === "TV-14";
+  const safestPick = anime.find((item) => item.rating === "TV-PG") || selected;
+  const stats = [
+    [ShieldCheck, "Limit", maturityLimit],
+    [Clapperboard, "Visible", `${visibleCount}/${anime.length}`],
+    [Lock, "Hidden", blockedCount],
+  ];
+
+  return (
+    <aside className="maturity-guard" aria-label="Maturity guard">
+      <div className="maturity-heading">
+        <div>
+          <p className="eyebrow">Family</p>
+          <h2>{isOpen ? "Full catalog" : "Maturity guard"}</h2>
+        </div>
+        <span>{selected.rating}</span>
+      </div>
+      <div className="maturity-grid">
+        {stats.map(([Icon, label, value]) => (
+          <div className="maturity-stat" key={label}>
+            <Icon size={17} />
+            <span>{label}</span>
+            <strong>{value}</strong>
+          </div>
+        ))}
+      </div>
+      <div className="maturity-options" aria-label="Allowed rating limit">
+        {maturityOptions.map((option) => (
+          <button className={maturityLimit === option ? "active" : ""} key={option} type="button" onClick={() => onMaturityLimitChange(option)}>
+            {option}
+          </button>
+        ))}
+      </div>
+      <p className="maturity-copy">
+        {isOpen
+          ? "All sample titles are visible for this profile."
+          : `${blockedCount} title${blockedCount === 1 ? "" : "s"} above ${maturityLimit} are hidden from browse, queues, and details.`}
+      </p>
+      {!isOpen && safestPick && (
+        <button className="maturity-safe-pick" type="button" onClick={() => onMaturityLimitChange("TV-PG")}>
+          <CheckCircle2 size={16} />
+          <span>{`Kids-safe mode highlights ${safestPick.title}`}</span>
+        </button>
+      )}
     </aside>
   );
 }
@@ -2413,6 +2468,7 @@ function App() {
   const [captionsOn, setCaptionsOn] = useState(Boolean(stored?.captionsOn));
   const [subtitleLanguage, setSubtitleLanguage] = useState(stored?.subtitleLanguage || "English");
   const [dataSaver, setDataSaver] = useState(Boolean(stored?.dataSaver));
+  const [maturityLimit, setMaturityLimit] = useState(stored?.maturityLimit || "TV-14");
   const [notes, setNotes] = useState(() => stored?.notes || {});
   const [episodeFeedback, setEpisodeFeedback] = useState(() => stored?.episodeFeedback || {});
   const [partyMessages, setPartyMessages] = useState(() => stored?.partyMessages || defaultPartyMessages);
@@ -2425,14 +2481,17 @@ function App() {
   const [activeTranscriptId, setActiveTranscriptId] = useState(stored?.activeTranscriptId || null);
   const [chapterJump, setChapterJump] = useState(null);
 
-  const selected = anime.find((item) => item.id === selectedId) || anime[0];
-  const detailsItem = anime.find((item) => item.id === detailsId) || null;
+  const visibleAnime = useMemo(() => anime.filter((item) => isWithinMaturityLimit(item, maturityLimit)), [maturityLimit]);
+  const safeAnime = visibleAnime.length ? visibleAnime : anime;
+  const blockedByMaturityCount = anime.length - visibleAnime.length;
+  const selected = safeAnime.find((item) => item.id === selectedId) || safeAnime[0];
+  const detailsItem = safeAnime.find((item) => item.id === detailsId) || null;
   const activeProfile = viewerProfiles.find((profile) => profile.id === activeProfileId) || viewerProfiles[0];
   const activeNoteKey = `${selected.id}:${selectedEpisode}`;
 
   const filteredAnime = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase();
-    const results = anime.filter((item) => {
+    const results = safeAnime.filter((item) => {
       const searchable = `${item.title} ${item.genre} ${item.studio} ${item.year} ${item.tags.join(" ")}`.toLowerCase();
       const matchesFilter = filter === "All" || item.genre === filter;
       const matchesLanguage = languageFilter === "All audio" || item.language === languageFilter;
@@ -2447,13 +2506,13 @@ function App() {
       if (sortMode === "A-Z") return a.title.localeCompare(b.title);
       return b.popularity - a.popularity;
     });
-  }, [filter, languageFilter, ratingFilter, query, sortMode]);
+  }, [filter, languageFilter, ratingFilter, query, safeAnime, sortMode]);
 
   const continueItems = useMemo(
-    () => anime.filter((item) => Number(progress[item.id] ?? item.progress) > 0).slice(0, 4),
-    [progress],
+    () => safeAnime.filter((item) => Number(progress[item.id] ?? item.progress) > 0).slice(0, 4),
+    [progress, safeAnime],
   );
-  const completedCount = useMemo(() => anime.filter((item) => Number(progress[item.id] ?? 0) >= 100).length, [progress]);
+  const completedCount = useMemo(() => safeAnime.filter((item) => Number(progress[item.id] ?? 0) >= 100).length, [progress, safeAnime]);
   const nextContinueTitle = continueItems[0]
     ? `${continueItems[0].title} E${currentEpisodes[continueItems[0].id] || continueItems[0].currentEpisode}`
     : "Pick a show";
@@ -2463,25 +2522,25 @@ function App() {
       {
         kicker: "Popular",
         title: "Top matches",
-        items: [...anime].sort((a, b) => b.popularity - a.popularity).slice(0, 3),
+        items: [...safeAnime].sort((a, b) => b.popularity - a.popularity).slice(0, 3),
       },
       {
         kicker: "Fresh",
         title: "New this year",
-        items: anime.filter((item) => item.year === "2026").slice(0, 3),
+        items: safeAnime.filter((item) => item.year === "2026").slice(0, 3),
       },
       {
         kicker: "Mood",
         title: "Comfort watches",
-        items: anime.filter((item) => ["Cozy", "Wonder", "Dreamlike"].includes(item.mood)).slice(0, 3),
+        items: safeAnime.filter((item) => ["Cozy", "Wonder", "Dreamlike"].includes(item.mood)).slice(0, 3),
       },
     ],
-    [],
+    [safeAnime],
   );
 
 
   const recommendedItems = useMemo(() => {
-    return anime
+    return safeAnime
       .filter((item) => item.id !== selected.id)
       .map((item) => {
         const sharedTags = item.tags.filter((tag) => selected.tags.includes(tag)).length;
@@ -2495,25 +2554,37 @@ function App() {
       })
       .sort((a, b) => b.recommendationScore - a.recommendationScore)
       .slice(0, 4);
-  }, [selected]);
+  }, [safeAnime, selected]);
 
   const scheduleItems = useMemo(
     () =>
-      schedule.map(([day, title]) => ({
-        day,
-        item: anime.find((candidate) => candidate.title === title) || anime[0],
-      })),
-    [],
+      schedule
+        .map(([day, title]) => ({
+          day,
+          item: safeAnime.find((candidate) => candidate.title === title) || null,
+        }))
+        .filter(({ item }) => Boolean(item)),
+    [safeAnime],
   );
-  const savedItems = useMemo(() => anime.filter((item) => saved.has(item.id)), [saved]);
-  const reminderItems = useMemo(() => anime.filter((item) => reminders.has(item.id)), [reminders]);
+  const savedItems = useMemo(() => safeAnime.filter((item) => saved.has(item.id)), [safeAnime, saved]);
+  const reminderItems = useMemo(() => safeAnime.filter((item) => reminders.has(item.id)), [safeAnime, reminders]);
   const libraryAverageProgress = useMemo(() => {
     if (!savedItems.length) return 0;
     const total = savedItems.reduce((sum, item) => sum + Number((progress[item.id] ?? item.progress) || 0), 0);
     return Math.round(total / savedItems.length);
   }, [progress, savedItems]);
   const nextSavedRelease = savedItems.find((item) => reminders.has(item.id))?.nextRelease || savedItems[0]?.nextRelease;
-  const sessionQueueItems = useMemo(() => sessionQueue.map((id) => anime.find((item) => item.id === id)).filter(Boolean), [sessionQueue]);
+  const sessionQueueItems = useMemo(() => sessionQueue.map((id) => safeAnime.find((item) => item.id === id)).filter(Boolean), [safeAnime, sessionQueue]);
+
+  useEffect(() => {
+    if (!safeAnime.some((item) => item.id === selectedId)) {
+      const fallback = safeAnime[0];
+      setSelectedId(fallback.id);
+      setSelectedEpisode(clampEpisode(currentEpisodes[fallback.id] || fallback.currentEpisode, fallback));
+      setShouldAutoPlay(false);
+    }
+    if (detailsId && !safeAnime.some((item) => item.id === detailsId)) setDetailsId(null);
+  }, [currentEpisodes, detailsId, safeAnime, selectedId]);
 
   useEffect(() => {
     const payload = {
@@ -2531,6 +2602,7 @@ function App() {
       captionsOn,
       subtitleLanguage,
       dataSaver,
+      maturityLimit,
       notes,
       episodeFeedback,
       partyMessages,
@@ -2543,7 +2615,7 @@ function App() {
       activeTranscriptId,
     };
     localStorage.setItem(storageKey, JSON.stringify(payload));
-  }, [selectedId, selectedEpisode, currentEpisodes, saved, reminders, progress, quality, playbackSpeed, autoplayNext, ambientMode, skipIntro, captionsOn, subtitleLanguage, dataSaver, notes, episodeFeedback, partyMessages, sessionQueue, sessionTarget, downloaded, activeProfileId, roomMode, activeChapterId, activeTranscriptId]);
+  }, [selectedId, selectedEpisode, currentEpisodes, saved, reminders, progress, quality, playbackSpeed, autoplayNext, ambientMode, skipIntro, captionsOn, subtitleLanguage, dataSaver, maturityLimit, notes, episodeFeedback, partyMessages, sessionQueue, sessionTarget, downloaded, activeProfileId, roomMode, activeChapterId, activeTranscriptId]);
 
   useEffect(() => {
     const sections = ["watch", "continue", "discover", "latest", "watchlist"]
@@ -2561,7 +2633,7 @@ function App() {
   }, []);
 
   function playSelection(id, episodeNumber, autoPlay = false) {
-    const item = anime.find((candidate) => candidate.id === id) || anime[0];
+    const item = safeAnime.find((candidate) => candidate.id === id) || safeAnime[0];
     const nextEpisode = clampEpisode(episodeNumber || currentEpisodes[item.id], item);
     setSelectedId(item.id);
     setSelectedEpisode(nextEpisode);
@@ -2602,7 +2674,7 @@ function App() {
   }
 
   function resetProgress(id) {
-    const item = anime.find((candidate) => candidate.id === id) || anime[0];
+    const item = safeAnime.find((candidate) => candidate.id === id) || safeAnime[0];
     setProgress((current) => ({ ...current, [id]: 0 }));
     setCurrentEpisodes((current) => ({ ...current, [id]: item.currentEpisode }));
     if (selectedId === id) setSelectedEpisode(item.currentEpisode);
@@ -2631,6 +2703,7 @@ function App() {
     setCaptionsOn(false);
     setSubtitleLanguage("English");
     setDataSaver(false);
+    setMaturityLimit("TV-14");
     setNotes({});
     setEpisodeFeedback({});
     setPartyMessages(defaultPartyMessages);
@@ -2651,6 +2724,12 @@ function App() {
     setSubtitleLanguage(value);
     setCaptionsOn(value !== "Off");
   }
+
+  function updateMaturityLimit(value) {
+    setMaturityLimit(value);
+    setRatingFilter((current) => (current !== "All ratings" && (ratingRank[current] || 0) > (ratingRank[value] || 0) ? "All ratings" : current));
+  }
+
   function updateNote(value) {
     setNotes((current) => ({ ...current, [activeNoteKey]: value }));
   }
@@ -2815,6 +2894,13 @@ function App() {
               onProfileChange={setActiveProfileId}
               onRoomModeChange={setRoomMode}
             />
+            <MaturityGuard
+              maturityLimit={maturityLimit}
+              blockedCount={blockedByMaturityCount}
+              visibleCount={visibleAnime.length}
+              selected={selected}
+              onMaturityLimitChange={updateMaturityLimit}
+            />
             <EpisodeChapters
               item={selected}
               selectedEpisode={selectedEpisode}
@@ -2962,7 +3048,7 @@ function App() {
           </div>
           <BrowsePulse
             items={filteredAnime}
-            totalCount={anime.length}
+            totalCount={safeAnime.length}
             selected={selected}
             saved={saved}
             reminders={reminders}
@@ -2974,7 +3060,7 @@ function App() {
           />
           <DiscoveryLens
             items={filteredAnime}
-            totalCount={anime.length}
+            totalCount={safeAnime.length}
             query={query}
             filter={filter}
             languageFilter={languageFilter}
@@ -2990,7 +3076,7 @@ function App() {
             onDetails={setDetailsId}
           />
           <StudioSpotlight
-            items={filteredAnime.length ? filteredAnime : anime}
+            items={filteredAnime.length ? filteredAnime : safeAnime}
             selected={selected}
             saved={saved}
             reminders={reminders}
@@ -3032,7 +3118,7 @@ function App() {
               </div>
             </div>
             <div className="episode-list">
-              {anime.slice(0, 6).map((item) => (
+              {safeAnime.slice(0, 6).map((item) => (
                 <article className="episode-row" key={item.id}>
                   <button className="episode-thumb" style={{ "--poster": item.poster }} type="button" onClick={() => setDetailsId(item.id)}>
                     E{item.currentEpisode}

@@ -34,10 +34,10 @@ The production output is generated in `dist/`.
 - Search, genre/audio filters, catalog sorting, discovery lens, browse pulse, studio spotlight, and curated discovery rails
 - Anime catalog cards
 - Continue-watching progress row with resume coach and complete/reset controls
-- Persistent watchlist, session queue, queue mixer, resume coach, watch goals, library insights, playback preferences, reminders, profile preferences, progress, notes, episode feedback, and watch-party messages via localStorage
+- Persistent watchlist, session queue, queue mixer, resume coach, watch goals, library insights, playback preferences, maturity guard, reminders, profile preferences, progress, notes, episode feedback, and watch-party messages via localStorage
 - Show details modal with metadata, tags, and episode buttons
 - Latest episode queue, premiere radar, release board, release reminders, notification center, and profile menu
-- Weekly release schedule, premiere radar, release board, discovery lens, browse pulse, studio spotlight, library stats, watch goals, library insights, taste profile, queue mixer, session queue controls, episode toolkit, chapter jumps, transcript jumps, episode recap, playback setup, episode notes, feedback, and watch-party reactions
+- Weekly release schedule, premiere radar, release board, discovery lens, browse pulse, studio spotlight, maturity-limited browsing, library stats, watch goals, library insights, taste profile, queue mixer, session queue controls, episode toolkit, chapter jumps, transcript jumps, episode recap, playback setup, episode notes, feedback, and watch-party reactions
 - Responsive desktop and mobile layout
 
 ## Next Backend Steps
