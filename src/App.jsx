@@ -1923,6 +1923,66 @@ function AccountCenter({ planId, billingCycle, devices, downloadedCount, profile
     </section>
   );
 }
+function OperatorDashboard({ items, savedCount, reminderCount, downloadedCount, progress }) {
+  const catalogCount = items.length;
+  const totalEpisodes = items.reduce((sum, item) => sum + item.episodes, 0);
+  const subDubCount = items.filter((item) => item.language === "Sub / Dub").length;
+  const avgPopularity = catalogCount ? Math.round(items.reduce((sum, item) => sum + item.popularity, 0) / catalogCount) : 0;
+  const completionCount = items.filter((item) => Number(progress[item.id] ?? item.progress) >= 100).length;
+  const releaseReady = items.filter((item) => reminderCount && item.nextRelease).slice(0, 3);
+  const stats = [
+    [Clapperboard, "Titles", catalogCount],
+    [ListVideo, "Episodes", totalEpisodes],
+    [Captions, "Sub / Dub", `${subDubCount}/${catalogCount}`],
+    [TrendingUp, "Demand", `${avgPopularity}%`],
+  ];
+
+  return (
+    <section className="operator-dashboard" aria-label="Catalog operations">
+      <div className="operator-heading">
+        <div>
+          <p className="eyebrow">Operations</p>
+          <h2>Catalog health</h2>
+        </div>
+        <span>{completionCount ? `${completionCount} completed` : "Live catalog"}</span>
+      </div>
+      <div className="operator-stat-grid">
+        {stats.map(([Icon, label, value]) => (
+          <div className="operator-stat" key={label}>
+            <Icon size={17} />
+            <span>{label}</span>
+            <strong>{value}</strong>
+          </div>
+        ))}
+      </div>
+      <div className="operator-checks">
+        <article>
+          <ShieldCheck size={17} />
+          <div>
+            <strong>Entitlements synced</strong>
+            <span>{`${savedCount} saved / ${downloadedCount} offline / ${reminderCount} alerts`}</span>
+          </div>
+        </article>
+        <article>
+          <WandSparkles size={17} />
+          <div>
+            <strong>Recommendation index</strong>
+            <span>{`${Math.max(0, catalogCount - 1)} related-title paths ready`}</span>
+          </div>
+        </article>
+      </div>
+      <div className="operator-release-list">
+        {(releaseReady.length ? releaseReady : items.slice(0, 3)).map((item) => (
+          <article key={item.id}>
+            <span>{item.nextRelease}</span>
+            <strong>{item.title}</strong>
+            <small>{`${item.genre} / ${item.rating} / ${item.language}`}</small>
+          </article>
+        ))}
+      </div>
+    </section>
+  );
+}
 function WatchGoals({ items, progress, currentEpisodes, reminders, onPlay, onMarkComplete, onReminderToggle }) {
   const goalItems = items.length ? items : anime.slice(0, 3);
   const weeklyTarget = 180;
@@ -3322,6 +3382,13 @@ function App() {
             onBillingCycleChange={setBillingCycle}
             onRemoveDevice={removeDevice}
             onAddDevice={addDevice}
+          />
+          <OperatorDashboard
+            items={safeAnime}
+            savedCount={savedItems.length}
+            reminderCount={reminderItems.length}
+            downloadedCount={downloaded.size}
+            progress={progress}
           />          <WatchGoals
             items={savedItems}
             progress={progress}
