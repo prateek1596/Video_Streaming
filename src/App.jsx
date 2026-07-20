@@ -1816,6 +1816,112 @@ function OfflineDownloads({ items, downloaded, progress, currentEpisodes, onTogg
   );
 }
 
+function AccountCenter({ planId, billingCycle, devices, downloadedCount, profileCount, onPlanChange, onBillingCycleChange, onRemoveDevice, onAddDevice }) {
+  const activePlan = subscriptionPlans.find((plan) => plan.id === planId) || subscriptionPlans[1];
+  const annualSavings = activePlan.price * 2;
+  const cyclePrice = billingCycle === "annual" ? activePlan.price * 10 : activePlan.price;
+  const devicePercent = Math.min(100, Math.round((devices.length / activePlan.streams) * 100));
+  const downloadPercent = Math.min(100, Math.round((downloadedCount / activePlan.downloads) * 100));
+  const nextDeviceNumber = devices.length + 1;
+
+  return (
+    <section className="account-center" aria-label="Account and subscription">
+      <div className="account-heading">
+        <div>
+          <p className="eyebrow">Account</p>
+          <h2>Subscription center</h2>
+        </div>
+        <span>{`${activePlan.name} / ${billingCycle}`}</span>
+      </div>
+      <div className="account-plan-row" role="tablist" aria-label="Subscription plans">
+        {subscriptionPlans.map((plan) => (
+          <button
+            className={plan.id === activePlan.id ? "active" : ""}
+            key={plan.id}
+            type="button"
+            role="tab"
+            aria-selected={plan.id === activePlan.id}
+            onClick={() => onPlanChange(plan.id)}
+          >
+            <span>{plan.name}</span>
+            <strong>{`$${plan.price}/mo`}</strong>
+            <small>{plan.perk}</small>
+          </button>
+        ))}
+      </div>
+      <div className="billing-toggle" aria-label="Billing cycle">
+        <button className={billingCycle === "monthly" ? "active" : ""} type="button" onClick={() => onBillingCycleChange("monthly")}>
+          Monthly
+        </button>
+        <button className={billingCycle === "annual" ? "active" : ""} type="button" onClick={() => onBillingCycleChange("annual")}>
+          Annual
+        </button>
+      </div>
+      <div className="account-stat-grid">
+        <div>
+          <ShieldCheck size={17} />
+          <span>Renewal</span>
+          <strong>{billingCycle === "annual" ? `$${cyclePrice}/yr` : `$${cyclePrice}/mo`}</strong>
+        </div>
+        <div>
+          <UsersRound size={17} />
+          <span>Profiles</span>
+          <strong>{`${profileCount}/5`}</strong>
+        </div>
+        <div>
+          <TvMinimalPlay size={17} />
+          <span>Streams</span>
+          <strong>{`${devices.length}/${activePlan.streams}`}</strong>
+        </div>
+        <div>
+          <Download size={17} />
+          <span>Downloads</span>
+          <strong>{`${downloadedCount}/${activePlan.downloads}`}</strong>
+        </div>
+      </div>
+      <div className="account-meter-pair">
+        <div>
+          <span>Device slots</span>
+          <div className="account-meter" aria-label={`${devicePercent}% of device slots used`}>
+            <span style={{ width: `${devicePercent}%` }} />
+          </div>
+        </div>
+        <div>
+          <span>Offline allowance</span>
+          <div className="account-meter" aria-label={`${downloadPercent}% of download allowance used`}>
+            <span style={{ width: `${downloadPercent}%` }} />
+          </div>
+        </div>
+      </div>
+      <div className="device-list">
+        {devices.map((device) => (
+          <article className="device-row" key={device.id}>
+            <div>
+              <TvMinimalPlay size={17} />
+              <div>
+                <strong>{device.name}</strong>
+                <span>{`${device.type} / ${device.lastSeen}`}</span>
+              </div>
+            </div>
+            <IconButton label={`Remove ${device.name}`} className="device-remove" onClick={() => onRemoveDevice(device.id)}>
+              <Trash2 size={16} />
+            </IconButton>
+          </article>
+        ))}
+      </div>
+      <div className="account-actions">
+        <button type="button" onClick={() => onAddDevice({ id: `device-${Date.now()}`, name: `Guest Device ${nextDeviceNumber}`, type: "Mobile", lastSeen: "Just now" })} disabled={devices.length >= activePlan.streams}>
+          <CirclePlus size={16} />
+          Add device
+        </button>
+        <button type="button" onClick={() => onBillingCycleChange(billingCycle === "annual" ? "monthly" : "annual")}>
+          <Gauge size={16} />
+          {billingCycle === "annual" ? "Use monthly" : `Save $${annualSavings}/yr`}
+        </button>
+      </div>
+    </section>
+  );
+}
 function WatchGoals({ items, progress, currentEpisodes, reminders, onPlay, onMarkComplete, onReminderToggle }) {
   const goalItems = items.length ? items : anime.slice(0, 3);
   const weeklyTarget = 180;
