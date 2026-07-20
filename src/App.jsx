@@ -68,7 +68,16 @@ const sessionTargets = [
   { id: "balanced", label: "Balanced", minutes: 90 },
   { id: "marathon", label: "Marathon", minutes: 150 },
 ];
-const viewerProfiles = [
+const subscriptionPlans = [
+  { id: "pulse", name: "Pulse", price: 6, streams: 1, downloads: 8, quality: "720p", perk: "Solo viewing" },
+  { id: "plus", name: "Pulse Plus", price: 11, streams: 3, downloads: 24, quality: "1080p", perk: "Watch rooms" },
+  { id: "max", name: "Pulse Max", price: 16, streams: 5, downloads: 48, quality: "4K HDR", perk: "Family library" },
+];
+const defaultDevices = [
+  { id: "living-room", name: "Living Room TV", type: "TV", lastSeen: "Streaming now" },
+  { id: "phone", name: "Prateek's Phone", type: "Mobile", lastSeen: "12 min ago" },
+  { id: "laptop", name: "Studio Laptop", type: "Desktop", lastSeen: "Yesterday" },
+];const viewerProfiles = [
   { id: "pr", name: "Prateek", initials: "PR", taste: "Action arcs", accent: "teal" },
   { id: "mk", name: "Mika", initials: "MK", taste: "Cozy nights", accent: "gold" },
   { id: "rn", name: "Rin", initials: "RN", taste: "Mystery runs", accent: "red" },
