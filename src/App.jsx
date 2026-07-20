@@ -77,7 +77,8 @@ const defaultDevices = [
   { id: "living-room", name: "Living Room TV", type: "TV", lastSeen: "Streaming now" },
   { id: "phone", name: "Prateek's Phone", type: "Mobile", lastSeen: "12 min ago" },
   { id: "laptop", name: "Studio Laptop", type: "Desktop", lastSeen: "Yesterday" },
-];const viewerProfiles = [
+];
+const viewerProfiles = [
   { id: "pr", name: "Prateek", initials: "PR", taste: "Action arcs", accent: "teal" },
   { id: "mk", name: "Mika", initials: "MK", taste: "Cozy nights", accent: "gold" },
   { id: "rn", name: "Rin", initials: "RN", taste: "Mystery runs", accent: "red" },
@@ -2595,7 +2596,9 @@ function App() {
   const [activeChapterId, setActiveChapterId] = useState(stored?.activeChapterId || null);
   const [activeTranscriptId, setActiveTranscriptId] = useState(stored?.activeTranscriptId || null);
   const [chapterJump, setChapterJump] = useState(null);
-
+  const [subscriptionPlan, setSubscriptionPlan] = useState(stored?.subscriptionPlan || "plus");
+  const [billingCycle, setBillingCycle] = useState(stored?.billingCycle || "monthly");
+  const [devices, setDevices] = useState(() => stored?.devices || defaultDevices);
   const visibleAnime = useMemo(() => anime.filter((item) => isWithinMaturityLimit(item, maturityLimit)), [maturityLimit]);
   const safeAnime = visibleAnime.length ? visibleAnime : anime;
   const blockedByMaturityCount = anime.length - visibleAnime.length;
@@ -2728,9 +2731,12 @@ function App() {
       roomMode,
       activeChapterId,
       activeTranscriptId,
+      subscriptionPlan,
+      billingCycle,
+      devices,
     };
     localStorage.setItem(storageKey, JSON.stringify(payload));
-  }, [selectedId, selectedEpisode, currentEpisodes, saved, reminders, progress, quality, playbackSpeed, autoplayNext, ambientMode, skipIntro, captionsOn, subtitleLanguage, dataSaver, maturityLimit, notes, episodeFeedback, partyMessages, sessionQueue, sessionTarget, downloaded, activeProfileId, roomMode, activeChapterId, activeTranscriptId]);
+  }, [selectedId, selectedEpisode, currentEpisodes, saved, reminders, progress, quality, playbackSpeed, autoplayNext, ambientMode, skipIntro, captionsOn, subtitleLanguage, dataSaver, maturityLimit, notes, episodeFeedback, partyMessages, sessionQueue, sessionTarget, downloaded, activeProfileId, roomMode, activeChapterId, activeTranscriptId, subscriptionPlan, billingCycle, devices]);
 
   useEffect(() => {
     const sections = ["watch", "continue", "discover", "latest", "watchlist"]
@@ -2830,8 +2836,10 @@ function App() {
     setActiveChapterId(null);
     setActiveTranscriptId(null);
     setChapterJump(null);
-    setDetailsId(null);
-    setShouldAutoPlay(false);
+    setSubscriptionPlan("plus");
+    setBillingCycle("monthly");
+    setDevices(defaultDevices);
+    setDetailsId(null);    setShouldAutoPlay(false);
   }
 
 
@@ -2891,6 +2899,20 @@ function App() {
     setDownloaded(new Set());
   }
 
+  function addDevice(device) {
+    const activePlan = subscriptionPlans.find((plan) => plan.id === subscriptionPlan) || subscriptionPlans[1];
+    setDevices((current) => (current.length >= activePlan.streams ? current : [...current, device]));
+  }
+
+  function removeDevice(id) {
+    setDevices((current) => current.filter((device) => device.id !== id));
+  }
+
+  function updateSubscriptionPlan(planId) {
+    const nextPlan = subscriptionPlans.find((plan) => plan.id === planId) || subscriptionPlans[1];
+    setSubscriptionPlan(nextPlan.id);
+    setDevices((current) => current.slice(0, nextPlan.streams));
+  }
   function requestTimelineJump(seconds) {
     setChapterJump({ seconds, token: Date.now() });
     setShouldAutoPlay(true);
@@ -3290,7 +3312,17 @@ function App() {
             averageProgress={libraryAverageProgress}
             nextRelease={nextSavedRelease}
           />
-          <WatchGoals
+          <AccountCenter
+            planId={subscriptionPlan}
+            billingCycle={billingCycle}
+            devices={devices}
+            downloadedCount={downloaded.size}
+            profileCount={viewerProfiles.length}
+            onPlanChange={updateSubscriptionPlan}
+            onBillingCycleChange={setBillingCycle}
+            onRemoveDevice={removeDevice}
+            onAddDevice={addDevice}
+          />          <WatchGoals
             items={savedItems}
             progress={progress}
             currentEpisodes={currentEpisodes}
