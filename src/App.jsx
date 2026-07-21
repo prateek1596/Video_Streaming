@@ -2761,6 +2761,7 @@ function App() {
   const [notes, setNotes] = useState(() => stored?.notes || {});
   const [episodeFeedback, setEpisodeFeedback] = useState(() => stored?.episodeFeedback || {});
   const [partyMessages, setPartyMessages] = useState(() => stored?.partyMessages || defaultPartyMessages);
+  const [reviews, setReviews] = useState(() => stored?.reviews || defaultReviews);
   const [sessionQueue, setSessionQueue] = useState(() => stored?.sessionQueue || defaultSessionQueue);
   const [sessionTarget, setSessionTarget] = useState(stored?.sessionTarget || "balanced");
   const [downloaded, setDownloaded] = useState(() => new Set(stored?.downloaded || ["signal-bloom"]));
@@ -2897,6 +2898,7 @@ function App() {
       notes,
       episodeFeedback,
       partyMessages,
+      reviews,
       sessionQueue,
       sessionTarget,
       downloaded: Array.from(downloaded),
@@ -2909,7 +2911,7 @@ function App() {
       devices,
     };
     localStorage.setItem(storageKey, JSON.stringify(payload));
-  }, [selectedId, selectedEpisode, currentEpisodes, saved, reminders, progress, quality, playbackSpeed, autoplayNext, ambientMode, skipIntro, captionsOn, subtitleLanguage, dataSaver, maturityLimit, notes, episodeFeedback, partyMessages, sessionQueue, sessionTarget, downloaded, activeProfileId, roomMode, activeChapterId, activeTranscriptId, subscriptionPlan, billingCycle, devices]);
+  }, [selectedId, selectedEpisode, currentEpisodes, saved, reminders, progress, quality, playbackSpeed, autoplayNext, ambientMode, skipIntro, captionsOn, subtitleLanguage, dataSaver, maturityLimit, notes, episodeFeedback, partyMessages, reviews, sessionQueue, sessionTarget, downloaded, activeProfileId, roomMode, activeChapterId, activeTranscriptId, subscriptionPlan, billingCycle, devices]);
 
   useEffect(() => {
     const sections = ["watch", "continue", "discover", "latest", "watchlist"]
@@ -3001,6 +3003,7 @@ function App() {
     setNotes({});
     setEpisodeFeedback({});
     setPartyMessages(defaultPartyMessages);
+    setReviews(defaultReviews);
     setSessionQueue(defaultSessionQueue);
     setSessionTarget("balanced");
     setDownloaded(new Set(["signal-bloom"]));
@@ -3012,7 +3015,8 @@ function App() {
     setSubscriptionPlan("plus");
     setBillingCycle("monthly");
     setDevices(defaultDevices);
-    setDetailsId(null);    setShouldAutoPlay(false);
+    setDetailsId(null);
+    setShouldAutoPlay(false);
   }
 
 
@@ -3044,6 +3048,21 @@ function App() {
         ...message,
       },
     ]);
+  }
+
+  function submitReview(review) {
+    setReviews((current) => [
+      {
+        id: `review-${Date.now()}`,
+        author: "You",
+        ...review,
+      },
+      ...current.slice(0, 19),
+    ]);
+  }
+
+  function removeReview(id) {
+    setReviews((current) => current.filter((review) => review.id !== id));
   }
 
 
@@ -3502,7 +3521,14 @@ function App() {
             reminderCount={reminderItems.length}
             downloadedCount={downloaded.size}
             progress={progress}
-          />          <WatchGoals
+          />
+          <ReviewHub
+            items={savedItems.length ? savedItems : safeAnime}
+            reviews={reviews}
+            onReviewSubmit={submitReview}
+            onReviewRemove={removeReview}
+          />
+          <WatchGoals
             items={savedItems}
             progress={progress}
             currentEpisodes={currentEpisodes}
