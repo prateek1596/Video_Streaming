@@ -90,6 +90,11 @@ const defaultPartyMessages = [
   { id: "party-2", animeId: "signal-bloom", episode: 7, author: "Rin", text: "That flower code has to be a map.", tone: "Theory" },
   { id: "party-3", animeId: "cloud-atelier", episode: 11, author: "Aya", text: "Weather painting is such a beautiful power system.", tone: "Vibe" },
 ];
+const defaultReviews = [
+  { id: "review-1", animeId: "neon-ronin-zero", author: "Mika", rating: 5, text: "Sharp action, clean pacing, and a fantastic neon skyline." },
+  { id: "review-2", animeId: "signal-bloom", author: "Rin", rating: 4, text: "The mystery payoff is patient, but the flower code is worth it." },
+  { id: "review-3", animeId: "cloud-atelier", author: "Aya", rating: 5, text: "Gentle fantasy with a gorgeous sense of place." },
+];
 
 function readStoredState() {
   try {
@@ -1979,6 +1984,114 @@ function OperatorDashboard({ items, savedCount, reminderCount, downloadedCount, 
             <small>{`${item.genre} / ${item.rating} / ${item.language}`}</small>
           </article>
         ))}
+      </div>
+    </section>
+  );
+}
+function ReviewHub({ items, reviews, onReviewSubmit, onReviewRemove }) {
+  const [selectedReviewId, setSelectedReviewId] = useState(items[0]?.id || anime[0].id);
+  const [draftRating, setDraftRating] = useState(5);
+  const [draftText, setDraftText] = useState("");
+  const reviewItems = items.length ? items : anime.slice(0, 4);
+  const selectedItem = reviewItems.find((item) => item.id === selectedReviewId) || reviewItems[0];
+  const itemReviews = reviews.filter((review) => review.animeId === selectedItem.id);
+  const averageRating = itemReviews.length
+    ? (itemReviews.reduce((sum, review) => sum + Number(review.rating || 0), 0) / itemReviews.length).toFixed(1)
+    : "New";
+  const allAverage = reviews.length
+    ? (reviews.reduce((sum, review) => sum + Number(review.rating || 0), 0) / reviews.length).toFixed(1)
+    : "0.0";
+
+  function submitReview(event) {
+    event.preventDefault();
+    const trimmed = draftText.trim();
+    if (!trimmed) return;
+    onReviewSubmit({ animeId: selectedItem.id, rating: draftRating, text: trimmed });
+    setDraftText("");
+    setDraftRating(5);
+  }
+
+  return (
+    <section className="review-hub" aria-label="Ratings and reviews">
+      <div className="review-heading">
+        <div>
+          <p className="eyebrow">Community</p>
+          <h2>Ratings and reviews</h2>
+        </div>
+        <span>{`${reviews.length} reviews / ${allAverage} avg`}</span>
+      </div>
+      <div className="review-show-row" role="tablist" aria-label="Review title picker">
+        {reviewItems.slice(0, 4).map((item) => {
+          const count = reviews.filter((review) => review.animeId === item.id).length;
+          return (
+            <button
+              className={item.id === selectedItem.id ? "active" : ""}
+              key={item.id}
+              type="button"
+              role="tab"
+              aria-selected={item.id === selectedItem.id}
+              onClick={() => setSelectedReviewId(item.id)}
+            >
+              <span>{item.genre}</span>
+              <strong>{item.title}</strong>
+              <small>{`${count} reviews`}</small>
+            </button>
+          );
+        })}
+      </div>
+      <div className="review-summary">
+        <div>
+          <Star size={18} fill="currentColor" />
+          <span>Selected average</span>
+          <strong>{averageRating}</strong>
+        </div>
+        <div>
+          <MessageCircle size={18} />
+          <span>Thread</span>
+          <strong>{itemReviews.length ? `${itemReviews.length} notes` : "No notes yet"}</strong>
+        </div>
+        <div>
+          <TrendingUp size={18} />
+          <span>Signal</span>
+          <strong>{selectedItem.popularity}% demand</strong>
+        </div>
+      </div>
+      <form className="review-form" onSubmit={submitReview}>
+        <label>
+          <span>Rating</span>
+          <select value={draftRating} onChange={(event) => setDraftRating(Number(event.target.value))}>
+            {[5, 4, 3, 2, 1].map((rating) => (
+              <option key={rating} value={rating}>{`${rating} stars`}</option>
+            ))}
+          </select>
+        </label>
+        <label>
+          <span>Review</span>
+          <input value={draftText} onChange={(event) => setDraftText(event.target.value)} placeholder={`Share a take on ${selectedItem.title}`} />
+        </label>
+        <button type="submit" disabled={!draftText.trim()}>
+          <SendHorizontal size={16} />
+          Post
+        </button>
+      </form>
+      <div className="review-list">
+        {(itemReviews.length ? itemReviews : reviews.slice(0, 3)).map((review) => {
+          const item = anime.find((candidate) => candidate.id === review.animeId) || selectedItem;
+          return (
+            <article className="review-row" key={review.id}>
+              <div>
+                <strong>{review.author}</strong>
+                <span>{`${item.title} / ${review.rating} stars`}</span>
+                <p>{review.text}</p>
+              </div>
+              {review.author === "You" && (
+                <IconButton label="Remove review" className="review-remove" onClick={() => onReviewRemove(review.id)}>
+                  <Trash2 size={16} />
+                </IconButton>
+              )}
+            </article>
+          );
+        })}
       </div>
     </section>
   );
