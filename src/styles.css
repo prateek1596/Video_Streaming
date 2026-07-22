@@ -6922,3 +6922,234 @@ svg {
     grid-template-columns: 1fr;
   }
 }
+
+.support-center {
+  display: grid;
+  gap: 0.85rem;
+  padding: 1rem;
+  border: 1px solid rgba(44, 230, 211, 0.2);
+  border-radius: 0.7rem;
+  background: linear-gradient(145deg, rgba(44, 230, 211, 0.075), rgba(255, 255, 255, 0.055));
+}
+
+.support-heading {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.support-heading h2 {
+  margin: 0.2rem 0 0;
+  font-size: clamp(1.15rem, 1.8vw, 1.45rem);
+}
+
+.support-heading > span {
+  display: inline-flex;
+  min-height: 1.9rem;
+  align-items: center;
+  padding: 0 0.6rem;
+  border: 1px solid rgba(44, 230, 211, 0.38);
+  border-radius: 99rem;
+  background: rgba(44, 230, 211, 0.1);
+  color: var(--teal);
+  font-size: 0.78rem;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.support-stat-grid,
+.support-form,
+.support-ticket-list {
+  display: grid;
+  gap: 0.55rem;
+}
+
+.support-stat-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.support-stat-grid > div,
+.support-priority,
+.support-ticket,
+.support-form label,
+.support-form button,
+.support-ticket-actions button,
+.support-remove {
+  min-width: 0;
+  border: 1px solid var(--line);
+  border-radius: 0.55rem;
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--text);
+}
+
+.support-stat-grid > div,
+.support-priority {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 0.15rem 0.45rem;
+  align-items: center;
+  padding: 0.65rem;
+}
+
+.support-stat-grid svg,
+.support-priority svg {
+  grid-row: span 2;
+  color: var(--teal);
+}
+
+.support-stat-grid span,
+.support-priority span,
+.support-form span,
+.support-ticket span {
+  color: var(--muted);
+  font-size: 0.74rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.support-stat-grid strong,
+.support-priority strong,
+.support-priority p,
+.support-ticket strong,
+.support-ticket p {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.support-priority > div,
+.support-ticket > div:first-child {
+  display: grid;
+  min-width: 0;
+  gap: 0.18rem;
+}
+
+.support-priority p,
+.support-ticket p {
+  margin: 0;
+  color: #d8dfec;
+  line-height: 1.5;
+}
+
+.support-form {
+  grid-template-columns: minmax(7rem, 0.26fr) minmax(0, 0.36fr) minmax(0, 1fr) auto;
+  align-items: end;
+}
+
+.support-form label {
+  display: grid;
+  gap: 0.25rem;
+  padding: 0.55rem;
+}
+
+.support-form select,
+.support-form input {
+  width: 100%;
+  min-height: 2.35rem;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--text);
+}
+
+.support-form button,
+.support-ticket-actions button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  font-weight: 850;
+  transition:
+    transform 160ms ease,
+    border-color 160ms ease,
+    background 160ms ease;
+}
+
+.support-form button {
+  min-height: 3.65rem;
+  padding: 0 0.85rem;
+}
+
+.support-form button:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.support-ticket {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.75rem;
+  align-items: center;
+  padding: 0.75rem;
+  background: rgba(8, 10, 16, 0.28);
+}
+
+.support-ticket-actions {
+  display: flex;
+  gap: 0.45rem;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.support-ticket-actions button {
+  min-height: 2.35rem;
+  padding: 0 0.65rem;
+}
+
+.support-ticket-actions button.active {
+  border-color: rgba(44, 230, 211, 0.45);
+  background: rgba(44, 230, 211, 0.14);
+  color: var(--teal);
+}
+
+.support-remove {
+  display: grid;
+  width: 2.35rem;
+  height: 2.35rem;
+  place-items: center;
+  transition:
+    transform 160ms ease,
+    border-color 160ms ease,
+    background 160ms ease;
+}
+
+.support-form button:hover:not(:disabled),
+.support-ticket-actions button:hover,
+.support-remove:hover {
+  transform: translateY(-1px);
+  border-color: rgba(255, 255, 255, 0.28);
+  background: rgba(255, 255, 255, 0.1);
+}
+
+@media (max-width: 920px) {
+  .support-stat-grid,
+  .support-form {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .support-form button {
+    min-height: 2.8rem;
+  }
+}
+
+@media (max-width: 620px) {
+  .support-heading {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .support-stat-grid,
+  .support-form,
+  .support-ticket {
+    grid-template-columns: 1fr;
+  }
+
+  .support-ticket-actions {
+    justify-content: stretch;
+  }
+
+  .support-ticket-actions button,
+  .support-remove {
+    flex: 1 1 8rem;
+  }
+}
