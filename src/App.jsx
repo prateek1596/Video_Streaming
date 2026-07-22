@@ -95,6 +95,11 @@ const defaultReviews = [
   { id: "review-2", animeId: "signal-bloom", author: "Rin", rating: 4, text: "The mystery payoff is patient, but the flower code is worth it." },
   { id: "review-3", animeId: "cloud-atelier", author: "Aya", rating: 5, text: "Gentle fantasy with a gorgeous sense of place." },
 ];
+const supportCategories = ["Playback", "Billing", "Downloads", "Account"];
+const defaultSupportTickets = [
+  { id: "ticket-1", category: "Playback", status: "Open", subject: "Player quality dropped during Neon Ronin", detail: "Auto quality fell back twice during the latest episode.", updated: "Today" },
+  { id: "ticket-2", category: "Downloads", status: "Resolved", subject: "Offline copy refreshed", detail: "Signal Bloom is available for travel mode again.", updated: "Yesterday" },
+];
 
 function readStoredState() {
   try {
@@ -2096,6 +2101,111 @@ function ReviewHub({ items, reviews, onReviewSubmit, onReviewRemove }) {
     </section>
   );
 }
+function SupportCenter({ tickets, onTicketCreate, onTicketResolve, onTicketRemove }) {
+  const [category, setCategory] = useState(supportCategories[0]);
+  const [subject, setSubject] = useState("");
+  const [detail, setDetail] = useState("");
+  const openTickets = tickets.filter((ticket) => ticket.status !== "Resolved");
+  const resolvedTickets = tickets.length - openTickets.length;
+  const priorityTicket = openTickets[0] || tickets[0];
+
+  function submitTicket(event) {
+    event.preventDefault();
+    const trimmedSubject = subject.trim();
+    const trimmedDetail = detail.trim();
+    if (!trimmedSubject || !trimmedDetail) return;
+    onTicketCreate({ category, subject: trimmedSubject, detail: trimmedDetail });
+    setSubject("");
+    setDetail("");
+    setCategory(supportCategories[0]);
+  }
+
+  return (
+    <section className="support-center" aria-label="Support center">
+      <div className="support-heading">
+        <div>
+          <p className="eyebrow">Help</p>
+          <h2>Support center</h2>
+        </div>
+        <span>{openTickets.length ? `${openTickets.length} active` : "All clear"}</span>
+      </div>
+      <div className="support-stat-grid">
+        <div>
+          <MessageCircle size={17} />
+          <span>Tickets</span>
+          <strong>{tickets.length}</strong>
+        </div>
+        <div>
+          <Clock3 size={17} />
+          <span>Open</span>
+          <strong>{openTickets.length}</strong>
+        </div>
+        <div>
+          <CheckCircle2 size={17} />
+          <span>Resolved</span>
+          <strong>{resolvedTickets}</strong>
+        </div>
+        <div>
+          <ShieldCheck size={17} />
+          <span>SLA</span>
+          <strong>{openTickets.length ? "4h" : "Met"}</strong>
+        </div>
+      </div>
+      {priorityTicket && (
+        <article className="support-priority">
+          <ScrollText size={18} />
+          <div>
+            <span>{`${priorityTicket.category} / ${priorityTicket.status}`}</span>
+            <strong>{priorityTicket.subject}</strong>
+            <p>{priorityTicket.detail}</p>
+          </div>
+        </article>
+      )}
+      <form className="support-form" onSubmit={submitTicket}>
+        <label>
+          <span>Category</span>
+          <select value={category} onChange={(event) => setCategory(event.target.value)}>
+            {supportCategories.map((option) => (
+              <option key={option}>{option}</option>
+            ))}
+          </select>
+        </label>
+        <label>
+          <span>Subject</span>
+          <input value={subject} onChange={(event) => setSubject(event.target.value)} placeholder="What needs help?" />
+        </label>
+        <label>
+          <span>Details</span>
+          <input value={detail} onChange={(event) => setDetail(event.target.value)} placeholder="Add useful context" />
+        </label>
+        <button type="submit" disabled={!subject.trim() || !detail.trim()}>
+          <SendHorizontal size={16} />
+          Create
+        </button>
+      </form>
+      <div className="support-ticket-list">
+        {tickets.map((ticket) => (
+          <article className="support-ticket" key={ticket.id}>
+            <div>
+              <span>{`${ticket.category} / ${ticket.updated}`}</span>
+              <strong>{ticket.subject}</strong>
+              <p>{ticket.detail}</p>
+            </div>
+            <div className="support-ticket-actions">
+              <button className={ticket.status === "Resolved" ? "active" : ""} type="button" onClick={() => onTicketResolve(ticket.id)}>
+                <CheckCircle2 size={16} />
+                {ticket.status === "Resolved" ? "Resolved" : "Resolve"}
+              </button>
+              <IconButton label={`Remove ${ticket.subject}`} className="support-remove" onClick={() => onTicketRemove(ticket.id)}>
+                <Trash2 size={16} />
+              </IconButton>
+            </div>
+          </article>
+        ))}
+      </div>
+    </section>
+  );
+}
 function WatchGoals({ items, progress, currentEpisodes, reminders, onPlay, onMarkComplete, onReminderToggle }) {
   const goalItems = items.length ? items : anime.slice(0, 3);
   const weeklyTarget = 180;
@@ -2762,6 +2872,7 @@ function App() {
   const [episodeFeedback, setEpisodeFeedback] = useState(() => stored?.episodeFeedback || {});
   const [partyMessages, setPartyMessages] = useState(() => stored?.partyMessages || defaultPartyMessages);
   const [reviews, setReviews] = useState(() => stored?.reviews || defaultReviews);
+  const [supportTickets, setSupportTickets] = useState(() => stored?.supportTickets || defaultSupportTickets);
   const [sessionQueue, setSessionQueue] = useState(() => stored?.sessionQueue || defaultSessionQueue);
   const [sessionTarget, setSessionTarget] = useState(stored?.sessionTarget || "balanced");
   const [downloaded, setDownloaded] = useState(() => new Set(stored?.downloaded || ["signal-bloom"]));
@@ -2899,6 +3010,7 @@ function App() {
       episodeFeedback,
       partyMessages,
       reviews,
+      supportTickets,
       sessionQueue,
       sessionTarget,
       downloaded: Array.from(downloaded),
@@ -2911,7 +3023,7 @@ function App() {
       devices,
     };
     localStorage.setItem(storageKey, JSON.stringify(payload));
-  }, [selectedId, selectedEpisode, currentEpisodes, saved, reminders, progress, quality, playbackSpeed, autoplayNext, ambientMode, skipIntro, captionsOn, subtitleLanguage, dataSaver, maturityLimit, notes, episodeFeedback, partyMessages, reviews, sessionQueue, sessionTarget, downloaded, activeProfileId, roomMode, activeChapterId, activeTranscriptId, subscriptionPlan, billingCycle, devices]);
+  }, [selectedId, selectedEpisode, currentEpisodes, saved, reminders, progress, quality, playbackSpeed, autoplayNext, ambientMode, skipIntro, captionsOn, subtitleLanguage, dataSaver, maturityLimit, notes, episodeFeedback, partyMessages, reviews, supportTickets, sessionQueue, sessionTarget, downloaded, activeProfileId, roomMode, activeChapterId, activeTranscriptId, subscriptionPlan, billingCycle, devices]);
 
   useEffect(() => {
     const sections = ["watch", "continue", "discover", "latest", "watchlist"]
@@ -3004,6 +3116,7 @@ function App() {
     setEpisodeFeedback({});
     setPartyMessages(defaultPartyMessages);
     setReviews(defaultReviews);
+    setSupportTickets(defaultSupportTickets);
     setSessionQueue(defaultSessionQueue);
     setSessionTarget("balanced");
     setDownloaded(new Set(["signal-bloom"]));
@@ -3063,6 +3176,28 @@ function App() {
 
   function removeReview(id) {
     setReviews((current) => current.filter((review) => review.id !== id));
+  }
+
+  function createSupportTicket(ticket) {
+    setSupportTickets((current) => [
+      {
+        id: `ticket-${Date.now()}`,
+        status: "Open",
+        updated: "Just now",
+        ...ticket,
+      },
+      ...current.slice(0, 9),
+    ]);
+  }
+
+  function resolveSupportTicket(id) {
+    setSupportTickets((current) =>
+      current.map((ticket) => (ticket.id === id ? { ...ticket, status: "Resolved", updated: "Just now" } : ticket)),
+    );
+  }
+
+  function removeSupportTicket(id) {
+    setSupportTickets((current) => current.filter((ticket) => ticket.id !== id));
   }
 
 
@@ -3528,7 +3663,12 @@ function App() {
             onReviewSubmit={submitReview}
             onReviewRemove={removeReview}
           />
-          <WatchGoals
+          <SupportCenter
+            tickets={supportTickets}
+            onTicketCreate={createSupportTicket}
+            onTicketResolve={resolveSupportTicket}
+            onTicketRemove={removeSupportTicket}
+          />          <WatchGoals
             items={savedItems}
             progress={progress}
             currentEpisodes={currentEpisodes}
