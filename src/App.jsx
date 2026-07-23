@@ -100,6 +100,10 @@ const defaultSupportTickets = [
   { id: "ticket-1", category: "Playback", status: "Open", subject: "Player quality dropped during Neon Ronin", detail: "Auto quality fell back twice during the latest episode.", updated: "Today" },
   { id: "ticket-2", category: "Downloads", status: "Resolved", subject: "Offline copy refreshed", detail: "Signal Bloom is available for travel mode again.", updated: "Yesterday" },
 ];
+const defaultGiftPasses = [
+  { id: "gift-1", code: "RONIN-7DAYS", recipient: "Mika", status: "Sent", perk: "7-day Plus trial" },
+  { id: "gift-2", code: "BLOOM-FRI", recipient: "Rin", status: "Redeemed", perk: "Watch-room premiere pass" },
+];
 
 function readStoredState() {
   try {
@@ -2101,6 +2105,104 @@ function ReviewHub({ items, reviews, onReviewSubmit, onReviewRemove }) {
     </section>
   );
 }
+function GiftPassCenter({ passes, activePlanName, onPassCreate, onPassRedeem, onPassRemove }) {
+  const [recipient, setRecipient] = useState("");
+  const [redeemCode, setRedeemCode] = useState("");
+  const availablePasses = passes.filter((pass) => pass.status !== "Redeemed");
+  const redeemedPasses = passes.length - availablePasses.length;
+  const latestPass = passes[0];
+
+  function createPass(event) {
+    event.preventDefault();
+    const trimmed = recipient.trim();
+    if (!trimmed) return;
+    onPassCreate(trimmed);
+    setRecipient("");
+  }
+
+  function redeemPass(event) {
+    event.preventDefault();
+    const trimmed = redeemCode.trim().toUpperCase();
+    if (!trimmed) return;
+    onPassRedeem(trimmed);
+    setRedeemCode("");
+  }
+
+  return (
+    <section className="gift-center" aria-label="Gift passes and codes">
+      <div className="gift-heading">
+        <div>
+          <p className="eyebrow">Sharing</p>
+          <h2>Gift passes</h2>
+        </div>
+        <span>{`${availablePasses.length} available`}</span>
+      </div>
+      <div className="gift-stat-grid">
+        <div>
+          <Share2 size={17} />
+          <span>Plan</span>
+          <strong>{activePlanName}</strong>
+        </div>
+        <div>
+          <CirclePlus size={17} />
+          <span>Issued</span>
+          <strong>{passes.length}</strong>
+        </div>
+        <div>
+          <CheckCircle2 size={17} />
+          <span>Redeemed</span>
+          <strong>{redeemedPasses}</strong>
+        </div>
+      </div>
+      {latestPass && (
+        <article className="gift-focus">
+          <Star size={18} fill="currentColor" />
+          <div>
+            <span>{`${latestPass.status} / ${latestPass.perk}`}</span>
+            <strong>{latestPass.code}</strong>
+            <p>{`For ${latestPass.recipient}`}</p>
+          </div>
+        </article>
+      )}
+      <div className="gift-forms">
+        <form onSubmit={createPass}>
+          <label>
+            <span>Recipient</span>
+            <input value={recipient} onChange={(event) => setRecipient(event.target.value)} placeholder="Friend name" />
+          </label>
+          <button type="submit" disabled={!recipient.trim()}>
+            <CirclePlus size={16} />
+            Issue
+          </button>
+        </form>
+        <form onSubmit={redeemPass}>
+          <label>
+            <span>Redeem code</span>
+            <input value={redeemCode} onChange={(event) => setRedeemCode(event.target.value)} placeholder="ANIPULSE-CODE" />
+          </label>
+          <button type="submit" disabled={!redeemCode.trim()}>
+            <CheckCircle2 size={16} />
+            Redeem
+          </button>
+        </form>
+      </div>
+      <div className="gift-list">
+        {passes.map((pass) => (
+          <article className="gift-row" key={pass.id}>
+            <div>
+              <span>{`${pass.status} / ${pass.perk}`}</span>
+              <strong>{pass.code}</strong>
+              <p>{`Recipient: ${pass.recipient}`}</p>
+            </div>
+            <IconButton label={`Remove ${pass.code}`} className="gift-remove" onClick={() => onPassRemove(pass.id)}>
+              <Trash2 size={16} />
+            </IconButton>
+          </article>
+        ))}
+      </div>
+    </section>
+  );
+}
 function SupportCenter({ tickets, onTicketCreate, onTicketResolve, onTicketRemove }) {
   const [category, setCategory] = useState(supportCategories[0]);
   const [subject, setSubject] = useState("");
@@ -2873,6 +2975,7 @@ function App() {
   const [partyMessages, setPartyMessages] = useState(() => stored?.partyMessages || defaultPartyMessages);
   const [reviews, setReviews] = useState(() => stored?.reviews || defaultReviews);
   const [supportTickets, setSupportTickets] = useState(() => stored?.supportTickets || defaultSupportTickets);
+  const [giftPasses, setGiftPasses] = useState(() => stored?.giftPasses || defaultGiftPasses);
   const [sessionQueue, setSessionQueue] = useState(() => stored?.sessionQueue || defaultSessionQueue);
   const [sessionTarget, setSessionTarget] = useState(stored?.sessionTarget || "balanced");
   const [downloaded, setDownloaded] = useState(() => new Set(stored?.downloaded || ["signal-bloom"]));
@@ -3011,6 +3114,7 @@ function App() {
       partyMessages,
       reviews,
       supportTickets,
+      giftPasses,
       sessionQueue,
       sessionTarget,
       downloaded: Array.from(downloaded),
@@ -3023,7 +3127,7 @@ function App() {
       devices,
     };
     localStorage.setItem(storageKey, JSON.stringify(payload));
-  }, [selectedId, selectedEpisode, currentEpisodes, saved, reminders, progress, quality, playbackSpeed, autoplayNext, ambientMode, skipIntro, captionsOn, subtitleLanguage, dataSaver, maturityLimit, notes, episodeFeedback, partyMessages, reviews, supportTickets, sessionQueue, sessionTarget, downloaded, activeProfileId, roomMode, activeChapterId, activeTranscriptId, subscriptionPlan, billingCycle, devices]);
+  }, [selectedId, selectedEpisode, currentEpisodes, saved, reminders, progress, quality, playbackSpeed, autoplayNext, ambientMode, skipIntro, captionsOn, subtitleLanguage, dataSaver, maturityLimit, notes, episodeFeedback, partyMessages, reviews, supportTickets, giftPasses, sessionQueue, sessionTarget, downloaded, activeProfileId, roomMode, activeChapterId, activeTranscriptId, subscriptionPlan, billingCycle, devices]);
 
   useEffect(() => {
     const sections = ["watch", "continue", "discover", "latest", "watchlist"]
@@ -3117,6 +3221,7 @@ function App() {
     setPartyMessages(defaultPartyMessages);
     setReviews(defaultReviews);
     setSupportTickets(defaultSupportTickets);
+    setGiftPasses(defaultGiftPasses);
     setSessionQueue(defaultSessionQueue);
     setSessionTarget("balanced");
     setDownloaded(new Set(["signal-bloom"]));
@@ -3198,6 +3303,41 @@ function App() {
 
   function removeSupportTicket(id) {
     setSupportTickets((current) => current.filter((ticket) => ticket.id !== id));
+  }
+
+  function createGiftPass(recipientName) {
+    const code = `${recipientName.replace(/[^a-z0-9]/gi, "").slice(0, 6).toUpperCase() || "GUEST"}-${Math.floor(1000 + Math.random() * 9000)}`;
+    setGiftPasses((current) => [
+      {
+        id: `gift-${Date.now()}`,
+        code,
+        recipient: recipientName,
+        status: "Sent",
+        perk: "7-day Plus trial",
+      },
+      ...current.slice(0, 9),
+    ]);
+  }
+
+  function redeemGiftPass(code) {
+    setGiftPasses((current) => {
+      const existing = current.find((pass) => pass.code.toUpperCase() === code);
+      if (existing) return current.map((pass) => (pass.id === existing.id ? { ...pass, status: "Redeemed" } : pass));
+      return [
+        {
+          id: `gift-${Date.now()}`,
+          code,
+          recipient: "You",
+          status: "Redeemed",
+          perk: "Promo access",
+        },
+        ...current.slice(0, 9),
+      ];
+    });
+  }
+
+  function removeGiftPass(id) {
+    setGiftPasses((current) => current.filter((pass) => pass.id !== id));
   }
 
 
@@ -3650,7 +3790,13 @@ function App() {
             onRemoveDevice={removeDevice}
             onAddDevice={addDevice}
           />
-          <OperatorDashboard
+          <GiftPassCenter
+            passes={giftPasses}
+            activePlanName={(subscriptionPlans.find((plan) => plan.id === subscriptionPlan) || subscriptionPlans[1]).name}
+            onPassCreate={createGiftPass}
+            onPassRedeem={redeemGiftPass}
+            onPassRemove={removeGiftPass}
+          />          <OperatorDashboard
             items={safeAnime}
             savedCount={savedItems.length}
             reminderCount={reminderItems.length}
