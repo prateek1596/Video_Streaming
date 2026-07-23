@@ -7153,3 +7153,206 @@ svg {
     flex: 1 1 8rem;
   }
 }
+
+.gift-center {
+  display: grid;
+  gap: 0.85rem;
+  padding: 1rem;
+  border: 1px solid rgba(246, 200, 95, 0.22);
+  border-radius: 0.7rem;
+  background: linear-gradient(145deg, rgba(246, 200, 95, 0.08), rgba(255, 255, 255, 0.055));
+}
+
+.gift-heading {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.gift-heading h2 {
+  margin: 0.2rem 0 0;
+  font-size: clamp(1.15rem, 1.8vw, 1.45rem);
+}
+
+.gift-heading > span {
+  display: inline-flex;
+  min-height: 1.9rem;
+  align-items: center;
+  padding: 0 0.6rem;
+  border: 1px solid rgba(246, 200, 95, 0.4);
+  border-radius: 99rem;
+  background: rgba(246, 200, 95, 0.12);
+  color: var(--gold);
+  font-size: 0.78rem;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.gift-stat-grid,
+.gift-forms,
+.gift-list {
+  display: grid;
+  gap: 0.55rem;
+}
+
+.gift-stat-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.gift-stat-grid > div,
+.gift-focus,
+.gift-row,
+.gift-forms label,
+.gift-forms button,
+.gift-remove {
+  min-width: 0;
+  border: 1px solid var(--line);
+  border-radius: 0.55rem;
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--text);
+}
+
+.gift-stat-grid > div,
+.gift-focus {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 0.15rem 0.45rem;
+  align-items: center;
+  padding: 0.65rem;
+}
+
+.gift-stat-grid svg,
+.gift-focus svg {
+  grid-row: span 2;
+  color: var(--gold);
+}
+
+.gift-stat-grid span,
+.gift-focus span,
+.gift-forms span,
+.gift-row span {
+  color: var(--muted);
+  font-size: 0.74rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.gift-stat-grid strong,
+.gift-focus strong,
+.gift-focus p,
+.gift-row strong,
+.gift-row p {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.gift-focus > div,
+.gift-row > div {
+  display: grid;
+  min-width: 0;
+  gap: 0.18rem;
+}
+
+.gift-focus p,
+.gift-row p {
+  margin: 0;
+  color: #d8dfec;
+  line-height: 1.5;
+}
+
+.gift-forms {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.gift-forms form {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.55rem;
+  align-items: end;
+  min-width: 0;
+}
+
+.gift-forms label {
+  display: grid;
+  gap: 0.25rem;
+  padding: 0.55rem;
+}
+
+.gift-forms input {
+  width: 100%;
+  min-height: 2.35rem;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--text);
+}
+
+.gift-forms button {
+  display: inline-flex;
+  min-height: 3.65rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  padding: 0 0.85rem;
+  font-weight: 850;
+  transition:
+    transform 160ms ease,
+    border-color 160ms ease,
+    background 160ms ease;
+}
+
+.gift-forms button:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.gift-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.75rem;
+  align-items: start;
+  padding: 0.75rem;
+  background: rgba(8, 10, 16, 0.28);
+}
+
+.gift-remove {
+  display: grid;
+  width: 2.35rem;
+  height: 2.35rem;
+  place-items: center;
+  transition:
+    transform 160ms ease,
+    border-color 160ms ease,
+    background 160ms ease;
+}
+
+.gift-forms button:hover:not(:disabled),
+.gift-remove:hover {
+  transform: translateY(-1px);
+  border-color: rgba(255, 255, 255, 0.28);
+  background: rgba(255, 255, 255, 0.1);
+}
+
+@media (max-width: 860px) {
+  .gift-stat-grid,
+  .gift-forms {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 560px) {
+  .gift-heading {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .gift-forms form,
+  .gift-row {
+    grid-template-columns: 1fr;
+  }
+
+  .gift-forms button {
+    min-height: 2.8rem;
+  }
+}
