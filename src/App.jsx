@@ -3944,7 +3944,8 @@ function App() {
             onPassCreate={createGiftPass}
             onPassRedeem={redeemGiftPass}
             onPassRemove={removeGiftPass}
-          />          <OperatorDashboard
+          />
+          <OperatorDashboard
             items={safeAnime}
             savedCount={savedItems.length}
             reminderCount={reminderItems.length}
@@ -3969,7 +3970,8 @@ function App() {
             onTicketCreate={createSupportTicket}
             onTicketResolve={resolveSupportTicket}
             onTicketRemove={removeSupportTicket}
-          />          <WatchGoals
+          />
+          <WatchGoals
             items={savedItems}
             progress={progress}
             currentEpisodes={currentEpisodes}
