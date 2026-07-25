@@ -105,6 +105,15 @@ const defaultGiftPasses = [
   { id: "gift-2", code: "BLOOM-FRI", recipient: "Rin", status: "Redeemed", perk: "Watch-room premiere pass" },
 ];
 
+const localizationLanguages = ["English", "Hindi", "Japanese", "Spanish", "Portuguese"];
+const localizationStatuses = ["Draft", "QA", "Ready", "Live"];
+const defaultLocalizationJobs = [
+  { id: "loc-1", animeId: "neon-ronin-zero", language: "Hindi", status: "QA", progress: 72, owner: "Mika" },
+  { id: "loc-2", animeId: "signal-bloom", language: "Spanish", status: "Ready", progress: 94, owner: "Rin" },
+  { id: "loc-3", animeId: "cloud-atelier", language: "Portuguese", status: "Live", progress: 100, owner: "Aya" },
+  { id: "loc-4", animeId: "starfall-railway", language: "English", status: "Draft", progress: 38, owner: "You" },
+];
+
 function readStoredState() {
   try {
     const parsed = JSON.parse(localStorage.getItem(storageKey));
@@ -1997,6 +2006,112 @@ function OperatorDashboard({ items, savedCount, reminderCount, downloadedCount, 
     </section>
   );
 }
+function LocalizationCenter({ items, jobs, onJobCreate, onJobAdvance, onJobRemove }) {
+  const [selectedAnimeId, setSelectedAnimeId] = useState(items[0]?.id || anime[0].id);
+  const [selectedLanguage, setSelectedLanguage] = useState(localizationLanguages[0]);
+  const titleItems = items.length ? items : anime;
+  const readyCount = jobs.filter((job) => ["Ready", "Live"].includes(job.status)).length;
+  const qaCount = jobs.filter((job) => job.status === "QA").length;
+  const coverageCount = new Set(jobs.filter((job) => job.status === "Live").map((job) => job.animeId)).size;
+  const activeJob = jobs.find((job) => job.status !== "Live") || jobs[0];
+  const activeItem = activeJob ? anime.find((item) => item.id === activeJob.animeId) || titleItems[0] : titleItems[0];
+
+  function createJob(event) {
+    event.preventDefault();
+    onJobCreate(selectedAnimeId, selectedLanguage);
+  }
+
+  return (
+    <section className="localization-center" aria-label="Localization operations">
+      <div className="localization-heading">
+        <div>
+          <p className="eyebrow">Localization</p>
+          <h2>Subtitle and dub pipeline</h2>
+        </div>
+        <span>{`${readyCount}/${jobs.length || 1} ready`}</span>
+      </div>
+      <div className="localization-stat-grid">
+        <div>
+          <Captions size={17} />
+          <span>Active</span>
+          <strong>{jobs.filter((job) => job.status !== "Live").length}</strong>
+        </div>
+        <div>
+          <CheckCircle2 size={17} />
+          <span>Coverage</span>
+          <strong>{`${coverageCount}/${titleItems.length}`}</strong>
+        </div>
+        <div>
+          <Clock3 size={17} />
+          <span>QA load</span>
+          <strong>{qaCount}</strong>
+        </div>
+      </div>
+      {activeJob && (
+        <article className="localization-focus">
+          <div>
+            <Captions size={18} />
+            <div>
+              <span>Current handoff</span>
+              <strong>{activeItem?.title || "Title pending"}</strong>
+              <p>{`${activeJob.language} / ${activeJob.status} / ${activeJob.owner}`}</p>
+            </div>
+          </div>
+          <div className="localization-meter" aria-label={`${activeJob.progress}% localized`}>
+            <span style={{ width: `${Math.min(100, activeJob.progress)}%` }} />
+          </div>
+        </article>
+      )}
+      <form className="localization-form" onSubmit={createJob}>
+        <label>
+          <span>Title</span>
+          <select value={selectedAnimeId} onChange={(event) => setSelectedAnimeId(event.target.value)}>
+            {titleItems.map((item) => (
+              <option key={item.id} value={item.id}>{item.title}</option>
+            ))}
+          </select>
+        </label>
+        <label>
+          <span>Language</span>
+          <select value={selectedLanguage} onChange={(event) => setSelectedLanguage(event.target.value)}>
+            {localizationLanguages.map((language) => (
+              <option key={language} value={language}>{language}</option>
+            ))}
+          </select>
+        </label>
+        <button type="submit">
+          <CirclePlus size={16} />
+          Add job
+        </button>
+      </form>
+      <div className="localization-list">
+        {jobs.map((job) => {
+          const item = anime.find((candidate) => candidate.id === job.animeId) || titleItems[0];
+          return (
+            <article className="localization-row" data-status={job.status} key={job.id}>
+              <div>
+                <strong>{item?.title || "Unknown title"}</strong>
+                <span>{`${job.language} / ${job.status} / ${job.progress}%`}</span>
+                <div className="localization-meter" aria-label={`${job.progress}% complete`}>
+                  <span style={{ width: `${Math.min(100, job.progress)}%` }} />
+                </div>
+              </div>
+              <div className="localization-actions">
+                <button type="button" onClick={() => onJobAdvance(job.id)} disabled={job.status === "Live"}>
+                  <CheckCircle2 size={16} />
+                  Advance
+                </button>
+                <IconButton label={`Remove ${item?.title || "localization job"}`} className="localization-remove" onClick={() => onJobRemove(job.id)}>
+                  <Trash2 size={16} />
+                </IconButton>
+              </div>
+            </article>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
 function ReviewHub({ items, reviews, onReviewSubmit, onReviewRemove }) {
   const [selectedReviewId, setSelectedReviewId] = useState(items[0]?.id || anime[0].id);
   const [draftRating, setDraftRating] = useState(5);
@@ -2975,7 +3090,7 @@ function App() {
   const [partyMessages, setPartyMessages] = useState(() => stored?.partyMessages || defaultPartyMessages);
   const [reviews, setReviews] = useState(() => stored?.reviews || defaultReviews);
   const [supportTickets, setSupportTickets] = useState(() => stored?.supportTickets || defaultSupportTickets);
-  const [giftPasses, setGiftPasses] = useState(() => stored?.giftPasses || defaultGiftPasses);
+  const [giftPasses, setGiftPasses] = useState(() => stored?.giftPasses || defaultGiftPasses);`r`n  const [localizationJobs, setLocalizationJobs] = useState(() => stored?.localizationJobs || defaultLocalizationJobs);
   const [sessionQueue, setSessionQueue] = useState(() => stored?.sessionQueue || defaultSessionQueue);
   const [sessionTarget, setSessionTarget] = useState(stored?.sessionTarget || "balanced");
   const [downloaded, setDownloaded] = useState(() => new Set(stored?.downloaded || ["signal-bloom"]));
@@ -3115,6 +3230,7 @@ function App() {
       reviews,
       supportTickets,
       giftPasses,
+      localizationJobs,
       sessionQueue,
       sessionTarget,
       downloaded: Array.from(downloaded),
@@ -3127,7 +3243,7 @@ function App() {
       devices,
     };
     localStorage.setItem(storageKey, JSON.stringify(payload));
-  }, [selectedId, selectedEpisode, currentEpisodes, saved, reminders, progress, quality, playbackSpeed, autoplayNext, ambientMode, skipIntro, captionsOn, subtitleLanguage, dataSaver, maturityLimit, notes, episodeFeedback, partyMessages, reviews, supportTickets, giftPasses, sessionQueue, sessionTarget, downloaded, activeProfileId, roomMode, activeChapterId, activeTranscriptId, subscriptionPlan, billingCycle, devices]);
+  }, [selectedId, selectedEpisode, currentEpisodes, saved, reminders, progress, quality, playbackSpeed, autoplayNext, ambientMode, skipIntro, captionsOn, subtitleLanguage, dataSaver, maturityLimit, notes, episodeFeedback, partyMessages, reviews, supportTickets, giftPasses, localizationJobs, sessionQueue, sessionTarget, downloaded, activeProfileId, roomMode, activeChapterId, activeTranscriptId, subscriptionPlan, billingCycle, devices]);
 
   useEffect(() => {
     const sections = ["watch", "continue", "discover", "latest", "watchlist"]
@@ -3221,7 +3337,7 @@ function App() {
     setPartyMessages(defaultPartyMessages);
     setReviews(defaultReviews);
     setSupportTickets(defaultSupportTickets);
-    setGiftPasses(defaultGiftPasses);
+    setGiftPasses(defaultGiftPasses);`r`n    setLocalizationJobs(defaultLocalizationJobs);
     setSessionQueue(defaultSessionQueue);
     setSessionTarget("balanced");
     setDownloaded(new Set(["signal-bloom"]));
@@ -3339,8 +3455,38 @@ function App() {
   function removeGiftPass(id) {
     setGiftPasses((current) => current.filter((pass) => pass.id !== id));
   }
+  function createLocalizationJob(animeId, language) {
+    setLocalizationJobs((current) => [
+      {
+        id: `loc-${Date.now()}`,
+        animeId,
+        language,
+        status: "Draft",
+        progress: 18,
+        owner: "You",
+      },
+      ...current.slice(0, 11),
+    ]);
+  }
 
+  function advanceLocalizationJob(id) {
+    setLocalizationJobs((current) =>
+      current.map((job) => {
+        if (job.id !== id) return job;
+        const currentIndex = localizationStatuses.indexOf(job.status);
+        const nextStatus = localizationStatuses[Math.min(currentIndex + 1, localizationStatuses.length - 1)] || "Live";
+        return {
+          ...job,
+          status: nextStatus,
+          progress: nextStatus === "Live" ? 100 : Math.min(99, job.progress + 28),
+        };
+      }),
+    );
+  }
 
+  function removeLocalizationJob(id) {
+    setLocalizationJobs((current) => current.filter((job) => job.id !== id));
+  }
   function addToSessionQueue(id) {
     setSessionQueue((current) => (current.includes(id) ? current : [...current, id]));
   }
@@ -3802,6 +3948,13 @@ function App() {
             reminderCount={reminderItems.length}
             downloadedCount={downloaded.size}
             progress={progress}
+          />
+          <LocalizationCenter
+            items={safeAnime}
+            jobs={localizationJobs}
+            onJobCreate={createLocalizationJob}
+            onJobAdvance={advanceLocalizationJob}
+            onJobRemove={removeLocalizationJob}
           />
           <ReviewHub
             items={savedItems.length ? savedItems : safeAnime}
