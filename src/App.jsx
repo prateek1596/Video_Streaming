@@ -3090,7 +3090,8 @@ function App() {
   const [partyMessages, setPartyMessages] = useState(() => stored?.partyMessages || defaultPartyMessages);
   const [reviews, setReviews] = useState(() => stored?.reviews || defaultReviews);
   const [supportTickets, setSupportTickets] = useState(() => stored?.supportTickets || defaultSupportTickets);
-  const [giftPasses, setGiftPasses] = useState(() => stored?.giftPasses || defaultGiftPasses);`r`n  const [localizationJobs, setLocalizationJobs] = useState(() => stored?.localizationJobs || defaultLocalizationJobs);
+  const [giftPasses, setGiftPasses] = useState(() => stored?.giftPasses || defaultGiftPasses);
+  const [localizationJobs, setLocalizationJobs] = useState(() => stored?.localizationJobs || defaultLocalizationJobs);
   const [sessionQueue, setSessionQueue] = useState(() => stored?.sessionQueue || defaultSessionQueue);
   const [sessionTarget, setSessionTarget] = useState(stored?.sessionTarget || "balanced");
   const [downloaded, setDownloaded] = useState(() => new Set(stored?.downloaded || ["signal-bloom"]));
@@ -3337,7 +3338,8 @@ function App() {
     setPartyMessages(defaultPartyMessages);
     setReviews(defaultReviews);
     setSupportTickets(defaultSupportTickets);
-    setGiftPasses(defaultGiftPasses);`r`n    setLocalizationJobs(defaultLocalizationJobs);
+    setGiftPasses(defaultGiftPasses);
+    setLocalizationJobs(defaultLocalizationJobs);
     setSessionQueue(defaultSessionQueue);
     setSessionTarget("balanced");
     setDownloaded(new Set(["signal-bloom"]));
