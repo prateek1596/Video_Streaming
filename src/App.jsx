@@ -90,6 +90,11 @@ const defaultPartyMessages = [
   { id: "party-2", animeId: "signal-bloom", episode: 7, author: "Rin", text: "That flower code has to be a map.", tone: "Theory" },
   { id: "party-3", animeId: "cloud-atelier", episode: 11, author: "Aya", text: "Weather painting is such a beautiful power system.", tone: "Vibe" },
 ];
+const inviteCandidates = ["Mika", "Rin", "Aya", "Noor"];
+const defaultPartyInvites = [
+  { id: "invite-1", animeId: "neon-ronin-zero", episode: 1, recipient: "Mika", status: "Accepted", eta: "Ready" },
+  { id: "invite-2", animeId: "signal-bloom", episode: 7, recipient: "Rin", status: "Invited", eta: "4 min" },
+];
 const defaultReviews = [
   { id: "review-1", animeId: "neon-ronin-zero", author: "Mika", rating: 5, text: "Sharp action, clean pacing, and a fantastic neon skyline." },
   { id: "review-2", animeId: "signal-bloom", author: "Rin", rating: 4, text: "The mystery payoff is patient, but the flower code is worth it." },
@@ -1022,12 +1027,14 @@ function EpisodeFeedback({ item, selectedEpisode, feedback, onFeedbackChange }) 
     </aside>
   );
 }
-function WatchParty({ item, selectedEpisode, messages, onSendMessage }) {
+function WatchParty({ item, selectedEpisode, messages, invites, onSendMessage, onInviteFriend, onNudgeInvite, onCancelInvite }) {
   const [draft, setDraft] = useState("");
   const [pollVotes, setPollVotes] = useState({});
   const activeMessages = messages.filter((message) => message.animeId === item.id && message.episode === selectedEpisode).slice(-5);
+  const activeInvites = invites.filter((invite) => invite.animeId === item.id && invite.episode === selectedEpisode).slice(-4);
   const viewerCount = item.popularity + selectedEpisode * 3;
   const reactions = ["Hype", "Theory", "Wow"];
+  const nextInviteName = inviteCandidates.find((name) => !activeInvites.some((invite) => invite.recipient === name)) || inviteCandidates[activeInvites.length % inviteCandidates.length];
   const pollKey = `${item.id}:${selectedEpisode}`;
   const pollOptions = [
     { id: "twist", label: "Plot twist" },
@@ -1070,7 +1077,7 @@ function WatchParty({ item, selectedEpisode, messages, onSendMessage }) {
         </span>
       </div>
       <div className="party-actions" aria-label="Watch party actions">
-        <button type="button">
+        <button type="button" onClick={() => onInviteFriend(item.id, selectedEpisode, nextInviteName)}>
           <Share2 size={16} />
           Invite
         </button>
@@ -1100,6 +1107,36 @@ function WatchParty({ item, selectedEpisode, messages, onSendMessage }) {
           })}
         </div>
       </div>
+      <div className="party-invites" aria-label="Watch party invites">
+        <div className="party-invites-heading">
+          <span>Invite list</span>
+          <strong>{activeInvites.length ? `${activeInvites.length} active` : "Open room"}</strong>
+        </div>
+        {activeInvites.length ? (
+          <div className="party-invite-list">
+            {activeInvites.map((invite) => (
+              <article className={`party-invite ${invite.status.toLowerCase()}`} key={invite.id}>
+                <div>
+                  <strong>{invite.recipient}</strong>
+                  <span>{`${invite.status} / ${invite.eta}`}</span>
+                </div>
+                <button type="button" onClick={() => onNudgeInvite(invite.id)}>
+                  <Bell size={15} />
+                  Nudge
+                </button>
+                <IconButton label={`Cancel invite for ${invite.recipient}`} className="party-invite-cancel" onClick={() => onCancelInvite(invite.id)}>
+                  <X size={15} />
+                </IconButton>
+              </article>
+            ))}
+          </div>
+        ) : (
+          <button className="party-invite-empty" type="button" onClick={() => onInviteFriend(item.id, selectedEpisode, nextInviteName)}>
+            <Share2 size={16} />
+            <span>{`Invite ${nextInviteName} to this episode`}</span>
+          </button>
+        )}
+      </div>
       <div className="party-feed" aria-live="polite">
         {activeMessages.length ? (
           activeMessages.map((message) => (
@@ -1126,8 +1163,7 @@ function WatchParty({ item, selectedEpisode, messages, onSendMessage }) {
       </form>
     </aside>
   );
-}
-function QueueMixer({ items, selected, currentEpisodes, progress, sessionTarget, onSessionTargetChange, onPlay, onAddCurrent, onRemove, onClear }) {
+}function QueueMixer({ items, selected, currentEpisodes, progress, sessionTarget, onSessionTargetChange, onPlay, onAddCurrent, onRemove, onClear }) {
   const nextItem = items.find((item) => item.id !== selected.id) || items[0] || selected;
   const nextEpisode = currentEpisodes[nextItem.id] || nextItem.currentEpisode;
   const totalMinutes = items.reduce((sum, item) => sum + durationMinutes(item.duration), 0);
@@ -3087,7 +3123,7 @@ function App() {
   const [maturityLimit, setMaturityLimit] = useState(stored?.maturityLimit || "TV-14");
   const [notes, setNotes] = useState(() => stored?.notes || {});
   const [episodeFeedback, setEpisodeFeedback] = useState(() => stored?.episodeFeedback || {});
-  const [partyMessages, setPartyMessages] = useState(() => stored?.partyMessages || defaultPartyMessages);
+  const [partyMessages, setPartyMessages] = useState(() => stored?.partyMessages || defaultPartyMessages);`r`n  const [partyInvites, setPartyInvites] = useState(() => stored?.partyInvites || defaultPartyInvites);
   const [reviews, setReviews] = useState(() => stored?.reviews || defaultReviews);
   const [supportTickets, setSupportTickets] = useState(() => stored?.supportTickets || defaultSupportTickets);
   const [giftPasses, setGiftPasses] = useState(() => stored?.giftPasses || defaultGiftPasses);
@@ -3244,7 +3280,7 @@ function App() {
       devices,
     };
     localStorage.setItem(storageKey, JSON.stringify(payload));
-  }, [selectedId, selectedEpisode, currentEpisodes, saved, reminders, progress, quality, playbackSpeed, autoplayNext, ambientMode, skipIntro, captionsOn, subtitleLanguage, dataSaver, maturityLimit, notes, episodeFeedback, partyMessages, reviews, supportTickets, giftPasses, localizationJobs, sessionQueue, sessionTarget, downloaded, activeProfileId, roomMode, activeChapterId, activeTranscriptId, subscriptionPlan, billingCycle, devices]);
+  }, [selectedId, selectedEpisode, currentEpisodes, saved, reminders, progress, quality, playbackSpeed, autoplayNext, ambientMode, skipIntro, captionsOn, subtitleLanguage, dataSaver, maturityLimit, notes, episodeFeedback, partyMessages, partyInvites, reviews, supportTickets, giftPasses, localizationJobs, sessionQueue, sessionTarget, downloaded, activeProfileId, roomMode, activeChapterId, activeTranscriptId, subscriptionPlan, billingCycle, devices]);
 
   useEffect(() => {
     const sections = ["watch", "continue", "discover", "latest", "watchlist"]
