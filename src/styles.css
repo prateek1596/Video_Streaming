@@ -1872,6 +1872,60 @@ svg {
   color: var(--gold);
 }
 
+.profile-switcher {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.5rem;
+}
+
+.profile-switcher button {
+  display: grid;
+  min-width: 0;
+  gap: 0.18rem;
+  min-height: 3.4rem;
+  padding: 0.55rem;
+  border: 1px solid var(--line);
+  border-radius: 0.55rem;
+  background: rgba(255, 255, 255, 0.055);
+  color: var(--text);
+  text-align: left;
+}
+
+.profile-switcher button:hover {
+  border-color: rgba(255, 255, 255, 0.28);
+  background: rgba(255, 255, 255, 0.095);
+}
+
+.profile-switcher button.active.teal {
+  border-color: rgba(44, 230, 211, 0.5);
+  background: rgba(44, 230, 211, 0.14);
+}
+
+.profile-switcher button.active.gold {
+  border-color: rgba(246, 200, 95, 0.5);
+  background: rgba(246, 200, 95, 0.14);
+}
+
+.profile-switcher button.active.red {
+  border-color: rgba(255, 79, 103, 0.5);
+  background: rgba(255, 79, 103, 0.14);
+}
+
+.profile-switcher strong,
+.profile-switcher span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.profile-switcher strong {
+  font-size: 0.84rem;
+}
+
+.profile-switcher span {
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 800;
+}
 .profile-field {
   display: grid;
   gap: 0.45rem;
