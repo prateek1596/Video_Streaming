@@ -3751,7 +3751,11 @@ function App() {
               item={selected}
               selectedEpisode={selectedEpisode}
               messages={partyMessages}
+              invites={partyInvites}
               onSendMessage={sendPartyMessage}
+              onInviteFriend={inviteFriendToParty}
+              onNudgeInvite={nudgePartyInvite}
+              onCancelInvite={cancelPartyInvite}
             />
             <QueueMixer
               items={sessionQueueItems}
