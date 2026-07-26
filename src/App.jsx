@@ -3123,7 +3123,8 @@ function App() {
   const [maturityLimit, setMaturityLimit] = useState(stored?.maturityLimit || "TV-14");
   const [notes, setNotes] = useState(() => stored?.notes || {});
   const [episodeFeedback, setEpisodeFeedback] = useState(() => stored?.episodeFeedback || {});
-  const [partyMessages, setPartyMessages] = useState(() => stored?.partyMessages || defaultPartyMessages);`r`n  const [partyInvites, setPartyInvites] = useState(() => stored?.partyInvites || defaultPartyInvites);
+  const [partyMessages, setPartyMessages] = useState(() => stored?.partyMessages || defaultPartyMessages);
+  const [partyInvites, setPartyInvites] = useState(() => stored?.partyInvites || defaultPartyInvites);
   const [reviews, setReviews] = useState(() => stored?.reviews || defaultReviews);
   const [supportTickets, setSupportTickets] = useState(() => stored?.supportTickets || defaultSupportTickets);
   const [giftPasses, setGiftPasses] = useState(() => stored?.giftPasses || defaultGiftPasses);
@@ -3264,6 +3265,7 @@ function App() {
       notes,
       episodeFeedback,
       partyMessages,
+      partyInvites,
       reviews,
       supportTickets,
       giftPasses,
@@ -3422,6 +3424,35 @@ function App() {
     ]);
   }
 
+  function inviteFriendToParty(animeId, episode, recipient) {
+    setPartyInvites((current) => {
+      const existingInvite = current.find((invite) => invite.animeId === animeId && invite.episode === episode && invite.recipient === recipient);
+      if (existingInvite) {
+        return current.map((invite) =>
+          invite.id === existingInvite.id ? { ...invite, status: "Nudged", eta: "Now" } : invite,
+        );
+      }
+      return [
+        ...current,
+        {
+          id: `invite-${Date.now()}`,
+          animeId,
+          episode,
+          recipient,
+          status: "Invited",
+          eta: `${Math.max(2, episode + recipient.length)} min`,
+        },
+      ];
+    });
+  }
+
+  function nudgePartyInvite(id) {
+    setPartyInvites((current) => current.map((invite) => (invite.id === id ? { ...invite, status: "Nudged", eta: "Now" } : invite)));
+  }
+
+  function cancelPartyInvite(id) {
+    setPartyInvites((current) => current.filter((invite) => invite.id !== id));
+  }
   function submitReview(review) {
     setReviews((current) => [
       {
