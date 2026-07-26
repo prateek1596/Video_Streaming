@@ -282,7 +282,8 @@ function Topbar({ query, onQueryChange, reminderItems, quality, captionsOn, subt
                     <span>{profile.taste}</span>
                   </button>
                 ))}
-              </div>              <label className="profile-field">
+              </div>
+              <label className="profile-field">
                 <span>Default quality</span>
                 <select value={quality} onChange={(event) => onQualityChange(event.target.value)}>
                   <option>Auto</option>
