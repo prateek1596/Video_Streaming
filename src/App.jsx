@@ -196,7 +196,7 @@ function Sidebar({ activeSection }) {
   );
 }
 
-function Topbar({ query, onQueryChange, reminderItems, quality, captionsOn, subtitleLanguage, onPlay, onReminderToggle, onQualityChange, onSubtitleLanguageChange, onCaptionsToggle, onResetLibrary }) {
+function Topbar({ query, onQueryChange, reminderItems, quality, captionsOn, subtitleLanguage, activeProfile, onProfileChange, onPlay, onReminderToggle, onQualityChange, onSubtitleLanguageChange, onCaptionsToggle, onResetLibrary }) {
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
 
@@ -259,18 +259,30 @@ function Topbar({ query, onQueryChange, reminderItems, quality, captionsOn, subt
             aria-expanded={isProfileOpen}
             onClick={() => setIsProfileOpen((current) => !current)}
           >
-            PR
+            {activeProfile.initials}
           </button>
           {isProfileOpen && (
             <div className="profile-panel">
               <div className="profile-heading">
                 <div>
                   <p className="eyebrow">Profile</p>
-                  <strong>Prateek</strong>
+                  <strong>{activeProfile.name}</strong>
                 </div>
                 <Settings size={18} />
               </div>
-              <label className="profile-field">
+              <div className="profile-switcher" aria-label="Switch viewer profile">
+                {viewerProfiles.map((profile) => (
+                  <button
+                    className={`${activeProfile.id === profile.id ? "active" : ""} ${profile.accent}`}
+                    key={profile.id}
+                    type="button"
+                    onClick={() => onProfileChange(profile.id)}
+                  >
+                    <strong>{profile.initials}</strong>
+                    <span>{profile.taste}</span>
+                  </button>
+                ))}
+              </div>              <label className="profile-field">
                 <span>Default quality</span>
                 <select value={quality} onChange={(event) => onQualityChange(event.target.value)}>
                   <option>Auto</option>
@@ -3620,7 +3632,7 @@ function App() {
     <div className={`app-shell ${ambientMode ? "ambient-mode" : ""}`}>
       <Sidebar activeSection={activeSection} />
       <main className="main-area">
-        <Topbar query={query} onQueryChange={setQuery} reminderItems={reminderItems} quality={quality} captionsOn={captionsOn} subtitleLanguage={subtitleLanguage} onPlay={playSelection} onReminderToggle={toggleReminder} onQualityChange={setQuality} onSubtitleLanguageChange={updateSubtitleLanguage} onCaptionsToggle={() => setCaptionsOn((current) => !current)} onResetLibrary={resetLibraryState} />
+        <Topbar query={query} onQueryChange={setQuery} reminderItems={reminderItems} quality={quality} captionsOn={captionsOn} subtitleLanguage={subtitleLanguage} activeProfile={activeProfile} onProfileChange={setActiveProfileId} onPlay={playSelection} onReminderToggle={toggleReminder} onQualityChange={setQuality} onSubtitleLanguageChange={updateSubtitleLanguage} onCaptionsToggle={() => setCaptionsOn((current) => !current)} onResetLibrary={resetLibraryState} />
         <NowPlayingStrip item={selected} selectedEpisode={selectedEpisode} quality={quality} captionsOn={captionsOn} subtitleLanguage={subtitleLanguage} progress={progress[selected.id]} />
 
         <section className="watch-stage" id="watch">
