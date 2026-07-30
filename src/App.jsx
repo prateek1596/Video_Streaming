@@ -1502,6 +1502,7 @@ function ActivitySummary({ watchingCount, completedCount, nextUp }) {
 
 
 function WatchHistory({ items, currentEpisodes, progress, history, onPlay, onClear, onRemove }) {
+  const [historyFilter, setHistoryFilter] = useState("All");
   const enrichedHistory = history
     .map((entry) => {
       const item = items.find((candidate) => candidate.id === entry.animeId);
@@ -1516,9 +1517,14 @@ function WatchHistory({ items, currentEpisodes, progress, history, onPlay, onCle
     .filter(Boolean)
     .slice(0, 6);
 
-  const totalMinutes = enrichedHistory.reduce((sum, entry) => sum + durationMinutes(entry.item.duration), 0);
-  const uniqueShows = new Set(enrichedHistory.map((entry) => entry.item.id)).size;
-  const latest = enrichedHistory[0];
+  const visibleHistory = enrichedHistory.filter((entry) => {
+    if (historyFilter === "In progress") return entry.progress > 0 && entry.progress < 100;
+    if (historyFilter === "Complete") return entry.progress >= 100;
+    return true;
+  });
+  const totalMinutes = visibleHistory.reduce((sum, entry) => sum + durationMinutes(entry.item.duration), 0);
+  const uniqueShows = new Set(visibleHistory.map((entry) => entry.item.id)).size;
+  const latest = visibleHistory[0];
 
   return (
     <section className="watch-history" aria-label="Viewing history">
@@ -1531,6 +1537,20 @@ function WatchHistory({ items, currentEpisodes, progress, history, onPlay, onCle
           <Trash2 size={15} />
           Clear
         </button>
+      </div>
+      <div className="history-filter" role="tablist" aria-label="History filters">
+        {["All", "In progress", "Complete"].map((option) => (
+          <button
+            className={historyFilter === option ? "active" : ""}
+            key={option}
+            type="button"
+            role="tab"
+            aria-selected={historyFilter === option}
+            onClick={() => setHistoryFilter(option)}
+          >
+            {option}
+          </button>
+        ))}
       </div>
       <div className="history-stats">
         <div>
@@ -1550,8 +1570,8 @@ function WatchHistory({ items, currentEpisodes, progress, history, onPlay, onCle
         </div>
       </div>
       <div className="history-list">
-        {enrichedHistory.length ? (
-          enrichedHistory.map(({ item, episode, progress: itemProgress, watchedAt, id }) => (
+        {visibleHistory.length ? (
+          visibleHistory.map(({ item, episode, progress: itemProgress, watchedAt, id }) => (
             <article className="history-row" key={id}>
               <button className="history-art" style={{ "--poster": item.poster }} type="button" onClick={() => onPlay(item.id, episode, true)}>
                 E{episode}
@@ -1572,7 +1592,7 @@ function WatchHistory({ items, currentEpisodes, progress, history, onPlay, onCle
             </article>
           ))
         ) : (
-          <div className="history-empty">Plays and episode jumps will appear here.</div>
+          <div className="history-empty">No activity matches this history filter.</div>
         )}
       </div>
     </section>

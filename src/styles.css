@@ -1722,6 +1722,37 @@ svg {
   opacity: 0.42;
 }
 
+.history-filter {
+  display: flex;
+  gap: 0.45rem;
+  flex-wrap: wrap;
+}
+
+.history-filter button {
+  display: inline-flex;
+  min-height: 2.25rem;
+  align-items: center;
+  justify-content: center;
+  padding: 0 0.72rem;
+  border: 1px solid var(--line);
+  border-radius: 0.5rem;
+  background: rgba(255, 255, 255, 0.055);
+  color: var(--muted);
+  font-weight: 900;
+  transition:
+    transform 160ms ease,
+    border-color 160ms ease,
+    background 160ms ease,
+    color 160ms ease;
+}
+
+.history-filter button:hover,
+.history-filter button.active {
+  transform: translateY(-1px);
+  border-color: rgba(44, 230, 211, 0.42);
+  background: rgba(44, 230, 211, 0.13);
+  color: var(--teal);
+}
 .history-stats {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -1829,6 +1860,7 @@ svg {
   }
 
   .history-heading button,
+  .history-filter button,
   .history-stats {
     width: 100%;
   }
