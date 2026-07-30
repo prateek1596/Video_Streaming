@@ -63,6 +63,11 @@ const transcriptTemplates = [
   { id: "line-6", time: 1036, speaker: "Lead", text: "No more reruns. We finish this live." },
 ];
 const defaultSessionQueue = ["signal-bloom", "cloud-atelier", "starfall-railway"];
+const defaultWatchHistory = [
+  { id: "history-1", animeId: "signal-bloom", episode: 7, watchedAt: "Today" },
+  { id: "history-2", animeId: "cloud-atelier", episode: 11, watchedAt: "Yesterday" },
+  { id: "history-3", animeId: "neon-ronin-zero", episode: 1, watchedAt: "Mon" },
+];
 const sessionTargets = [
   { id: "short", label: "Short", minutes: 45 },
   { id: "balanced", label: "Balanced", minutes: 90 },
@@ -1495,6 +1500,84 @@ function ActivitySummary({ watchingCount, completedCount, nextUp }) {
   );
 }
 
+
+function WatchHistory({ items, currentEpisodes, progress, history, onPlay, onClear, onRemove }) {
+  const enrichedHistory = history
+    .map((entry) => {
+      const item = items.find((candidate) => candidate.id === entry.animeId);
+      if (!item) return null;
+      return {
+        ...entry,
+        item,
+        progress: Math.min(100, Math.max(0, Number(progress[item.id] ?? item.progress) || 0)),
+        episode: clampEpisode(entry.episode || currentEpisodes[item.id] || item.currentEpisode, item),
+      };
+    })
+    .filter(Boolean)
+    .slice(0, 6);
+
+  const totalMinutes = enrichedHistory.reduce((sum, entry) => sum + durationMinutes(entry.item.duration), 0);
+  const uniqueShows = new Set(enrichedHistory.map((entry) => entry.item.id)).size;
+  const latest = enrichedHistory[0];
+
+  return (
+    <section className="watch-history" aria-label="Viewing history">
+      <div className="history-heading">
+        <div>
+          <p className="eyebrow">History</p>
+          <h2>Recent activity</h2>
+        </div>
+        <button type="button" onClick={onClear} disabled={!enrichedHistory.length}>
+          <Trash2 size={15} />
+          Clear
+        </button>
+      </div>
+      <div className="history-stats">
+        <div>
+          <Clock3 size={16} />
+          <span>Minutes</span>
+          <strong>{totalMinutes}</strong>
+        </div>
+        <div>
+          <TvMinimalPlay size={16} />
+          <span>Shows</span>
+          <strong>{uniqueShows}</strong>
+        </div>
+        <div>
+          <TrendingUp size={16} />
+          <span>Latest</span>
+          <strong>{latest ? `E${latest.episode}` : "None"}</strong>
+        </div>
+      </div>
+      <div className="history-list">
+        {enrichedHistory.length ? (
+          enrichedHistory.map(({ item, episode, progress: itemProgress, watchedAt, id }) => (
+            <article className="history-row" key={id}>
+              <button className="history-art" style={{ "--poster": item.poster }} type="button" onClick={() => onPlay(item.id, episode, true)}>
+                E{episode}
+              </button>
+              <div>
+                <span>{watchedAt}</span>
+                <strong>{item.title}</strong>
+                <small>{`${episodeLabel(episode)} / ${itemProgress}% watched`}</small>
+              </div>
+              <div className="history-actions">
+                <button type="button" onClick={() => onPlay(item.id, episode, true)} aria-label={`Resume ${item.title}`}>
+                  <Play size={15} fill="currentColor" />
+                </button>
+                <button type="button" onClick={() => onRemove(id)} aria-label={`Remove ${item.title} from history`}>
+                  <X size={15} />
+                </button>
+              </div>
+            </article>
+          ))
+        ) : (
+          <div className="history-empty">Plays and episode jumps will appear here.</div>
+        )}
+      </div>
+    </section>
+  );
+}
 
 function recommendationReason(item, selected) {
   if (item.genre === selected.genre) return `${selected.genre} pick`;
