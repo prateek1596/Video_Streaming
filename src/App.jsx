@@ -3226,6 +3226,7 @@ function App() {
   const [giftPasses, setGiftPasses] = useState(() => stored?.giftPasses || defaultGiftPasses);
   const [localizationJobs, setLocalizationJobs] = useState(() => stored?.localizationJobs || defaultLocalizationJobs);
   const [sessionQueue, setSessionQueue] = useState(() => stored?.sessionQueue || defaultSessionQueue);
+  const [watchHistory, setWatchHistory] = useState(() => stored?.watchHistory || defaultWatchHistory);
   const [sessionTarget, setSessionTarget] = useState(stored?.sessionTarget || "balanced");
   const [downloaded, setDownloaded] = useState(() => new Set(stored?.downloaded || ["signal-bloom"]));
   const [activeProfileId, setActiveProfileId] = useState(stored?.activeProfileId || viewerProfiles[0].id);
@@ -3367,6 +3368,7 @@ function App() {
       giftPasses,
       localizationJobs,
       sessionQueue,
+      watchHistory,
       sessionTarget,
       downloaded: Array.from(downloaded),
       activeProfileId,
@@ -3378,7 +3380,7 @@ function App() {
       devices,
     };
     localStorage.setItem(storageKey, JSON.stringify(payload));
-  }, [selectedId, selectedEpisode, currentEpisodes, saved, reminders, progress, quality, playbackSpeed, autoplayNext, ambientMode, skipIntro, captionsOn, subtitleLanguage, dataSaver, maturityLimit, notes, episodeFeedback, partyMessages, partyInvites, reviews, supportTickets, giftPasses, localizationJobs, sessionQueue, sessionTarget, downloaded, activeProfileId, roomMode, activeChapterId, activeTranscriptId, subscriptionPlan, billingCycle, devices]);
+  }, [selectedId, selectedEpisode, currentEpisodes, saved, reminders, progress, quality, playbackSpeed, autoplayNext, ambientMode, skipIntro, captionsOn, subtitleLanguage, dataSaver, maturityLimit, notes, episodeFeedback, partyMessages, partyInvites, reviews, supportTickets, giftPasses, localizationJobs, sessionQueue, watchHistory, sessionTarget, downloaded, activeProfileId, roomMode, activeChapterId, activeTranscriptId, subscriptionPlan, billingCycle, devices]);
 
   useEffect(() => {
     const sections = ["watch", "continue", "discover", "latest", "watchlist"]
@@ -3395,6 +3397,28 @@ function App() {
     return () => observer.disconnect();
   }, []);
 
+  function recordWatchHistory(animeId, episode) {
+    setWatchHistory((current) => {
+      const sameEpisode = current.filter((entry) => !(entry.animeId === animeId && entry.episode === episode));
+      return [
+        {
+          id: `history-${Date.now()}`,
+          animeId,
+          episode,
+          watchedAt: "Just now",
+        },
+        ...sameEpisode,
+      ].slice(0, 20);
+    });
+  }
+
+  function removeWatchHistoryEntry(id) {
+    setWatchHistory((current) => current.filter((entry) => entry.id !== id));
+  }
+
+  function clearWatchHistory() {
+    setWatchHistory([]);
+  }
   function playSelection(id, episodeNumber, autoPlay = false) {
     const item = safeAnime.find((candidate) => candidate.id === id) || safeAnime[0];
     const nextEpisode = clampEpisode(episodeNumber || currentEpisodes[item.id], item);
@@ -3402,6 +3426,7 @@ function App() {
     setSelectedEpisode(nextEpisode);
     setCurrentEpisodes((current) => ({ ...current, [item.id]: nextEpisode }));
     setShouldAutoPlay(autoPlay);
+    recordWatchHistory(item.id, nextEpisode);
     setActiveChapterId(null);
     setActiveTranscriptId(null);
     setDetailsId(null);
@@ -3475,6 +3500,7 @@ function App() {
     setGiftPasses(defaultGiftPasses);
     setLocalizationJobs(defaultLocalizationJobs);
     setSessionQueue(defaultSessionQueue);
+    setWatchHistory(defaultWatchHistory);
     setSessionTarget("balanced");
     setDownloaded(new Set(["signal-bloom"]));
     setActiveProfileId(viewerProfiles[0].id);
