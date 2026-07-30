@@ -3919,6 +3919,15 @@ function App() {
             onMarkComplete={markComplete}
             onResetProgress={resetProgress}
           />
+          <WatchHistory
+            items={safeAnime}
+            currentEpisodes={currentEpisodes}
+            progress={progress}
+            history={watchHistory}
+            onPlay={playSelection}
+            onClear={clearWatchHistory}
+            onRemove={removeWatchHistoryEntry}
+          />
           <div className="continue-grid">
             {continueItems.map((item) => (
               <ContinueCard
