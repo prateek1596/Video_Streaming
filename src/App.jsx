@@ -3950,7 +3950,19 @@ function App() {
               onTranscriptSelect={selectTranscriptLine}
               onCaptionsToggle={() => setCaptionsOn((current) => !current)}
             />
-            <EpisodeQueue item={selected} selectedEpisode={selectedEpisode} progress={progress[selected.id]} onEpisodeSelect={playSelection} />
+            <CaptionStudio
+              captionsOn={captionsOn}
+              subtitleLanguage={subtitleLanguage}
+              captionSize={captionSize}
+              captionTheme={captionTheme}
+              captionDelay={captionDelay}
+              onCaptionsToggle={() => setCaptionsOn((current) => !current)}
+              onLanguageChange={updateSubtitleLanguage}
+              onSizeChange={setCaptionSize}
+              onThemeChange={setCaptionTheme}
+              onDelayChange={setCaptionDelay}
+              onReset={resetCaptionSettings}
+            />            <EpisodeQueue item={selected} selectedEpisode={selectedEpisode} progress={progress[selected.id]} onEpisodeSelect={playSelection} />
             <WatchNotes
               item={selected}
               selectedEpisode={selectedEpisode}
