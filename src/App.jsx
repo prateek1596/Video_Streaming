@@ -963,7 +963,7 @@ function MaturityGuard({ maturityLimit, blockedCount, visibleCount, selected, on
     </aside>
   );
 }
-function PlaybackPreferences({ playbackSpeed, autoplayNext, ambientMode, skipIntro, onSpeedChange, onAutoplayToggle, onAmbientToggle, onSkipIntroToggle }) {
+function PlaybackPreferences({ playbackSpeed, autoplayNext, ambientMode, skipIntro, breakReminder, onSpeedChange, onAutoplayToggle, onAmbientToggle, onSkipIntroToggle, onBreakReminderToggle }) {
   return (
     <aside className="playback-preferences" aria-label="Playback preferences">
       <div className="preferences-heading">
@@ -3300,6 +3300,7 @@ function App() {
   const [autoplayNext, setAutoplayNext] = useState(stored?.autoplayNext ?? true);
   const [ambientMode, setAmbientMode] = useState(Boolean(stored?.ambientMode));
   const [skipIntro, setSkipIntro] = useState(Boolean(stored?.skipIntro));
+  const [breakReminder, setBreakReminder] = useState(stored?.breakReminder ?? true);
   const [captionsOn, setCaptionsOn] = useState(Boolean(stored?.captionsOn));
   const [subtitleLanguage, setSubtitleLanguage] = useState(stored?.subtitleLanguage || "English");
   const [dataSaver, setDataSaver] = useState(Boolean(stored?.dataSaver));
@@ -3442,6 +3443,7 @@ function App() {
       autoplayNext,
       ambientMode,
       skipIntro,
+      breakReminder,
       captionsOn,
       subtitleLanguage,
       dataSaver,
@@ -3467,7 +3469,7 @@ function App() {
       devices,
     };
     localStorage.setItem(storageKey, JSON.stringify(payload));
-  }, [selectedId, selectedEpisode, currentEpisodes, saved, reminders, progress, quality, playbackSpeed, autoplayNext, ambientMode, skipIntro, captionsOn, subtitleLanguage, captionSize, captionTheme, captionDelay, dataSaver, maturityLimit, notes, episodeFeedback, partyMessages, partyInvites, reviews, supportTickets, giftPasses, localizationJobs, sessionQueue, watchHistory, sessionTarget, downloaded, activeProfileId, roomMode, activeChapterId, activeTranscriptId, subscriptionPlan, billingCycle, devices]);
+  }, [selectedId, selectedEpisode, currentEpisodes, saved, reminders, progress, quality, playbackSpeed, autoplayNext, ambientMode, skipIntro, breakReminder, captionsOn, subtitleLanguage, captionSize, captionTheme, captionDelay, dataSaver, maturityLimit, notes, episodeFeedback, partyMessages, partyInvites, reviews, supportTickets, giftPasses, localizationJobs, sessionQueue, watchHistory, sessionTarget, downloaded, activeProfileId, roomMode, activeChapterId, activeTranscriptId, subscriptionPlan, billingCycle, devices]);
 
   useEffect(() => {
     const sections = ["watch", "continue", "discover", "latest", "watchlist"]
@@ -3575,6 +3577,7 @@ function App() {
     setAutoplayNext(true);
     setAmbientMode(false);
     setSkipIntro(false);
+    setBreakReminder(true);
     setCaptionsOn(false);
     setSubtitleLanguage("English");
     setDataSaver(false);
