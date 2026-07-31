@@ -45,6 +45,8 @@ const languageOptions = ["All audio", "Sub", "Sub / Dub"];
 const ratingOptions = ["All ratings", "TV-PG", "TV-14", "PG-13"];
 const speedOptions = ["0.75x", "1x", "1.25x", "1.5x", "2x"];
 const subtitleOptions = ["English", "Hindi", "Japanese", "Spanish", "Off"];
+const captionSizeOptions = ["Small", "Medium", "Large"];
+const captionThemeOptions = ["Classic", "High contrast", "Soft glow"];
 const maturityOptions = ["TV-PG", "PG-13", "TV-14"];
 const ratingRank = { "TV-PG": 1, "PG-13": 2, "TV-14": 3 };
 const chapterTemplates = [
@@ -692,6 +694,71 @@ function EpisodeTranscript({ item, selectedEpisode, captionsOn, activeTranscript
       </div>
       <p className="transcript-footnote">Preview transcript for {item.title} {episodeLabel(selectedEpisode)}.</p>
     </aside>
+  );
+}
+function CaptionStudio({ captionsOn, subtitleLanguage, captionSize, captionTheme, captionDelay, onCaptionsToggle, onLanguageChange, onSizeChange, onThemeChange, onDelayChange, onReset }) {
+  return (
+    <section className="caption-studio" aria-label="Caption studio">
+      <div className="caption-studio-heading">
+        <div>
+          <p className="eyebrow">Captions</p>
+          <h2>Subtitle studio</h2>
+        </div>
+        <button className={captionsOn ? "active" : ""} type="button" onClick={onCaptionsToggle}>
+          <Captions size={16} />
+          {captionsOn ? "On" : "Off"}
+        </button>
+      </div>
+      <div className={`caption-preview ${captionSize.toLowerCase().replace(" ", "-")} ${captionTheme.toLowerCase().replace(" ", "-")}`}>
+        <span>{captionDelay > 0 ? `+${captionDelay.toFixed(1)}s` : `${captionDelay.toFixed(1)}s`}</span>
+        <strong>{captionsOn ? "Every missing frame points back to the midnight platform." : "Captions are off for this episode."}</strong>
+      </div>
+      <div className="caption-controls">
+        <label>
+          <span>Language</span>
+          <select value={subtitleLanguage} onChange={(event) => onLanguageChange(event.target.value)}>
+            {subtitleOptions.map((option) => (
+              <option key={option}>{option}</option>
+            ))}
+          </select>
+        </label>
+        <label>
+          <span>Size</span>
+          <select value={captionSize} onChange={(event) => onSizeChange(event.target.value)}>
+            {captionSizeOptions.map((option) => (
+              <option key={option}>{option}</option>
+            ))}
+          </select>
+        </label>
+        <label>
+          <span>Style</span>
+          <select value={captionTheme} onChange={(event) => onThemeChange(event.target.value)}>
+            {captionThemeOptions.map((option) => (
+              <option key={option}>{option}</option>
+            ))}
+          </select>
+        </label>
+      </div>
+      <label className="caption-delay">
+        <span>Sync offset</span>
+        <input
+          aria-label="Caption sync offset"
+          type="range"
+          min="-2"
+          max="2"
+          step="0.1"
+          value={captionDelay}
+          onChange={(event) => onDelayChange(Number(event.target.value))}
+        />
+        <strong>{captionDelay > 0 ? `+${captionDelay.toFixed(1)}s` : `${captionDelay.toFixed(1)}s`}</strong>
+      </label>
+      <div className="caption-actions">
+        <button type="button" onClick={onReset}>
+          <RotateCcw size={15} />
+          Reset captions
+        </button>
+      </div>
+    </section>
   );
 }
 function EpisodeToolkit({ playbackSpeed, captionsOn, skipIntro, ambientMode, activeChapterId, activeTranscriptId, onSpeedChange, onCaptionsToggle, onSkipIntroToggle, onAmbientToggle, onOpeningJump }) {
@@ -3400,7 +3467,7 @@ function App() {
       devices,
     };
     localStorage.setItem(storageKey, JSON.stringify(payload));
-  }, [selectedId, selectedEpisode, currentEpisodes, saved, reminders, progress, quality, playbackSpeed, autoplayNext, ambientMode, skipIntro, captionsOn, subtitleLanguage, dataSaver, maturityLimit, notes, episodeFeedback, partyMessages, partyInvites, reviews, supportTickets, giftPasses, localizationJobs, sessionQueue, watchHistory, sessionTarget, downloaded, activeProfileId, roomMode, activeChapterId, activeTranscriptId, subscriptionPlan, billingCycle, devices]);
+  }, [selectedId, selectedEpisode, currentEpisodes, saved, reminders, progress, quality, playbackSpeed, autoplayNext, ambientMode, skipIntro, captionsOn, subtitleLanguage, captionSize, captionTheme, captionDelay, dataSaver, maturityLimit, notes, episodeFeedback, partyMessages, partyInvites, reviews, supportTickets, giftPasses, localizationJobs, sessionQueue, watchHistory, sessionTarget, downloaded, activeProfileId, roomMode, activeChapterId, activeTranscriptId, subscriptionPlan, billingCycle, devices]);
 
   useEffect(() => {
     const sections = ["watch", "continue", "discover", "latest", "watchlist"]
@@ -3541,6 +3608,13 @@ function App() {
     setCaptionsOn(value !== "Off");
   }
 
+  function resetCaptionSettings() {
+    setCaptionsOn(true);
+    setSubtitleLanguage("English");
+    setCaptionSize("Medium");
+    setCaptionTheme("Classic");
+    setCaptionDelay(0);
+  }
   function updateMaturityLimit(value) {
     setMaturityLimit(value);
     setRatingFilter((current) => (current !== "All ratings" && (ratingRank[current] || 0) > (ratingRank[value] || 0) ? "All ratings" : current));
