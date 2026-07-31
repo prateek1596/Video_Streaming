@@ -994,6 +994,10 @@ function PlaybackPreferences({ playbackSpeed, autoplayNext, ambientMode, skipInt
           <WandSparkles size={16} />
           Ambient glow
         </button>
+        <button className={breakReminder ? "active" : ""} type="button" onClick={onBreakReminderToggle}>
+          <ShieldCheck size={16} />
+          Break reminder
+        </button>
       </div>
     </aside>
   );
@@ -3303,6 +3307,9 @@ function App() {
   const [breakReminder, setBreakReminder] = useState(stored?.breakReminder ?? true);
   const [captionsOn, setCaptionsOn] = useState(Boolean(stored?.captionsOn));
   const [subtitleLanguage, setSubtitleLanguage] = useState(stored?.subtitleLanguage || "English");
+  const [captionSize, setCaptionSize] = useState(stored?.captionSize || "Medium");
+  const [captionTheme, setCaptionTheme] = useState(stored?.captionTheme || "Classic");
+  const [captionDelay, setCaptionDelay] = useState(Number(stored?.captionDelay) || 0);
   const [dataSaver, setDataSaver] = useState(Boolean(stored?.dataSaver));
   const [maturityLimit, setMaturityLimit] = useState(stored?.maturityLimit || "TV-14");
   const [notes, setNotes] = useState(() => stored?.notes || {});
@@ -3446,6 +3453,9 @@ function App() {
       breakReminder,
       captionsOn,
       subtitleLanguage,
+      captionSize,
+      captionTheme,
+      captionDelay,
       dataSaver,
       maturityLimit,
       notes,
@@ -3580,6 +3590,9 @@ function App() {
     setBreakReminder(true);
     setCaptionsOn(false);
     setSubtitleLanguage("English");
+    setCaptionSize("Medium");
+    setCaptionTheme("Classic");
+    setCaptionDelay(0);
     setDataSaver(false);
     setMaturityLimit("TV-14");
     setNotes({});
@@ -3905,10 +3918,12 @@ function App() {
               autoplayNext={autoplayNext}
               ambientMode={ambientMode}
               skipIntro={skipIntro}
+              breakReminder={breakReminder}
               onSpeedChange={setPlaybackSpeed}
               onAutoplayToggle={() => setAutoplayNext((current) => !current)}
               onAmbientToggle={() => setAmbientMode((current) => !current)}
               onSkipIntroToggle={() => setSkipIntro((current) => !current)}
+              onBreakReminderToggle={() => setBreakReminder((current) => !current)}
             />
             <StreamHealth
               item={selected}
