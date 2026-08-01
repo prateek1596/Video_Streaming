@@ -550,6 +550,12 @@ button {
   .nav-stack {
     display: flex;
     overflow-x: auto;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .nav-stack::-webkit-scrollbar {
+    display: none;
   }
 
   .side-panel {
