@@ -550,11 +550,15 @@ button {
   .nav-stack {
     display: flex;
     overflow-x: auto;
+    overflow-y: hidden;
     scrollbar-width: none;
+    -ms-overflow-style: none;
     -webkit-overflow-scrolling: touch;
   }
 
   .nav-stack::-webkit-scrollbar {
+    width: 0;
+    height: 0;
     display: none;
   }
 
