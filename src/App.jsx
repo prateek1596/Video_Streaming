@@ -1,41 +1,43 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import Bell from "lucide-react/dist/esm/icons/bell.js";
-import Bookmark from "lucide-react/dist/esm/icons/bookmark.js";
-import BookmarkCheck from "lucide-react/dist/esm/icons/bookmark-check.js";
-import CalendarDays from "lucide-react/dist/esm/icons/calendar-days.js";
-import CheckCircle2 from "lucide-react/dist/esm/icons/check-circle-2.js";
-import Clapperboard from "lucide-react/dist/esm/icons/clapperboard.js";
-import Captions from "lucide-react/dist/esm/icons/captions.js";
-import CirclePlus from "lucide-react/dist/esm/icons/circle-plus.js";
-import ChevronLeft from "lucide-react/dist/esm/icons/chevron-left.js";
-import ChevronRight from "lucide-react/dist/esm/icons/chevron-right.js";
-import Clock3 from "lucide-react/dist/esm/icons/clock-3.js";
-import Download from "lucide-react/dist/esm/icons/download.js";
-import Gauge from "lucide-react/dist/esm/icons/gauge.js";
-import ListChecks from "lucide-react/dist/esm/icons/list-checks.js";
-import ScrollText from "lucide-react/dist/esm/icons/scroll-text.js";
-import Home from "lucide-react/dist/esm/icons/home.js";
-import Info from "lucide-react/dist/esm/icons/info.js";
-import Library from "lucide-react/dist/esm/icons/library.js";
-import ListVideo from "lucide-react/dist/esm/icons/list-video.js";
-import Lock from "lucide-react/dist/esm/icons/lock.js";
-import MessageCircle from "lucide-react/dist/esm/icons/message-circle.js";
-import Play from "lucide-react/dist/esm/icons/play.js";
-import RotateCcw from "lucide-react/dist/esm/icons/rotate-ccw.js";
-import Search from "lucide-react/dist/esm/icons/search.js";
-import Settings from "lucide-react/dist/esm/icons/settings.js";
-import SendHorizontal from "lucide-react/dist/esm/icons/send-horizontal.js";
-import ShieldCheck from "lucide-react/dist/esm/icons/shield-check.js";
-import SkipForward from "lucide-react/dist/esm/icons/skip-forward.js";
-import Share2 from "lucide-react/dist/esm/icons/share-2.js";
-import Sparkles from "lucide-react/dist/esm/icons/sparkles.js";
-import Star from "lucide-react/dist/esm/icons/star.js";
-import TrendingUp from "lucide-react/dist/esm/icons/trending-up.js";
-import TvMinimalPlay from "lucide-react/dist/esm/icons/tv-minimal-play.js";
-import Trash2 from "lucide-react/dist/esm/icons/trash-2.js";
-import WandSparkles from "lucide-react/dist/esm/icons/wand-sparkles.js";
-import UsersRound from "lucide-react/dist/esm/icons/users-round.js";
-import X from "lucide-react/dist/esm/icons/x.js";
+import {
+  Bell,
+  Bookmark,
+  BookmarkCheck,
+  CalendarDays,
+  Captions,
+  CheckCircle2,
+  ChevronLeft,
+  ChevronRight,
+  CirclePlus,
+  Clapperboard,
+  Clock3,
+  Download,
+  Gauge,
+  Home,
+  Info,
+  Library,
+  ListChecks,
+  ListVideo,
+  Lock,
+  MessageCircle,
+  Play,
+  RotateCcw,
+  ScrollText,
+  Search,
+  SendHorizontal,
+  Settings,
+  Share2,
+  ShieldCheck,
+  SkipForward,
+  Sparkles,
+  Star,
+  Trash2,
+  TrendingUp,
+  TvMinimalPlay,
+  UsersRound,
+  WandSparkles,
+  X,
+} from "lucide-react";
 import { anime, genres, sampleVideo, schedule } from "./data.js";
 import heroImage from "../assets/hero-anime-city.png";
 
