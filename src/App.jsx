@@ -2718,6 +2718,84 @@ function WatchGoals({ items, progress, currentEpisodes, reminders, onPlay, onMar
   );
 }
 
+function PremierePass({ items, progress, currentEpisodes, reminders, downloaded, onPlay, onDetails, onReminderToggle, onToggleDownload }) {
+  const passItems = items.length ? items : anime.slice(0, 4);
+  const completedTasks = [
+    passItems.filter((item) => Number(progress[item.id] ?? item.progress) > 0).length >= 3,
+    passItems.some((item) => Number(progress[item.id] ?? item.progress) >= 75),
+    passItems.some((item) => reminders.has(item.id)),
+    passItems.some((item) => downloaded.has(item.id)),
+  ].filter(Boolean).length;
+  const passPercent = Math.round((completedTasks / 4) * 100);
+  const focusItem =
+    passItems.find((item) => !reminders.has(item.id)) ||
+    passItems.find((item) => !downloaded.has(item.id)) ||
+    passItems.find((item) => Number(progress[item.id] ?? item.progress) < 75) ||
+    passItems[0];
+  const focusEpisode = currentEpisodes[focusItem.id] || focusItem.currentEpisode;
+  const focusProgress = Math.min(100, Math.max(0, Number(progress[focusItem.id] ?? focusItem.progress) || 0));
+  const isReminderOn = reminders.has(focusItem.id);
+  const isDownloaded = downloaded.has(focusItem.id);
+  const perks = [
+    [TvMinimalPlay, "Starter streak", "Watch 3 saved shows", passItems.filter((item) => Number(progress[item.id] ?? item.progress) > 0).length >= 3],
+    [Star, "Deep run", "Reach 75% on one title", passItems.some((item) => Number(progress[item.id] ?? item.progress) >= 75)],
+    [Bell, "Premiere ready", "Set a release alert", passItems.some((item) => reminders.has(item.id))],
+    [Download, "Travel kit", "Save one offline", passItems.some((item) => downloaded.has(item.id))],
+  ];
+
+  return (
+    <section className="premiere-pass" aria-label="Premiere pass rewards">
+      <div className="pass-heading">
+        <div>
+          <p className="eyebrow">Rewards</p>
+          <h2>Premiere pass</h2>
+        </div>
+        <span>{`${completedTasks}/4 perks unlocked`}</span>
+      </div>
+      <div className="pass-meter" aria-label={`${passPercent}% premiere pass progress`}>
+        <span style={{ width: `${passPercent}%` }} />
+      </div>
+      <div className="pass-layout">
+        <article className="pass-focus">
+          <button className="pass-art" style={{ "--poster": focusItem.poster }} type="button" onClick={() => onDetails(focusItem.id)}>
+            E{focusEpisode}
+          </button>
+          <div>
+            <span>{passPercent === 100 ? "Reward track complete" : "Next unlock"}</span>
+            <strong>{focusItem.title}</strong>
+            <small>{`${focusProgress}% watched / ${focusItem.nextRelease}`}</small>
+          </div>
+          <div className="pass-actions">
+            <button type="button" onClick={() => onPlay(focusItem.id, focusEpisode, true)}>
+              <Play size={15} fill="currentColor" />
+              Watch
+            </button>
+            <button className={isReminderOn ? "active" : ""} type="button" onClick={() => onReminderToggle(focusItem.id)}>
+              <Bell size={15} />
+              {isReminderOn ? "Alert on" : "Alert"}
+            </button>
+            <button className={isDownloaded ? "active" : ""} type="button" onClick={() => onToggleDownload(focusItem.id)}>
+              {isDownloaded ? <CheckCircle2 size={15} /> : <Download size={15} />}
+              Offline
+            </button>
+          </div>
+        </article>
+        <div className="pass-perks">
+          {perks.map(([Icon, title, detail, isComplete]) => (
+            <article className={isComplete ? "complete" : ""} key={title}>
+              <Icon size={17} />
+              <div>
+                <span>{isComplete ? "Unlocked" : "Locked"}</span>
+                <strong>{title}</strong>
+                <small>{detail}</small>
+              </div>
+            </article>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
 function LibraryInsights({ items, progress, currentEpisodes, reminders, onPlay, onDetails, onReminderToggle }) {
   const insightItems = items.length ? items : anime.slice(0, 4);
   const countBy = (field) => {
@@ -3982,7 +4060,8 @@ function App() {
               onThemeChange={setCaptionTheme}
               onDelayChange={setCaptionDelay}
               onReset={resetCaptionSettings}
-            />            <EpisodeQueue item={selected} selectedEpisode={selectedEpisode} progress={progress[selected.id]} onEpisodeSelect={playSelection} />
+            />
+            <EpisodeQueue item={selected} selectedEpisode={selectedEpisode} progress={progress[selected.id]} onEpisodeSelect={playSelection} />
             <WatchNotes
               item={selected}
               selectedEpisode={selectedEpisode}
@@ -4307,6 +4386,17 @@ function App() {
             onPlay={playSelection}
             onMarkComplete={markComplete}
             onReminderToggle={toggleReminder}
+          />
+          <PremierePass
+            items={savedItems}
+            progress={progress}
+            currentEpisodes={currentEpisodes}
+            reminders={reminders}
+            downloaded={downloaded}
+            onPlay={playSelection}
+            onDetails={setDetailsId}
+            onReminderToggle={toggleReminder}
+            onToggleDownload={toggleDownload}
           />
           <LibraryInsights
             items={savedItems}
