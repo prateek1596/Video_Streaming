@@ -6,6 +6,7 @@
   --text: #f4f7fb;
   --muted: #9da8b8;
   --teal: #2ce6d3;
+  --cyan: #43d7c7;
   --red: #ff4f67;
   --gold: #f6c85f;
   --violet: #8d7cff;
@@ -7948,6 +7949,204 @@ svg {
   }
 }
 
+.premiere-pass {
+  display: grid;
+  gap: 0.85rem;
+  padding: 1rem;
+  border: 1px solid rgba(141, 124, 255, 0.22);
+  border-radius: 0.7rem;
+  background: linear-gradient(145deg, rgba(141, 124, 255, 0.085), rgba(255, 255, 255, 0.055));
+}
+
+.pass-heading {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.pass-heading h2 {
+  margin: 0.2rem 0 0;
+  font-size: clamp(1.15rem, 1.8vw, 1.45rem);
+}
+
+.pass-heading > span {
+  display: inline-flex;
+  min-height: 1.9rem;
+  align-items: center;
+  padding: 0 0.6rem;
+  border: 1px solid rgba(141, 124, 255, 0.42);
+  border-radius: 99rem;
+  background: rgba(141, 124, 255, 0.13);
+  color: var(--violet);
+  font-size: 0.78rem;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.pass-meter {
+  overflow: hidden;
+  height: 0.5rem;
+  border-radius: 99rem;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.pass-meter span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--violet), var(--teal), var(--gold));
+}
+
+.pass-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+  gap: 0.75rem;
+}
+
+.pass-focus,
+.pass-perks article,
+.pass-actions button {
+  min-width: 0;
+  border: 1px solid var(--line);
+  border-radius: 0.55rem;
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--text);
+}
+
+.pass-focus {
+  display: grid;
+  grid-template-columns: 5.25rem minmax(0, 1fr);
+  gap: 0.75rem;
+  align-items: center;
+  padding: 0.75rem;
+}
+
+.pass-art {
+  display: grid;
+  width: 5.25rem;
+  min-height: 5.25rem;
+  place-items: center;
+  border: 0;
+  border-radius: 0.5rem;
+  background:
+    linear-gradient(180deg, transparent, rgba(0, 0, 0, 0.72)),
+    var(--poster);
+  color: var(--text);
+  font-weight: 900;
+}
+
+.pass-focus > div:not(.pass-actions) {
+  display: grid;
+  min-width: 0;
+  gap: 0.18rem;
+}
+
+.pass-focus span,
+.pass-perks span,
+.pass-focus small,
+.pass-perks small {
+  color: var(--muted);
+  font-size: 0.74rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.pass-focus strong,
+.pass-focus small,
+.pass-perks strong,
+.pass-perks small {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.pass-actions {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+
+.pass-actions button {
+  display: inline-flex;
+  min-height: 2.35rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  padding: 0 0.7rem;
+  font-weight: 850;
+  transition:
+    transform 160ms ease,
+    border-color 160ms ease,
+    background 160ms ease;
+}
+
+.pass-actions button.active,
+.pass-perks article.complete {
+  border-color: rgba(44, 230, 211, 0.45);
+  background: rgba(44, 230, 211, 0.13);
+}
+
+.pass-perks {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.55rem;
+}
+
+.pass-perks article {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 0.15rem 0.5rem;
+  align-items: start;
+  padding: 0.65rem;
+}
+
+.pass-perks svg {
+  grid-row: span 3;
+  color: var(--violet);
+}
+
+.pass-perks article.complete svg {
+  color: var(--teal);
+}
+
+.pass-perks div {
+  display: grid;
+  min-width: 0;
+  gap: 0.12rem;
+}
+
+.pass-actions button:hover {
+  transform: translateY(-1px);
+  border-color: rgba(255, 255, 255, 0.28);
+  background: rgba(255, 255, 255, 0.1);
+}
+
+@media (max-width: 860px) {
+  .pass-layout,
+  .pass-perks {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 560px) {
+  .pass-heading {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .pass-focus {
+    grid-template-columns: 1fr;
+  }
+
+  .pass-art {
+    width: 100%;
+  }
+
+  .pass-actions button {
+    flex: 1 1 8rem;
+  }
+}
 .localization-center {
   display: grid;
   gap: 0.85rem;
