@@ -5895,6 +5895,73 @@ svg {
   justify-content: flex-end;
 }
 
+
+.mood-alternates {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.6rem;
+}
+
+.mood-alternate {
+  display: grid;
+  grid-template-columns: 4.5rem minmax(0, 1fr) 2.35rem;
+  gap: 0.65rem;
+  align-items: center;
+  min-width: 0;
+  padding: 0.65rem;
+  border: 1px solid var(--line);
+  border-radius: 0.55rem;
+  background: rgba(8, 10, 16, 0.34);
+}
+
+.mood-alt-art {
+  display: grid;
+  width: 4.5rem;
+  height: 3rem;
+  place-items: center;
+  border: 0;
+  border-radius: 0.45rem;
+  background: var(--poster);
+  color: #fff;
+  font-size: 0.7rem;
+  font-weight: 900;
+  overflow-wrap: anywhere;
+  text-align: center;
+}
+
+.mood-alternate div {
+  display: grid;
+  min-width: 0;
+  gap: 0.12rem;
+}
+
+.mood-alternate strong,
+.mood-alternate span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.mood-alternate strong {
+  font-size: 0.9rem;
+}
+
+.mood-alternate span {
+  color: var(--muted);
+  font-size: 0.76rem;
+  font-weight: 800;
+}
+
+.mood-alt-play {
+  display: grid;
+  width: 2.35rem;
+  min-height: 2.35rem;
+  place-items: center;
+  border: 1px solid rgba(44, 230, 211, 0.34);
+  border-radius: 0.5rem;
+  background: rgba(44, 230, 211, 0.1);
+  color: var(--teal);
+}
+
 @media (max-width: 920px) {
   .mood-feature {
     grid-template-columns: 8rem minmax(0, 1fr);
@@ -5907,6 +5974,10 @@ svg {
 
   .mood-actions button {
     flex: 1 1 8rem;
+  }
+
+  .mood-alternates {
+    grid-template-columns: 1fr;
   }
 }
 
@@ -5933,8 +6004,13 @@ svg {
     grid-template-columns: 1fr;
   }
 
-  .mood-art {
+  .mood-art,
+  .mood-alt-art {
     width: 100%;
+  }
+
+  .mood-alternate {
+    grid-template-columns: 1fr;
   }
 }
 .studio-spotlight {

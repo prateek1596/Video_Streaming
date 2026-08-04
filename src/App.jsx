@@ -1890,6 +1890,7 @@ function MoodMatchmaker({ mood, matches, saved, progress, currentEpisodes, onMoo
   const bestMatch = matches[0] || anime[0];
   const bestEpisode = currentEpisodes[bestMatch.id] || bestMatch.currentEpisode;
   const bestProgress = Math.min(100, Math.max(0, Number(progress[bestMatch.id] ?? bestMatch.progress) || 0));
+  const alternateMatches = matches.filter((item) => item.id !== bestMatch.id).slice(0, 3);
   const savedCount = matches.filter((item) => saved.has(item.id)).length;
   const stats = [
     [WandSparkles, "Mood", mood],
@@ -1943,6 +1944,28 @@ function MoodMatchmaker({ mood, matches, saved, progress, currentEpisodes, onMoo
           </button>
         </div>
       </article>
+      {alternateMatches.length > 0 && (
+        <div className="mood-alternates" aria-label="Alternate mood picks">
+          {alternateMatches.map((item) => {
+            const nextEpisode = currentEpisodes[item.id] || item.currentEpisode;
+            const matchPercent = Math.min(99, Math.max(70, Math.round(item.moodScore || item.popularity)));
+            return (
+              <article className="mood-alternate" key={item.id}>
+                <button className="mood-alt-art" style={{ "--poster": item.poster }} type="button" onClick={() => onDetails(item.id)}>
+                  {item.genre}
+                </button>
+                <div>
+                  <strong>{item.title}</strong>
+                  <span>{`${matchPercent}% / ${item.mood}`}</span>
+                </div>
+                <IconButton label={`Play ${item.title}`} className="mood-alt-play" onClick={() => onPlay(item.id, nextEpisode, true)}>
+                  <Play size={16} fill="currentColor" />
+                </IconButton>
+              </article>
+            );
+          })}
+        </div>
+      )}
     </section>
   );
 }
