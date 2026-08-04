@@ -3549,6 +3549,21 @@ function App() {
       .slice(0, 4);
   }, [safeAnime, selected]);
 
+  const moodMatches = useMemo(() => {
+    return [...safeAnime]
+      .map((item) => {
+        const progressScore = Math.min(20, Math.round(Number(progress[item.id] ?? item.progress) / 5));
+        const score =
+          item.popularity +
+          (item.mood === moodMatch ? 34 : 0) +
+          (item.genre === selected.genre ? 10 : 0) +
+          (saved.has(item.id) ? 8 : 0) +
+          progressScore;
+        return { ...item, moodScore: score };
+      })
+      .sort((a, b) => b.moodScore - a.moodScore)
+      .slice(0, 4);
+  }, [moodMatch, progress, safeAnime, saved, selected.genre]);
   const scheduleItems = useMemo(
     () =>
       schedule
@@ -3619,6 +3634,7 @@ function App() {
       subscriptionPlan,
       billingCycle,
       devices,
+      moodMatch,
     };
     localStorage.setItem(storageKey, JSON.stringify(payload));
   }, [selectedId, selectedEpisode, currentEpisodes, saved, reminders, progress, quality, playbackSpeed, autoplayNext, ambientMode, skipIntro, breakReminder, captionsOn, subtitleLanguage, captionSize, captionTheme, captionDelay, dataSaver, maturityLimit, notes, episodeFeedback, partyMessages, partyInvites, reviews, supportTickets, giftPasses, localizationJobs, sessionQueue, watchHistory, sessionTarget, downloaded, activeProfileId, roomMode, activeChapterId, activeTranscriptId, subscriptionPlan, billingCycle, devices, moodMatch]);
@@ -4296,7 +4312,17 @@ function App() {
             onPlay={playSelection}
             onDetails={setDetailsId}
           />
-          <StudioSpotlight
+          <MoodMatchmaker
+            mood={moodMatch}
+            matches={moodMatches}
+            saved={saved}
+            progress={progress}
+            currentEpisodes={currentEpisodes}
+            onMoodChange={setMoodMatch}
+            onPlay={playSelection}
+            onSave={toggleSave}
+            onDetails={setDetailsId}
+          />          <StudioSpotlight
             items={filteredAnime.length ? filteredAnime : safeAnime}
             selected={selected}
             saved={saved}
