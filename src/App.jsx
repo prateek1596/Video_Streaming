@@ -94,6 +94,7 @@ const viewerProfiles = [
 ];
 const roomModes = ["Solo", "Together", "Focus"];
 const reactionTags = ["Hype", "Cozy", "Mystery", "Tearjerker", "Rewatch"];
+const moodMatchOptions = ["High stakes", "Cozy", "Wonder", "Bittersweet", "Intrigue", "Dreamlike"];
 const defaultPartyMessages = [
   { id: "party-1", animeId: "neon-ronin-zero", episode: 1, author: "Mika", text: "The city reveal still lands every time.", tone: "Hype" },
   { id: "party-2", animeId: "signal-bloom", episode: 7, author: "Rin", text: "That flower code has to be a map.", tone: "Theory" },
