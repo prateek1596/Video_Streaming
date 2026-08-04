@@ -1886,6 +1886,66 @@ function DiscoveryLens({ items, totalCount, query, filter, languageFilter, ratin
     </section>
   );
 }
+function MoodMatchmaker({ mood, matches, saved, progress, currentEpisodes, onMoodChange, onPlay, onSave, onDetails }) {
+  const bestMatch = matches[0] || anime[0];
+  const bestEpisode = currentEpisodes[bestMatch.id] || bestMatch.currentEpisode;
+  const bestProgress = Math.min(100, Math.max(0, Number(progress[bestMatch.id] ?? bestMatch.progress) || 0));
+  const savedCount = matches.filter((item) => saved.has(item.id)).length;
+  const stats = [
+    [WandSparkles, "Mood", mood],
+    [Gauge, "Match", `${bestMatch.mood === mood ? 98 : bestMatch.popularity}%`],
+    [Clock3, "Resume", `${bestProgress}%`],
+    [Bookmark, "Saved", `${savedCount}/${matches.length || 1}`],
+  ];
+
+  return (
+    <section className="mood-matchmaker" aria-label="Mood matchmaker">
+      <div className="mood-heading">
+        <div>
+          <p className="eyebrow">Mood match</p>
+          <h2>Pick tonight's pace</h2>
+        </div>
+        <span>{`${matches.length || 1} tuned picks`}</span>
+      </div>
+      <div className="mood-tabs" aria-label="Mood options">
+        {moodMatchOptions.map((option) => (
+          <button className={mood === option ? "active" : ""} key={option} type="button" onClick={() => onMoodChange(option)}>
+            {option}
+          </button>
+        ))}
+      </div>
+      <div className="mood-stats">
+        {stats.map(([Icon, label, value]) => (
+          <div className="mood-stat" key={label}>
+            <Icon size={17} />
+            <span>{label}</span>
+            <strong>{value}</strong>
+          </div>
+        ))}
+      </div>
+      <article className="mood-feature">
+        <button className="mood-art" style={{ "--poster": bestMatch.poster }} type="button" onClick={() => onDetails(bestMatch.id)}>
+          {bestMatch.title}
+        </button>
+        <div>
+          <span>{`${bestMatch.genre} / ${bestMatch.studio} / ${bestMatch.language}`}</span>
+          <strong>{bestMatch.title}</strong>
+          <p>{bestMatch.description}</p>
+        </div>
+        <div className="mood-actions">
+          <button type="button" onClick={() => onPlay(bestMatch.id, bestEpisode, true)}>
+            <Play size={15} fill="currentColor" />
+            Play E{bestEpisode}
+          </button>
+          <button className={saved.has(bestMatch.id) ? "active" : ""} type="button" onClick={() => onSave(bestMatch.id)}>
+            {saved.has(bestMatch.id) ? <BookmarkCheck size={15} /> : <Bookmark size={15} />}
+            {saved.has(bestMatch.id) ? "Saved" : "Save"}
+          </button>
+        </div>
+      </article>
+    </section>
+  );
+}
 function StudioSpotlight({ items, selected, saved, reminders, onPlay, onSave, onDetails, onReminderToggle }) {
   const studioStats = Object.values(
     items.reduce((acc, item) => {
@@ -3413,6 +3473,7 @@ function App() {
   const [subscriptionPlan, setSubscriptionPlan] = useState(stored?.subscriptionPlan || "plus");
   const [billingCycle, setBillingCycle] = useState(stored?.billingCycle || "monthly");
   const [devices, setDevices] = useState(() => stored?.devices || defaultDevices);
+  const [moodMatch, setMoodMatch] = useState(stored?.moodMatch || "High stakes");
   const visibleAnime = useMemo(() => anime.filter((item) => isWithinMaturityLimit(item, maturityLimit)), [maturityLimit]);
   const safeAnime = visibleAnime.length ? visibleAnime : anime;
   const blockedByMaturityCount = anime.length - visibleAnime.length;
@@ -3560,7 +3621,7 @@ function App() {
       devices,
     };
     localStorage.setItem(storageKey, JSON.stringify(payload));
-  }, [selectedId, selectedEpisode, currentEpisodes, saved, reminders, progress, quality, playbackSpeed, autoplayNext, ambientMode, skipIntro, breakReminder, captionsOn, subtitleLanguage, captionSize, captionTheme, captionDelay, dataSaver, maturityLimit, notes, episodeFeedback, partyMessages, partyInvites, reviews, supportTickets, giftPasses, localizationJobs, sessionQueue, watchHistory, sessionTarget, downloaded, activeProfileId, roomMode, activeChapterId, activeTranscriptId, subscriptionPlan, billingCycle, devices]);
+  }, [selectedId, selectedEpisode, currentEpisodes, saved, reminders, progress, quality, playbackSpeed, autoplayNext, ambientMode, skipIntro, breakReminder, captionsOn, subtitleLanguage, captionSize, captionTheme, captionDelay, dataSaver, maturityLimit, notes, episodeFeedback, partyMessages, partyInvites, reviews, supportTickets, giftPasses, localizationJobs, sessionQueue, watchHistory, sessionTarget, downloaded, activeProfileId, roomMode, activeChapterId, activeTranscriptId, subscriptionPlan, billingCycle, devices, moodMatch]);
 
   useEffect(() => {
     const sections = ["watch", "continue", "discover", "latest", "watchlist"]
