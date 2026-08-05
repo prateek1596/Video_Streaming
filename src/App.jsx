@@ -3590,6 +3590,7 @@ function App() {
   const [supportTickets, setSupportTickets] = useState(() => stored?.supportTickets || defaultSupportTickets);
   const [giftPasses, setGiftPasses] = useState(() => stored?.giftPasses || defaultGiftPasses);
   const [localizationJobs, setLocalizationJobs] = useState(() => stored?.localizationJobs || defaultLocalizationJobs);
+  const [contentPitches, setContentPitches] = useState(() => stored?.contentPitches || defaultContentPitches);
   const [sessionQueue, setSessionQueue] = useState(() => stored?.sessionQueue || defaultSessionQueue);
   const [watchHistory, setWatchHistory] = useState(() => stored?.watchHistory || defaultWatchHistory);
   const [sessionTarget, setSessionTarget] = useState(stored?.sessionTarget || "balanced");
@@ -3752,6 +3753,7 @@ function App() {
       supportTickets,
       giftPasses,
       localizationJobs,
+      contentPitches,
       sessionQueue,
       watchHistory,
       sessionTarget,
@@ -3766,7 +3768,7 @@ function App() {
       moodMatch,
     };
     localStorage.setItem(storageKey, JSON.stringify(payload));
-  }, [selectedId, selectedEpisode, currentEpisodes, saved, reminders, progress, quality, playbackSpeed, autoplayNext, ambientMode, skipIntro, breakReminder, captionsOn, subtitleLanguage, captionSize, captionTheme, captionDelay, dataSaver, maturityLimit, notes, episodeFeedback, partyMessages, partyInvites, reviews, supportTickets, giftPasses, localizationJobs, sessionQueue, watchHistory, sessionTarget, downloaded, activeProfileId, roomMode, activeChapterId, activeTranscriptId, subscriptionPlan, billingCycle, devices, moodMatch]);
+  }, [selectedId, selectedEpisode, currentEpisodes, saved, reminders, progress, quality, playbackSpeed, autoplayNext, ambientMode, skipIntro, breakReminder, captionsOn, subtitleLanguage, captionSize, captionTheme, captionDelay, dataSaver, maturityLimit, notes, episodeFeedback, partyMessages, partyInvites, reviews, supportTickets, giftPasses, localizationJobs, contentPitches, sessionQueue, watchHistory, sessionTarget, downloaded, activeProfileId, roomMode, activeChapterId, activeTranscriptId, subscriptionPlan, billingCycle, devices, moodMatch]);
 
   useEffect(() => {
     const sections = ["watch", "continue", "discover", "latest", "watchlist"]
