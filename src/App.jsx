@@ -129,6 +129,12 @@ const defaultLocalizationJobs = [
   { id: "loc-4", animeId: "starfall-railway", language: "English", status: "Draft", progress: 38, owner: "You" },
 ];
 
+const contentPipelineStages = ["Pitch", "Script", "Animatic", "Mastering", "Ready"];
+const defaultContentPitches = [
+  { id: "pitch-1", title: "Midnight Arcade Alchemy", genre: "Fantasy", stage: "Script", owner: "Mika", audience: "Cozy fantasy fans", readiness: 36 },
+  { id: "pitch-2", title: "Orbital Tea Service", genre: "Sci-Fi", stage: "Animatic", owner: "Rin", audience: "Mystery binge crews", readiness: 58 },
+  { id: "pitch-3", title: "Chrome Sakura Relay", genre: "Action", stage: "Mastering", owner: "Aya", audience: "Weekend premiere crowd", readiness: 82 },
+];
 function readStoredState() {
   try {
     const parsed = JSON.parse(localStorage.getItem(storageKey));
