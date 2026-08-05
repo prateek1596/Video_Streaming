@@ -4611,6 +4611,13 @@ function App() {
             downloadedCount={downloaded.size}
             progress={progress}
           />
+          <CreatorStudio
+            pitches={contentPitches}
+            items={safeAnime}
+            onPitchCreate={createContentPitch}
+            onPitchAdvance={advanceContentPitch}
+            onPitchRemove={removeContentPitch}
+          />
           <LocalizationCenter
             items={safeAnime}
             jobs={localizationJobs}
