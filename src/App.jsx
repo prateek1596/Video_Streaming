@@ -4077,7 +4077,40 @@ function App() {
   function removeLocalizationJob(id) {
     setLocalizationJobs((current) => current.filter((job) => job.id !== id));
   }
-  function addToSessionQueue(id) {
+  function createContentPitch(title, genre) {
+    const matchingTitle = safeAnime.find((item) => item.genre === genre);
+    setContentPitches((current) => [
+      {
+        id: `pitch-${Date.now()}`,
+        title,
+        genre,
+        stage: "Pitch",
+        owner: "You",
+        audience: matchingTitle ? `${matchingTitle.mood.toLowerCase()} ${genre.toLowerCase()} viewers` : "new subscribers",
+        readiness: 18,
+      },
+      ...current.slice(0, 9),
+    ]);
+  }
+
+  function advanceContentPitch(id) {
+    setContentPitches((current) =>
+      current.map((pitch) => {
+        if (pitch.id !== id) return pitch;
+        const currentIndex = contentPipelineStages.indexOf(pitch.stage);
+        const nextStage = contentPipelineStages[Math.min(currentIndex + 1, contentPipelineStages.length - 1)] || "Ready";
+        return {
+          ...pitch,
+          stage: nextStage,
+          readiness: nextStage === "Ready" ? 100 : Math.min(96, pitch.readiness + 22),
+        };
+      }),
+    );
+  }
+
+  function removeContentPitch(id) {
+    setContentPitches((current) => current.filter((pitch) => pitch.id !== id));
+  }  function addToSessionQueue(id) {
     setSessionQueue((current) => (current.includes(id) ? current : [...current, id]));
   }
 
