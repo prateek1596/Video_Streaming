@@ -2321,7 +2321,107 @@ function OperatorDashboard({ items, savedCount, reminderCount, downloadedCount, 
     </section>
   );
 }
-function LocalizationCenter({ items, jobs, onJobCreate, onJobAdvance, onJobRemove }) {
+function CreatorStudio({ pitches, items, onPitchCreate, onPitchAdvance, onPitchRemove }) {
+  const [title, setTitle] = useState("");
+  const [genre, setGenre] = useState(genres.find((item) => item !== "All") || "Action");
+  const readyCount = pitches.filter((pitch) => pitch.stage === "Ready").length;
+  const activePitch = pitches.find((pitch) => pitch.stage !== "Ready") || pitches[0];
+  const genreItems = items.filter((item) => item.genre === genre);
+  const averageDemand = Math.round(genreItems.reduce((sum, item) => sum + item.popularity, 0) / Math.max(1, genreItems.length));
+  const nextWindow = schedule.find((entry) => entry[1] === genreItems[0]?.title)?.[0] || "Fri";
+
+  function submitPitch(event) {
+    event.preventDefault();
+    if (!title.trim()) return;
+    onPitchCreate(title.trim(), genre);
+    setTitle("");
+  }
+
+  return (
+    <section className="creator-studio" aria-label="Creator content pipeline">
+      <div className="creator-heading">
+        <div>
+          <p className="eyebrow">Creator studio</p>
+          <h2>Content pipeline</h2>
+        </div>
+        <span>{`${readyCount}/${pitches.length || 1} ready`}</span>
+      </div>
+      <div className="creator-stat-grid">
+        <div>
+          <Clapperboard size={17} />
+          <span>In flight</span>
+          <strong>{pitches.filter((pitch) => pitch.stage !== "Ready").length}</strong>
+        </div>
+        <div>
+          <TrendingUp size={17} />
+          <span>Demand</span>
+          <strong>{`${averageDemand || 74}%`}</strong>
+        </div>
+        <div>
+          <CalendarDays size={17} />
+          <span>Window</span>
+          <strong>{nextWindow}</strong>
+        </div>
+      </div>
+      {activePitch && (
+        <article className="creator-focus">
+          <WandSparkles size={18} />
+          <div>
+            <span>{`${activePitch.genre} / ${activePitch.stage}`}</span>
+            <strong>{activePitch.title}</strong>
+            <p>{`${activePitch.owner} is shaping this for ${activePitch.audience}.`}</p>
+          </div>
+          <div className="creator-meter" aria-label={`${activePitch.readiness}% production readiness`}>
+            <span style={{ width: `${activePitch.readiness}%` }} />
+          </div>
+        </article>
+      )}
+      <form className="creator-form" onSubmit={submitPitch}>
+        <label>
+          <span>Title</span>
+          <input value={title} onChange={(event) => setTitle(event.target.value)} placeholder="New original concept" />
+        </label>
+        <label>
+          <span>Genre</span>
+          <select value={genre} onChange={(event) => setGenre(event.target.value)}>
+            {genres.filter((item) => item !== "All").map((option) => (
+              <option key={option}>{option}</option>
+            ))}
+          </select>
+        </label>
+        <button type="submit" disabled={!title.trim()}>
+          <CirclePlus size={16} />
+          Add pitch
+        </button>
+      </form>
+      <div className="creator-list">
+        {pitches.map((pitch) => {
+          const stageIndex = contentPipelineStages.indexOf(pitch.stage);
+          return (
+            <article className="creator-row" data-stage={pitch.stage} key={pitch.id}>
+              <div>
+                <span>{`${pitch.genre} / ${pitch.owner}`}</span>
+                <strong>{pitch.title}</strong>
+                <div className="creator-meter" aria-label={`${pitch.readiness}% ready`}>
+                  <span style={{ width: `${pitch.readiness}%` }} />
+                </div>
+              </div>
+              <div className="creator-actions">
+                <button type="button" onClick={() => onPitchAdvance(pitch.id)} disabled={pitch.stage === "Ready"}>
+                  <SkipForward size={15} />
+                  {pitch.stage === "Ready" ? "Ready" : contentPipelineStages[stageIndex + 1]}
+                </button>
+                <IconButton label={`Remove ${pitch.title}`} className="creator-remove" onClick={() => onPitchRemove(pitch.id)}>
+                  <Trash2 size={16} />
+                </IconButton>
+              </div>
+            </article>
+          );
+        })}
+      </div>
+    </section>
+  );
+}function LocalizationCenter({ items, jobs, onJobCreate, onJobAdvance, onJobRemove }) {
   const [selectedAnimeId, setSelectedAnimeId] = useState(items[0]?.id || anime[0].id);
   const [selectedLanguage, setSelectedLanguage] = useState(localizationLanguages[0]);
   const titleItems = items.length ? items : anime;
