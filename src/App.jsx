@@ -92,6 +92,12 @@ const viewerProfiles = [
   { id: "mk", name: "Mika", initials: "MK", taste: "Cozy nights", accent: "gold" },
   { id: "rn", name: "Rin", initials: "RN", taste: "Mystery runs", accent: "red" },
 ];
+const watchWindowOptions = ["Anytime", "After school", "Evenings", "Weekends"];
+const defaultFamilyRules = {
+  pr: { maturity: "TV-14", dailyLimit: 180, watchWindow: "Anytime", downloadsAllowed: true },
+  mk: { maturity: "TV-PG", dailyLimit: 90, watchWindow: "After school", downloadsAllowed: true },
+  rn: { maturity: "PG-13", dailyLimit: 120, watchWindow: "Evenings", downloadsAllowed: false },
+};
 const roomModes = ["Solo", "Together", "Focus"];
 const reactionTags = ["Hype", "Cozy", "Mystery", "Tearjerker", "Rewatch"];
 const moodMatchOptions = ["High stakes", "Cozy", "Wonder", "Bittersweet", "Intrigue", "Dreamlike"];
@@ -2257,6 +2263,108 @@ function AccountCenter({ planId, billingCycle, devices, downloadedCount, profile
           <Gauge size={16} />
           {billingCycle === "annual" ? "Use monthly" : `Save $${annualSavings}/yr`}
         </button>
+      </div>
+    </section>
+  );
+}
+function FamilyControls({ profiles, rules, activeProfileId, onRuleChange, onProfileChange }) {
+  const activeRule = rules[activeProfileId] || defaultFamilyRules[activeProfileId] || defaultFamilyRules.pr;
+  const lockedProfiles = profiles.filter((profile) => {
+    const rule = rules[profile.id] || defaultFamilyRules[profile.id] || defaultFamilyRules.pr;
+    return rule.maturity !== "TV-14" || Number(rule.dailyLimit) <= 120 || !rule.downloadsAllowed;
+  }).length;
+  const averageLimit = Math.round(
+    profiles.reduce((sum, profile) => {
+      const rule = rules[profile.id] || defaultFamilyRules[profile.id] || defaultFamilyRules.pr;
+      return sum + Number(rule.dailyLimit || 0);
+    }, 0) / Math.max(1, profiles.length),
+  );
+  const activeLimitPercent = Math.min(100, Math.round((Number(activeRule.dailyLimit) / 240) * 100));
+
+  return (
+    <section className="family-controls" aria-label="Family profile controls">
+      <div className="family-heading">
+        <div>
+          <p className="eyebrow">Profiles</p>
+          <h2>Family controls</h2>
+        </div>
+        <span>{`${lockedProfiles} guided`}</span>
+      </div>
+      <div className="family-stat-grid">
+        <div>
+          <ShieldCheck size={17} />
+          <span>Active rating</span>
+          <strong>{activeRule.maturity}</strong>
+        </div>
+        <div>
+          <Clock3 size={17} />
+          <span>Daily cap</span>
+          <strong>{`${activeRule.dailyLimit}m`}</strong>
+        </div>
+        <div>
+          <UsersRound size={17} />
+          <span>Average cap</span>
+          <strong>{`${averageLimit}m`}</strong>
+        </div>
+      </div>
+      <div className="family-profile-row" role="tablist" aria-label="Family profiles">
+        {profiles.map((profile) => {
+          const rule = rules[profile.id] || defaultFamilyRules[profile.id] || defaultFamilyRules.pr;
+          return (
+            <button
+              className={`${profile.id === activeProfileId ? "active" : ""} ${profile.accent}`}
+              key={profile.id}
+              type="button"
+              role="tab"
+              aria-selected={profile.id === activeProfileId}
+              onClick={() => onProfileChange(profile.id)}
+            >
+              <strong>{profile.initials}</strong>
+              <span>{rule.maturity}</span>
+              <small>{rule.watchWindow}</small>
+            </button>
+          );
+        })}
+      </div>
+      <div className="family-editor">
+        <label>
+          <span>Rating limit</span>
+          <select value={activeRule.maturity} onChange={(event) => onRuleChange(activeProfileId, { maturity: event.target.value })}>
+            {maturityOptions.map((option) => (
+              <option key={option}>{option}</option>
+            ))}
+          </select>
+        </label>
+        <label>
+          <span>Watch window</span>
+          <select value={activeRule.watchWindow} onChange={(event) => onRuleChange(activeProfileId, { watchWindow: event.target.value })}>
+            {watchWindowOptions.map((option) => (
+              <option key={option}>{option}</option>
+            ))}
+          </select>
+        </label>
+        <label>
+          <span>Daily minutes</span>
+          <input
+            type="range"
+            min="30"
+            max="240"
+            step="15"
+            value={activeRule.dailyLimit}
+            onChange={(event) => onRuleChange(activeProfileId, { dailyLimit: Number(event.target.value) })}
+          />
+        </label>
+        <button
+          className={activeRule.downloadsAllowed ? "active" : ""}
+          type="button"
+          onClick={() => onRuleChange(activeProfileId, { downloadsAllowed: !activeRule.downloadsAllowed })}
+        >
+          {activeRule.downloadsAllowed ? <Download size={16} /> : <Lock size={16} />}
+          {activeRule.downloadsAllowed ? "Downloads allowed" : "Downloads locked"}
+        </button>
+      </div>
+      <div className="family-meter" aria-label={`${activeLimitPercent}% of maximum daily minutes allowed`}>
+        <span style={{ width: `${activeLimitPercent}%` }} />
       </div>
     </section>
   );
@@ -4735,6 +4843,8 @@ function App() {
 }
 
 export default App;
+
+
 
 
 
