@@ -4013,6 +4013,8 @@ function App() {
     setSubscriptionPlan("plus");
     setBillingCycle("monthly");
     setDevices(defaultDevices);
+    setMoodMatch("High stakes");
+    setFamilyRules(defaultFamilyRules);
     setDetailsId(null);
     setShouldAutoPlay(false);
   }
@@ -4717,6 +4719,13 @@ function App() {
             onRemoveDevice={removeDevice}
             onAddDevice={addDevice}
           />
+          <FamilyControls
+            profiles={viewerProfiles}
+            rules={familyRules}
+            activeProfileId={activeProfileId}
+            onRuleChange={updateFamilyRule}
+            onProfileChange={setActiveProfileId}
+          />
           <GiftPassCenter
             passes={giftPasses}
             activePlanName={(subscriptionPlans.find((plan) => plan.id === subscriptionPlan) || subscriptionPlans[1]).name}
@@ -4855,6 +4864,7 @@ function App() {
 }
 
 export default App;
+
 
 
 
