@@ -3711,7 +3711,7 @@ function App() {
   const [subscriptionPlan, setSubscriptionPlan] = useState(stored?.subscriptionPlan || "plus");
   const [billingCycle, setBillingCycle] = useState(stored?.billingCycle || "monthly");
   const [devices, setDevices] = useState(() => stored?.devices || defaultDevices);
-  const [moodMatch, setMoodMatch] = useState(stored?.moodMatch || "High stakes");
+  const [moodMatch, setMoodMatch] = useState(stored?.moodMatch || "High stakes");`r`n  const [familyRules, setFamilyRules] = useState(() => ({ ...defaultFamilyRules, ...(stored?.familyRules || {}) }));
   const visibleAnime = useMemo(() => anime.filter((item) => isWithinMaturityLimit(item, maturityLimit)), [maturityLimit]);
   const safeAnime = visibleAnime.length ? visibleAnime : anime;
   const blockedByMaturityCount = anime.length - visibleAnime.length;
@@ -3876,7 +3876,7 @@ function App() {
       moodMatch,
     };
     localStorage.setItem(storageKey, JSON.stringify(payload));
-  }, [selectedId, selectedEpisode, currentEpisodes, saved, reminders, progress, quality, playbackSpeed, autoplayNext, ambientMode, skipIntro, breakReminder, captionsOn, subtitleLanguage, captionSize, captionTheme, captionDelay, dataSaver, maturityLimit, notes, episodeFeedback, partyMessages, partyInvites, reviews, supportTickets, giftPasses, localizationJobs, contentPitches, sessionQueue, watchHistory, sessionTarget, downloaded, activeProfileId, roomMode, activeChapterId, activeTranscriptId, subscriptionPlan, billingCycle, devices, moodMatch]);
+  }, [selectedId, selectedEpisode, currentEpisodes, saved, reminders, progress, quality, playbackSpeed, autoplayNext, ambientMode, skipIntro, breakReminder, captionsOn, subtitleLanguage, captionSize, captionTheme, captionDelay, dataSaver, maturityLimit, notes, episodeFeedback, partyMessages, partyInvites, reviews, supportTickets, giftPasses, localizationJobs, contentPitches, sessionQueue, watchHistory, sessionTarget, downloaded, activeProfileId, roomMode, activeChapterId, activeTranscriptId, subscriptionPlan, billingCycle, devices, moodMatch, familyRules]);
 
   useEffect(() => {
     const sections = ["watch", "continue", "discover", "latest", "watchlist"]
@@ -4256,6 +4256,16 @@ function App() {
     const nextPlan = subscriptionPlans.find((plan) => plan.id === planId) || subscriptionPlans[1];
     setSubscriptionPlan(nextPlan.id);
     setDevices((current) => current.slice(0, nextPlan.streams));
+  }
+  function updateFamilyRule(profileId, patch) {
+    setFamilyRules((current) => ({
+      ...current,
+      [profileId]: {
+        ...(defaultFamilyRules[profileId] || defaultFamilyRules.pr),
+        ...(current[profileId] || {}),
+        ...patch,
+      },
+    }));
   }
   function requestTimelineJump(seconds) {
     setChapterJump({ seconds, token: Date.now() });
@@ -4843,6 +4853,7 @@ function App() {
 }
 
 export default App;
+
 
 
 
