@@ -3514,6 +3514,64 @@ function ReleaseBoard({ scheduleItems, reminders, progress, onReminderToggle, on
     </aside>
   );
 }
+function SimulcastCalendar({ scheduleItems, selectedDay, reminders, progress, onDayChange, onReminderToggle, onPlay, onDetails }) {
+  const activeEntry = scheduleItems.find(({ day }) => day === selectedDay) || scheduleItems[0];
+  const activeItem = activeEntry?.item;
+  const watched = activeItem ? Number(progress[activeItem.id] ?? activeItem.progress) : 0;
+  const isReminderOn = activeItem ? reminders.has(activeItem.id) : false;
+
+  return (
+    <aside className="simulcast-calendar" aria-label="Simulcast calendar">
+      <div className="simulcast-heading">
+        <div>
+          <p className="eyebrow">Calendar</p>
+          <h2>Simulcast week</h2>
+        </div>
+        <span>{activeEntry?.day || "Soon"}</span>
+      </div>
+      <div className="simulcast-days" role="tablist" aria-label="Premiere days">
+        {scheduleItems.map(({ day, item }) => (
+          <button
+            className={day === activeEntry?.day ? "active" : ""}
+            key={day}
+            type="button"
+            role="tab"
+            aria-selected={day === activeEntry?.day}
+            onClick={() => onDayChange(day)}
+          >
+            <strong>{day}</strong>
+            <span>{item.title.split(" ")[0]}</span>
+          </button>
+        ))}
+      </div>
+      {activeItem && (
+        <article className="simulcast-focus">
+          <button className="simulcast-art" style={{ "--poster": activeItem.poster }} type="button" onClick={() => onDetails(activeItem.id)}>
+            E{activeItem.currentEpisode}
+          </button>
+          <div>
+            <span>{activeItem.nextRelease}</span>
+            <strong>{activeItem.title}</strong>
+            <small>{`${activeItem.genre} / ${activeItem.language} / ${watched}% watched`}</small>
+          </div>
+          <div className="simulcast-meter" aria-label={`${watched}% watched`}>
+            <span style={{ width: `${Math.min(100, watched)}%` }} />
+          </div>
+          <div className="simulcast-actions">
+            <button type="button" onClick={() => onPlay(activeItem.id, activeItem.currentEpisode, true)}>
+              <Play size={15} fill="currentColor" />
+              Play
+            </button>
+            <button className={isReminderOn ? "active" : ""} type="button" onClick={() => onReminderToggle(activeItem.id)}>
+              <Bell size={15} />
+              {isReminderOn ? "Reminder on" : "Remind"}
+            </button>
+          </div>
+        </article>
+      )}
+    </aside>
+  );
+}
 function WeeklyPlanner({ scheduleItems, reminders, onReminderToggle, onPlay, onDetails }) {
   return (
     <aside className="schedule-panel weekly-planner" aria-label="Release schedule">
@@ -3712,6 +3770,7 @@ function App() {
   const [billingCycle, setBillingCycle] = useState(stored?.billingCycle || "monthly");
   const [devices, setDevices] = useState(() => stored?.devices || defaultDevices);
   const [moodMatch, setMoodMatch] = useState(stored?.moodMatch || "High stakes");
+  const [selectedCalendarDay, setSelectedCalendarDay] = useState(stored?.selectedCalendarDay || "Fri");
   const [familyRules, setFamilyRules] = useState(() => ({ ...defaultFamilyRules, ...(stored?.familyRules || {}) }));
   const visibleAnime = useMemo(() => anime.filter((item) => isWithinMaturityLimit(item, maturityLimit)), [maturityLimit]);
   const safeAnime = visibleAnime.length ? visibleAnime : anime;
@@ -3876,9 +3935,10 @@ function App() {
       devices,
       moodMatch,
       familyRules,
+      selectedCalendarDay,
     };
     localStorage.setItem(storageKey, JSON.stringify(payload));
-  }, [selectedId, selectedEpisode, currentEpisodes, saved, reminders, progress, quality, playbackSpeed, autoplayNext, ambientMode, skipIntro, breakReminder, captionsOn, subtitleLanguage, captionSize, captionTheme, captionDelay, dataSaver, maturityLimit, notes, episodeFeedback, partyMessages, partyInvites, reviews, supportTickets, giftPasses, localizationJobs, contentPitches, sessionQueue, watchHistory, sessionTarget, downloaded, activeProfileId, roomMode, activeChapterId, activeTranscriptId, subscriptionPlan, billingCycle, devices, moodMatch, familyRules]);
+  }, [selectedId, selectedEpisode, currentEpisodes, saved, reminders, progress, quality, playbackSpeed, autoplayNext, ambientMode, skipIntro, breakReminder, captionsOn, subtitleLanguage, captionSize, captionTheme, captionDelay, dataSaver, maturityLimit, notes, episodeFeedback, partyMessages, partyInvites, reviews, supportTickets, giftPasses, localizationJobs, contentPitches, sessionQueue, watchHistory, sessionTarget, downloaded, activeProfileId, roomMode, activeChapterId, activeTranscriptId, subscriptionPlan, billingCycle, devices, moodMatch, familyRules, selectedCalendarDay]);
 
   useEffect(() => {
     const sections = ["watch", "continue", "discover", "latest", "watchlist"]
@@ -4685,7 +4745,16 @@ function App() {
               onPlay={playSelection}
               onDetails={setDetailsId}
             />
-            <WeeklyPlanner
+            <SimulcastCalendar
+              scheduleItems={scheduleItems}
+              selectedDay={selectedCalendarDay}
+              reminders={reminders}
+              progress={progress}
+              onDayChange={setSelectedCalendarDay}
+              onReminderToggle={toggleReminder}
+              onPlay={playSelection}
+              onDetails={setDetailsId}
+            />            <WeeklyPlanner
               scheduleItems={scheduleItems}
               reminders={reminders}
               onReminderToggle={toggleReminder}
@@ -4864,6 +4933,7 @@ function App() {
 }
 
 export default App;
+
 
 
 
