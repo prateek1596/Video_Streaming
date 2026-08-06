@@ -3519,6 +3519,8 @@ function SimulcastCalendar({ scheduleItems, selectedDay, reminders, progress, on
   const activeItem = activeEntry?.item;
   const watched = activeItem ? Number(progress[activeItem.id] ?? activeItem.progress) : 0;
   const isReminderOn = activeItem ? reminders.has(activeItem.id) : false;
+  const queuedReminderCount = scheduleItems.filter(({ item }) => reminders.has(item.id)).length;
+  const completeThisWeekCount = scheduleItems.filter(({ item }) => Number(progress[item.id] ?? item.progress) >= 100).length;
 
   return (
     <aside className="simulcast-calendar" aria-label="Simulcast calendar">
@@ -3543,6 +3545,10 @@ function SimulcastCalendar({ scheduleItems, selectedDay, reminders, progress, on
             <span>{item.title.split(" ")[0]}</span>
           </button>
         ))}
+      </div>
+      <div className="simulcast-summary">
+        <span>{`${queuedReminderCount} reminders`}</span>
+        <span>{`${completeThisWeekCount} completed`}</span>
       </div>
       {activeItem && (
         <article className="simulcast-focus">
@@ -4933,6 +4939,7 @@ function App() {
 }
 
 export default App;
+
 
 
 
