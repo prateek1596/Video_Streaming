@@ -3090,6 +3090,7 @@ svg {
 }
 
 .simulcast-days span,
+.simulcast-summary span,
 .simulcast-focus span,
 .simulcast-focus small {
   color: var(--muted);
@@ -3099,10 +3100,26 @@ svg {
 }
 
 .simulcast-days span,
+.simulcast-summary span,
 .simulcast-focus strong,
 .simulcast-focus small {
   min-width: 0;
   overflow-wrap: anywhere;
+}
+
+.simulcast-summary {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.45rem;
+}
+
+.simulcast-summary span {
+  display: grid;
+  min-height: 2rem;
+  place-items: center;
+  border: 1px solid var(--line);
+  border-radius: 0.5rem;
+  background: rgba(8, 10, 16, 0.28);
 }
 
 .simulcast-focus {
@@ -9324,5 +9341,6 @@ svg {
     flex: 1 1 8rem;
   }
 }
+
 
 
