@@ -3578,6 +3578,68 @@ function SimulcastCalendar({ scheduleItems, selectedDay, reminders, progress, on
     </aside>
   );
 }
+function PremiereDigest({ scheduleItems, reminders, progress, onPlay, onDetails }) {
+  const reminderCount = scheduleItems.filter(({ item }) => reminders.has(item.id)).length;
+  const completionCount = scheduleItems.filter(({ item }) => Number(progress[item.id] ?? item.progress) >= 100).length;
+  const catchUpEntry =
+    [...scheduleItems]
+      .filter(({ item }) => Number(progress[item.id] ?? item.progress) < 100)
+      .sort((a, b) => Number(progress[a.item.id] ?? a.item.progress) - Number(progress[b.item.id] ?? b.item.progress))[0] || scheduleItems[0];
+  const catchUpItem = catchUpEntry?.item;
+  const catchUpProgress = catchUpItem ? Number(progress[catchUpItem.id] ?? catchUpItem.progress) : 0;
+  const reminderPercent = scheduleItems.length ? Math.round((reminderCount / scheduleItems.length) * 100) : 0;
+
+  if (!catchUpItem) return null;
+
+  return (
+    <aside className="premiere-digest" aria-label="Premiere digest">
+      <div className="digest-heading">
+        <div>
+          <p className="eyebrow">Digest</p>
+          <h2>Premiere pulse</h2>
+        </div>
+        <span>{`${reminderPercent}% covered`}</span>
+      </div>
+      <div className="digest-stat-grid">
+        <div>
+          <Bell size={17} />
+          <span>Reminders</span>
+          <strong>{`${reminderCount}/${scheduleItems.length}`}</strong>
+        </div>
+        <div>
+          <CheckCircle2 size={17} />
+          <span>Finished</span>
+          <strong>{completionCount}</strong>
+        </div>
+        <div>
+          <TrendingUp size={17} />
+          <span>Catch up</span>
+          <strong>{`${catchUpProgress}%`}</strong>
+        </div>
+      </div>
+      <article className="digest-pick">
+        <button className="digest-art" style={{ "--poster": catchUpItem.poster }} type="button" onClick={() => onDetails(catchUpItem.id)}>
+          {catchUpEntry.day}
+        </button>
+        <div>
+          <span>{catchUpItem.nextRelease}</span>
+          <strong>{catchUpItem.title}</strong>
+          <small>{`${catchUpItem.genre} / Episode ${catchUpItem.currentEpisode}`}</small>
+        </div>
+      </article>
+      <div className="digest-actions">
+        <button type="button" onClick={() => onPlay(catchUpItem.id, catchUpItem.currentEpisode, true)}>
+          <Play size={15} fill="currentColor" />
+          Catch up
+        </button>
+        <button type="button" onClick={() => onDetails(catchUpItem.id)}>
+          <Info size={15} />
+          Details
+        </button>
+      </div>
+    </aside>
+  );
+}
 function WeeklyPlanner({ scheduleItems, reminders, onReminderToggle, onPlay, onDetails }) {
   return (
     <aside className="schedule-panel weekly-planner" aria-label="Release schedule">
@@ -4760,7 +4822,13 @@ function App() {
               onReminderToggle={toggleReminder}
               onPlay={playSelection}
               onDetails={setDetailsId}
-            />            <WeeklyPlanner
+            />                        <PremiereDigest
+              scheduleItems={scheduleItems}
+              reminders={reminders}
+              progress={progress}
+              onPlay={playSelection}
+              onDetails={setDetailsId}
+            /><WeeklyPlanner
               scheduleItems={scheduleItems}
               reminders={reminders}
               onReminderToggle={toggleReminder}
@@ -4939,6 +5007,7 @@ function App() {
 }
 
 export default App;
+
 
 
 
