@@ -4822,13 +4822,15 @@ function App() {
               onReminderToggle={toggleReminder}
               onPlay={playSelection}
               onDetails={setDetailsId}
-            />                        <PremiereDigest
+            />
+            <PremiereDigest
               scheduleItems={scheduleItems}
               reminders={reminders}
               progress={progress}
               onPlay={playSelection}
               onDetails={setDetailsId}
-            /><WeeklyPlanner
+            />
+            <WeeklyPlanner
               scheduleItems={scheduleItems}
               reminders={reminders}
               onReminderToggle={toggleReminder}
@@ -5007,6 +5009,7 @@ function App() {
 }
 
 export default App;
+
 
 
 
