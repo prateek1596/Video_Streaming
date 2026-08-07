@@ -36,8 +36,8 @@ The production output is generated in `dist/`.
 - Continue-watching progress row with resume coach and complete/reset controls
 - Persistent watchlist, session queue, queue mixer, resume coach, watch goals, library insights, playback preferences, maturity guard, family profile controls, reminders, profile preferences, progress, notes, episode feedback, and watch-party messages via localStorage
 - Show details modal with metadata, tags, and episode buttons
-- Latest episode queue, premiere radar, simulcast calendar with weekly reminder summary, release board, release reminders, notification center, and profile menu
-- Weekly release schedule, premiere radar, simulcast calendar with weekly reminder summary, release board, discovery lens, browse pulse, studio spotlight, maturity-limited browsing, library stats, watch goals, library insights, taste profile, queue mixer, session queue controls, episode toolkit, chapter jumps, transcript jumps, episode recap, playback setup, episode notes, feedback, and watch-party reactions
+- Latest episode queue, premiere radar, simulcast calendar with weekly reminder summary, premiere digest, release board, release reminders, notification center, and profile menu
+- Weekly release schedule, premiere radar, simulcast calendar with weekly reminder summary, premiere digest, release board, discovery lens, browse pulse, studio spotlight, maturity-limited browsing, library stats, watch goals, library insights, taste profile, queue mixer, session queue controls, episode toolkit, chapter jumps, transcript jumps, episode recap, playback setup, episode notes, feedback, and watch-party reactions
 - Responsive desktop and mobile layout
 
 ## Next Backend Steps
@@ -46,6 +46,7 @@ The production output is generated in `dist/`.
 - Store catalog data in a database
 - Replace the sample MP4 with licensed video assets or a legal streaming provider
 - Add subtitles, quality selection, and episode pages
+
 
 
 
