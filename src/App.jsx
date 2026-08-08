@@ -2161,6 +2161,71 @@ function OfflineDownloads({ items, downloaded, progress, currentEpisodes, onTogg
   );
 }
 
+function BandwidthPlanner({ planId, devices, downloadedCount, quality, dataSaver, sessionQueueCount, onQualityChange, onDataSaverToggle }) {
+  const activePlan = subscriptionPlans.find((plan) => plan.id === planId) || subscriptionPlans[1];
+  const qualityLoad = { Auto: 46, "480p": 30, "720p": 54, "1080p": 72 }[quality] || 46;
+  const streamLoad = Math.min(100, Math.round((devices.length / activePlan.streams) * qualityLoad));
+  const offlineLoad = Math.min(100, Math.round((downloadedCount / activePlan.downloads) * 100));
+  const householdLoad = Math.min(100, Math.round((streamLoad + offlineLoad + sessionQueueCount * 6) * (dataSaver ? 0.72 : 1)));
+  const recommendation = householdLoad > 78 ? "Use data saver" : householdLoad > 52 ? "Balanced night" : "Ready for 4K";
+  const activeDevices = devices.slice(0, 3);
+
+  return (
+    <section className="bandwidth-planner" aria-label="Bandwidth planner">
+      <div className="bandwidth-heading">
+        <div>
+          <p className="eyebrow">Network</p>
+          <h2>Bandwidth planner</h2>
+        </div>
+        <span>{recommendation}</span>
+      </div>
+      <div className="bandwidth-meter" aria-label={`${householdLoad}% household load`}>
+        <span style={{ width: `${householdLoad}%` }} />
+      </div>
+      <div className="bandwidth-stat-grid">
+        <div>
+          <TvMinimalPlay size={17} />
+          <span>Streams</span>
+          <strong>{`${devices.length}/${activePlan.streams}`}</strong>
+        </div>
+        <div>
+          <Download size={17} />
+          <span>Offline</span>
+          <strong>{`${downloadedCount}/${activePlan.downloads}`}</strong>
+        </div>
+        <div>
+          <Gauge size={17} />
+          <span>Load</span>
+          <strong>{`${householdLoad}%`}</strong>
+        </div>
+      </div>
+      <div className="bandwidth-controls">
+        <label>
+          <span>Stream quality</span>
+          <select value={quality} onChange={(event) => onQualityChange(event.target.value)}>
+            <option>Auto</option>
+            <option>1080p</option>
+            <option>720p</option>
+            <option>480p</option>
+          </select>
+        </label>
+        <button className={dataSaver ? "active" : ""} type="button" onClick={onDataSaverToggle}>
+          <Gauge size={16} />
+          {dataSaver ? "Data saver on" : "Data saver off"}
+        </button>
+      </div>
+      <div className="bandwidth-device-row" aria-label="Active device pressure">
+        {activeDevices.map((device) => (
+          <article key={device.id}>
+            <span>{device.type}</span>
+            <strong>{device.name}</strong>
+            <small>{device.lastSeen}</small>
+          </article>
+        ))}
+      </div>
+    </section>
+  );
+}
 function AccountCenter({ planId, billingCycle, devices, downloadedCount, profileCount, onPlanChange, onBillingCycleChange, onRemoveDevice, onAddDevice }) {
   const activePlan = subscriptionPlans.find((plan) => plan.id === planId) || subscriptionPlans[1];
   const annualSavings = activePlan.price * 2;
@@ -4864,6 +4929,16 @@ function App() {
             onRemoveDevice={removeDevice}
             onAddDevice={addDevice}
           />
+          <BandwidthPlanner
+            planId={subscriptionPlan}
+            devices={devices}
+            downloadedCount={downloaded.size}
+            quality={quality}
+            dataSaver={dataSaver}
+            sessionQueueCount={sessionQueueItems.length}
+            onQualityChange={setQuality}
+            onDataSaverToggle={() => setDataSaver((current) => !current)}
+          />
           <FamilyControls
             profiles={viewerProfiles}
             rules={familyRules}
@@ -5009,6 +5084,7 @@ function App() {
 }
 
 export default App;
+
 
 
 
