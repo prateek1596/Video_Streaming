@@ -22,6 +22,7 @@ import {
   MessageCircle,
   Play,
   RotateCcw,
+  Scissors,
   ScrollText,
   Search,
   SendHorizontal,
@@ -124,6 +125,12 @@ const defaultSupportTickets = [
 const defaultGiftPasses = [
   { id: "gift-1", code: "RONIN-7DAYS", recipient: "Mika", status: "Sent", perk: "7-day Plus trial" },
   { id: "gift-2", code: "BLOOM-FRI", recipient: "Rin", status: "Redeemed", perk: "Watch-room premiere pass" },
+];
+const clipVisibilityOptions = ["Private", "Friends", "Watch party"];
+const defaultClipReel = [
+  { id: "clip-1", animeId: "neon-ronin-zero", episode: 1, title: "Skyline draw", timestamp: 96, visibility: "Friends" },
+  { id: "clip-2", animeId: "signal-bloom", episode: 7, title: "Flower code reveal", timestamp: 514, visibility: "Watch party" },
+  { id: "clip-3", animeId: "cloud-atelier", episode: 11, title: "Cloud bridge", timestamp: 742, visibility: "Private" },
 ];
 
 const localizationLanguages = ["English", "Hindi", "Japanese", "Spanish", "Portuguese"];
