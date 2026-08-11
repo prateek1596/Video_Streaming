@@ -1692,6 +1692,118 @@ function WatchHistory({ items, currentEpisodes, progress, history, onPlay, onCle
   );
 }
 
+function ClipReel({ items, selected, selectedEpisode, progress, clips, onClipCreate, onClipRemove, onPlay, onDetails }) {
+  const [clipTitle, setClipTitle] = useState("");
+  const [visibility, setVisibility] = useState(clipVisibilityOptions[0]);
+  const enrichedClips = clips
+    .map((clip) => {
+      const item = items.find((candidate) => candidate.id === clip.animeId);
+      if (!item) return null;
+      return {
+        ...clip,
+        item,
+        episode: clampEpisode(clip.episode || item.currentEpisode, item),
+      };
+    })
+    .filter(Boolean)
+    .slice(0, 8);
+  const partyCount = enrichedClips.filter((clip) => clip.visibility === "Watch party").length;
+  const uniqueShows = new Set(enrichedClips.map((clip) => clip.item.id)).size;
+  const selectedProgress = Math.min(99, Math.max(0, Number(progress[selected.id] ?? selected.progress) || 0));
+  const estimatedTimestamp = Math.round((durationMinutes(selected.duration) * 60 * selectedProgress) / 100);
+  const suggestedTitle = `${selected.title} E${selectedEpisode} moment`;
+
+  function submitClip(event) {
+    event.preventDefault();
+    onClipCreate({
+      animeId: selected.id,
+      episode: selectedEpisode,
+      title: clipTitle.trim() || suggestedTitle,
+      timestamp: estimatedTimestamp,
+      visibility,
+    });
+    setClipTitle("");
+  }
+
+  return (
+    <section className="clip-reel" aria-label="Saved clips">
+      <div className="clip-heading">
+        <div>
+          <p className="eyebrow">Clips</p>
+          <h2>Moment reel</h2>
+        </div>
+        <span>{`${enrichedClips.length} saved`}</span>
+      </div>
+      <div className="clip-stat-grid">
+        <div>
+          <Scissors size={16} />
+          <span>Current</span>
+          <strong>{formatTimestamp(estimatedTimestamp)}</strong>
+        </div>
+        <div>
+          <Share2 size={16} />
+          <span>Party</span>
+          <strong>{partyCount}</strong>
+        </div>
+        <div>
+          <TvMinimalPlay size={16} />
+          <span>Shows</span>
+          <strong>{uniqueShows}</strong>
+        </div>
+      </div>
+      <form className="clip-form" onSubmit={submitClip}>
+        <label>
+          <span>Clip title</span>
+          <input value={clipTitle} onChange={(event) => setClipTitle(event.target.value)} placeholder={suggestedTitle} />
+        </label>
+        <label>
+          <span>Share with</span>
+          <select value={visibility} onChange={(event) => setVisibility(event.target.value)}>
+            {clipVisibilityOptions.map((option) => (
+              <option key={option}>{option}</option>
+            ))}
+          </select>
+        </label>
+        <button type="submit">
+          <Scissors size={15} />
+          Save clip
+        </button>
+      </form>
+      <div className="clip-list">
+        {enrichedClips.length ? (
+          enrichedClips.map((clip) => (
+            <article className="clip-row" key={clip.id}>
+              <button className="clip-art" style={{ "--poster": clip.item.poster }} type="button" onClick={() => onPlay(clip.item.id, clip.episode, true)}>
+                {formatTimestamp(clip.timestamp)}
+              </button>
+              <div>
+                <span>{`${clip.visibility} / Episode ${clip.episode}`}</span>
+                <strong>{clip.title}</strong>
+                <small>{clip.item.title}</small>
+              </div>
+              <div className="clip-actions">
+                <button type="button" onClick={() => onDetails(clip.item.id)}>
+                  <Info size={15} />
+                  Details
+                </button>
+                <button type="button" onClick={() => onPlay(clip.item.id, clip.episode, true)}>
+                  <Play size={15} fill="currentColor" />
+                  Play
+                </button>
+                <button type="button" onClick={() => onClipRemove(clip.id)} aria-label={`Remove ${clip.title}`}>
+                  <Trash2 size={15} />
+                </button>
+              </div>
+            </article>
+          ))
+        ) : (
+          <div className="clip-empty">Saved moments will appear here.</div>
+        )}
+      </div>
+    </section>
+  );
+}
+
 function recommendationReason(item, selected) {
   if (item.genre === selected.genre) return `${selected.genre} pick`;
   if (item.language === selected.language) return item.language;
