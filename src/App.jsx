@@ -4007,6 +4007,7 @@ function App() {
   const [reviews, setReviews] = useState(() => stored?.reviews || defaultReviews);
   const [supportTickets, setSupportTickets] = useState(() => stored?.supportTickets || defaultSupportTickets);
   const [giftPasses, setGiftPasses] = useState(() => stored?.giftPasses || defaultGiftPasses);
+  const [clipReel, setClipReel] = useState(() => stored?.clipReel || defaultClipReel);
   const [localizationJobs, setLocalizationJobs] = useState(() => stored?.localizationJobs || defaultLocalizationJobs);
   const [contentPitches, setContentPitches] = useState(() => stored?.contentPitches || defaultContentPitches);
   const [sessionQueue, setSessionQueue] = useState(() => stored?.sessionQueue || defaultSessionQueue);
@@ -4172,6 +4173,7 @@ function App() {
       reviews,
       supportTickets,
       giftPasses,
+      clipReel,
       localizationJobs,
       contentPitches,
       sessionQueue,
@@ -4190,7 +4192,7 @@ function App() {
       selectedCalendarDay,
     };
     localStorage.setItem(storageKey, JSON.stringify(payload));
-  }, [selectedId, selectedEpisode, currentEpisodes, saved, reminders, progress, quality, playbackSpeed, autoplayNext, ambientMode, skipIntro, breakReminder, captionsOn, subtitleLanguage, captionSize, captionTheme, captionDelay, dataSaver, maturityLimit, notes, episodeFeedback, partyMessages, partyInvites, reviews, supportTickets, giftPasses, localizationJobs, contentPitches, sessionQueue, watchHistory, sessionTarget, downloaded, activeProfileId, roomMode, activeChapterId, activeTranscriptId, subscriptionPlan, billingCycle, devices, moodMatch, familyRules, selectedCalendarDay]);
+  }, [selectedId, selectedEpisode, currentEpisodes, saved, reminders, progress, quality, playbackSpeed, autoplayNext, ambientMode, skipIntro, breakReminder, captionsOn, subtitleLanguage, captionSize, captionTheme, captionDelay, dataSaver, maturityLimit, notes, episodeFeedback, partyMessages, partyInvites, reviews, supportTickets, giftPasses, clipReel, localizationJobs, contentPitches, sessionQueue, watchHistory, sessionTarget, downloaded, activeProfileId, roomMode, activeChapterId, activeTranscriptId, subscriptionPlan, billingCycle, devices, moodMatch, familyRules, selectedCalendarDay]);
 
   useEffect(() => {
     const sections = ["watch", "continue", "discover", "latest", "watchlist"]
@@ -4312,6 +4314,7 @@ function App() {
     setReviews(defaultReviews);
     setSupportTickets(defaultSupportTickets);
     setGiftPasses(defaultGiftPasses);
+    setClipReel(defaultClipReel);
     setLocalizationJobs(defaultLocalizationJobs);
     setSessionQueue(defaultSessionQueue);
     setWatchHistory(defaultWatchHistory);
@@ -4468,6 +4471,19 @@ function App() {
 
   function removeGiftPass(id) {
     setGiftPasses((current) => current.filter((pass) => pass.id !== id));
+  }
+  function createClip(clip) {
+    setClipReel((current) => [
+      {
+        id: `clip-${Date.now()}`,
+        ...clip,
+      },
+      ...current.slice(0, 19),
+    ]);
+  }
+
+  function removeClip(id) {
+    setClipReel((current) => current.filter((clip) => clip.id !== id));
   }
   function createLocalizationJob(animeId, language) {
     setLocalizationJobs((current) => [
