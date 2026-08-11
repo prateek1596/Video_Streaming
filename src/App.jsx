@@ -4825,6 +4825,17 @@ function App() {
             onClear={clearWatchHistory}
             onRemove={removeWatchHistoryEntry}
           />
+          <ClipReel
+            items={safeAnime}
+            selected={selected}
+            selectedEpisode={selectedEpisode}
+            progress={progress}
+            clips={clipReel}
+            onClipCreate={createClip}
+            onClipRemove={removeClip}
+            onPlay={playSelection}
+            onDetails={setDetailsId}
+          />
           <div className="continue-grid">
             {continueItems.map((item) => (
               <ContinueCard
