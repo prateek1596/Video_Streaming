@@ -9177,6 +9177,230 @@ svg {
     flex: 1 1 8rem;
   }
 }
+
+.weekend-planner {
+  display: grid;
+  gap: 0.85rem;
+  padding: 1rem;
+  border: 1px solid rgba(123, 228, 149, 0.22);
+  border-radius: 0.7rem;
+  background: linear-gradient(145deg, rgba(123, 228, 149, 0.08), rgba(255, 255, 255, 0.055));
+}
+
+.planner-heading,
+.planner-focus {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.planner-heading h2 {
+  margin: 0.2rem 0 0;
+  font-size: clamp(1.15rem, 1.8vw, 1.45rem);
+}
+
+.planner-heading > span {
+  display: inline-flex;
+  min-height: 1.9rem;
+  align-items: center;
+  padding: 0 0.6rem;
+  border: 1px solid rgba(123, 228, 149, 0.38);
+  border-radius: 99rem;
+  background: rgba(123, 228, 149, 0.12);
+  color: var(--green);
+  font-size: 0.78rem;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.planner-summary,
+.planner-list {
+  display: grid;
+  gap: 0.55rem;
+}
+
+.planner-summary {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.planner-summary > div,
+.planner-focus,
+.planner-row,
+.planner-action,
+.planner-focus > button:last-child {
+  min-width: 0;
+  border: 1px solid var(--line);
+  border-radius: 0.55rem;
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--text);
+}
+
+.planner-summary > div {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 0.16rem 0.45rem;
+  align-items: center;
+  padding: 0.65rem;
+}
+
+.planner-summary svg {
+  grid-row: span 2;
+  color: var(--green);
+}
+
+.planner-summary span,
+.planner-focus span,
+.planner-focus small,
+.planner-row span {
+  color: var(--muted);
+  font-size: 0.74rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.planner-summary strong,
+.planner-focus strong,
+.planner-focus small,
+.planner-row strong,
+.planner-row span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.planner-focus {
+  display: grid;
+  grid-template-columns: 5.1rem minmax(0, 1fr) auto;
+  align-items: center;
+  padding: 0.7rem;
+  background: rgba(8, 10, 16, 0.28);
+}
+
+.planner-art,
+.planner-row-art {
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 0.5rem;
+  background:
+    linear-gradient(180deg, transparent, rgba(0, 0, 0, 0.72)),
+    var(--poster);
+  color: var(--text);
+  font-weight: 900;
+  text-align: center;
+}
+
+.planner-art {
+  width: 5.1rem;
+  height: 4rem;
+}
+
+.planner-focus > div,
+.planner-row > div {
+  display: grid;
+  min-width: 0;
+  gap: 0.16rem;
+}
+
+.planner-focus > button:last-child {
+  display: inline-flex;
+  min-height: 2.4rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  padding: 0 0.75rem;
+  font-weight: 850;
+}
+
+.planner-row {
+  display: grid;
+  grid-template-columns: 4.6rem minmax(0, 1fr) auto;
+  gap: 0.75rem;
+  align-items: center;
+  padding: 0.65rem;
+}
+
+.planner-row-art {
+  width: 4.6rem;
+  height: 3.35rem;
+  font-size: 0.68rem;
+  overflow-wrap: anywhere;
+}
+
+.planner-meter {
+  height: 0.42rem;
+  overflow: hidden;
+  border-radius: 99rem;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.planner-meter span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--green), var(--teal), var(--gold));
+}
+
+.planner-actions {
+  display: flex;
+  gap: 0.4rem;
+}
+
+.planner-action {
+  display: grid;
+  width: 2.35rem;
+  height: 2.35rem;
+  place-items: center;
+  transition:
+    transform 160ms ease,
+    border-color 160ms ease,
+    background 160ms ease;
+}
+
+.planner-action.active {
+  border-color: rgba(123, 228, 149, 0.45);
+  background: rgba(123, 228, 149, 0.14);
+  color: var(--green);
+}
+
+.planner-action:hover,
+.planner-focus > button:last-child:hover {
+  transform: translateY(-1px);
+  border-color: rgba(255, 255, 255, 0.28);
+  background: rgba(255, 255, 255, 0.1);
+}
+
+@media (max-width: 760px) {
+  .planner-heading {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .planner-summary,
+  .planner-focus,
+  .planner-row {
+    grid-template-columns: 1fr;
+  }
+
+  .planner-art,
+  .planner-row-art {
+    width: 100%;
+  }
+
+  .planner-focus > button:last-child,
+  .planner-actions {
+    width: 100%;
+  }
+
+  .planner-actions {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .planner-action {
+    width: 100%;
+  }
+}
 .localization-center {
   display: grid;
   gap: 0.85rem;
