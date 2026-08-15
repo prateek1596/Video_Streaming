@@ -3278,6 +3278,103 @@ function PremierePass({ items, progress, currentEpisodes, reminders, downloaded,
     </section>
   );
 }
+
+function WeekendWatchPlanner({ items, progress, currentEpisodes, reminders, downloaded, onPlay, onDetails, onReminderToggle, onToggleDownload }) {
+  const plannerItems = (items.length ? items : anime.slice(0, 5))
+    .map((item) => {
+      const watched = Math.min(100, Math.max(0, Number(progress[item.id] ?? item.progress) || 0));
+      const episode = currentEpisodes[item.id] || item.currentEpisode;
+      const minutesLeft = Math.max(0, durationMinutes(item.duration) - Math.round(durationMinutes(item.duration) * (watched / 100)));
+      const readiness =
+        (reminders.has(item.id) ? 34 : 0) +
+        (downloaded.has(item.id) ? 33 : 0) +
+        (watched > 0 ? 18 : 0) +
+        (watched >= 70 ? 15 : 0);
+      return { ...item, watched, episode, minutesLeft, readiness };
+    })
+    .sort((a, b) => b.readiness - a.readiness || b.popularity - a.popularity)
+    .slice(0, 4);
+  const totalMinutes = plannerItems.reduce((sum, item) => sum + item.minutesLeft, 0);
+  const readyCount = plannerItems.filter((item) => reminders.has(item.id) && downloaded.has(item.id)).length;
+  const nextItem = plannerItems.find((item) => item.watched < 100) || plannerItems[0];
+  const planPercent = plannerItems.length ? Math.round((readyCount / plannerItems.length) * 100) : 0;
+
+  return (
+    <section className="weekend-planner" aria-label="Weekend watch planner">
+      <div className="planner-heading">
+        <div>
+          <p className="eyebrow">Planner</p>
+          <h2>Weekend watchlist</h2>
+        </div>
+        <span>{`${readyCount}/${plannerItems.length} ready`}</span>
+      </div>
+      <div className="planner-summary">
+        <div>
+          <CalendarDays size={18} />
+          <span>Queue time</span>
+          <strong>{`${totalMinutes}m`}</strong>
+        </div>
+        <div>
+          <ListChecks size={18} />
+          <span>Ready score</span>
+          <strong>{`${planPercent}%`}</strong>
+        </div>
+        <div>
+          <ShieldCheck size={18} />
+          <span>Offline set</span>
+          <strong>{downloaded.size}</strong>
+        </div>
+      </div>
+      {nextItem && (
+        <article className="planner-focus">
+          <button className="planner-art" style={{ "--poster": nextItem.poster }} type="button" onClick={() => onDetails(nextItem.id)}>
+            E{nextItem.episode}
+          </button>
+          <div>
+            <span>Best next slot</span>
+            <strong>{nextItem.title}</strong>
+            <small>{`${nextItem.minutesLeft}m left / ${nextItem.nextRelease}`}</small>
+          </div>
+          <button type="button" onClick={() => onPlay(nextItem.id, nextItem.episode, true)}>
+            <Play size={15} fill="currentColor" />
+            Start
+          </button>
+        </article>
+      )}
+      <div className="planner-list">
+        {plannerItems.map((item) => {
+          const isReminderOn = reminders.has(item.id);
+          const isDownloaded = downloaded.has(item.id);
+          return (
+            <article className="planner-row" key={item.id}>
+              <button className="planner-row-art" style={{ "--poster": item.poster }} type="button" onClick={() => onDetails(item.id)}>
+                {item.genre}
+              </button>
+              <div>
+                <strong>{item.title}</strong>
+                <span>{`${item.watched}% watched / ${item.minutesLeft}m left`}</span>
+                <div className="planner-meter" aria-label={`${item.readiness}% readiness`}>
+                  <span style={{ width: `${item.readiness}%` }} />
+                </div>
+              </div>
+              <div className="planner-actions">
+                <IconButton label={`Play ${item.title}`} className="planner-action" onClick={() => onPlay(item.id, item.episode, true)}>
+                  <Play size={15} fill="currentColor" />
+                </IconButton>
+                <IconButton label={`${isReminderOn ? "Clear" : "Set"} reminder for ${item.title}`} className={`planner-action ${isReminderOn ? "active" : ""}`} onClick={() => onReminderToggle(item.id)}>
+                  <Bell size={15} />
+                </IconButton>
+                <IconButton label={`${isDownloaded ? "Remove" : "Add"} offline copy for ${item.title}`} className={`planner-action ${isDownloaded ? "active" : ""}`} onClick={() => onToggleDownload(item.id)}>
+                  {isDownloaded ? <CheckCircle2 size={15} /> : <Download size={15} />}
+                </IconButton>
+              </div>
+            </article>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
 function LibraryInsights({ items, progress, currentEpisodes, reminders, onPlay, onDetails, onReminderToggle }) {
   const insightItems = items.length ? items : anime.slice(0, 4);
   const countBy = (field) => {
@@ -5142,6 +5239,17 @@ function App() {
             onReminderToggle={toggleReminder}
           />
           <PremierePass
+            items={savedItems}
+            progress={progress}
+            currentEpisodes={currentEpisodes}
+            reminders={reminders}
+            downloaded={downloaded}
+            onPlay={playSelection}
+            onDetails={setDetailsId}
+            onReminderToggle={toggleReminder}
+            onToggleDownload={toggleDownload}
+          />
+          <WeekendWatchPlanner
             items={savedItems}
             progress={progress}
             currentEpisodes={currentEpisodes}
